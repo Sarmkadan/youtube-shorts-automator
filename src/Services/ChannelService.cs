@@ -7,6 +7,7 @@ using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -19,6 +20,7 @@ public class ChannelService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsChannelTokenValid(YouTubeChannel channel)
     {
         // Checks if the channel's access token is still valid
@@ -30,14 +32,25 @@ public class ChannelService
         return !channel.IsTokenExpired() && channel.IsActive;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool NeedsTokenRefresh(YouTubeChannel channel)
     {
+        // Fix: Add null check for channel parameter.
+        if (channel == null)
+        {
+            throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
+        }
         // Checks if the token should be refreshed proactively
         return channel.NeedsTokenRefresh();
     }
 
     public void UpdateChannelStatus(YouTubeChannel channel, bool isActive)
     {
+        // Fix: Add null check for channel parameter.
+        if (channel == null)
+        {
+            throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
+        }
         // Updates the active status of a channel
         if (isActive)
         {
@@ -53,6 +66,11 @@ public class ChannelService
 
     public string GetChannelStatusSummary(YouTubeChannel channel)
     {
+        // Fix: Add null check for channel parameter.
+        if (channel == null)
+        {
+            throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
+        }
         // Returns a human-readable summary of channel status
         var summary = $"Channel: {channel.ChannelName}\n";
         summary += $"Status: {(channel.IsActive ? "Active" : "Inactive")}\n";
@@ -68,6 +86,11 @@ public class ChannelService
 
     public bool ValidateChannelCredentials(YouTubeChannel channel)
     {
+        // Fix: Add null check for channel parameter.
+        if (channel == null)
+        {
+            throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
+        }
         // Validates that all required credentials are present
         if (!channel.IsValid())
         {
