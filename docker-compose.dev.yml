@@ -1,0 +1,24 @@
+# =============================================================================
+# YouTube Shorts Automator - docker-compose.dev.yml
+# Development configuration with hot reload and debugging capabilities
+# =============================================================================
+
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      - ./:/src
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - ASPNETCORE_HOSTINGSTARTUPASSEMBLIES=Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    # Expose additional ports for debugging
+    command: --debug
+    stdin_open: true
+    tty: true
