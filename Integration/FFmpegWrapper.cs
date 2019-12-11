@@ -3,6 +3,7 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Collections.Frozen;
 using System.Diagnostics;
 
 namespace YouTubeShortsAutomator.Integration;
@@ -20,6 +21,20 @@ public interface IFFmpegWrapper
 
 public class FFmpegWrapper : IFFmpegWrapper
 {
+    // FrozenDictionary provides O(1) lookup with no locking and is optimised
+    // for read-heavy, write-never access patterns.  OrdinalIgnoreCase means
+    // profile names never need .ToLowerInvariant() before the lookup.
+    private static readonly FrozenDictionary<string, string> ProfileOptions =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["hq"]       = "-c:v libx264 -preset medium -crf 23 -c:a aac -b:a 192k",
+            ["standard"] = "-c:v libx264 -preset medium -crf 28 -c:a aac -b:a 128k",
+            ["mobile"]   = "-c:v libx264 -preset fast   -crf 32 -c:a aac -b:a 96k",
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+    private const string DefaultProfileOptions =
+        "-c:v libx264 -preset medium -crf 28 -c:a aac -b:a 128k";
+
     private readonly string _ffmpegPath;
     private readonly string _ffprobePath;
     private readonly ILogger<FFmpegWrapper> _logger;
@@ -114,15 +129,10 @@ public class FFmpegWrapper : IFFmpegWrapper
         }
     }
 
-    private string BuildEncodingArguments(string inputPath, string outputPath, string profile)
+    private static string BuildEncodingArguments(string inputPath, string outputPath, string profile)
     {
-        return profile.ToLowerInvariant() switch
-        {
-            "hq" => $"-i \"{inputPath}\" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 192k \"{outputPath}\"",
-            "standard" => $"-i \"{inputPath}\" -c:v libx264 -preset medium -crf 28 -c:a aac -b:a 128k \"{outputPath}\"",
-            "mobile" => $"-i \"{inputPath}\" -c:v libx264 -preset fast -crf 32 -c:a aac -b:a 96k \"{outputPath}\"",
-            _ => $"-i \"{inputPath}\" -c:v libx264 -preset medium -crf 28 -c:a aac -b:a 128k \"{outputPath}\""
-        };
+        var opts = ProfileOptions.GetValueOrDefault(profile, DefaultProfileOptions);
+        return $"-i \"{inputPath}\" {opts} \"{outputPath}\"";
     }
 
     private async Task<bool> ExecuteFFmpegAsync(string executable, string arguments)
