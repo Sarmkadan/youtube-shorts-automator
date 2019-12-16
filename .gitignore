@@ -43,6 +43,11 @@ logs/
 *.swp
 *.swo
 *~
+*.DotSettings.user
+
+# NuGet
+*.nupkg
+packages/
 
 # Environment
 .env
