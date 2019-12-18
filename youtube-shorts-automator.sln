@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YouTubeShortsAutomator", "Y
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "youtube-shorts-automator", "youtube-shorts-automator.csproj", "{F8D2A30E-F729-47FB-973A-64E3038AA351}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "youtube-shorts-automator.Tests", "tests\youtube-shorts-automator.Tests\youtube-shorts-automator.Tests.csproj", "{D4F2B8A0-3C7E-4F9A-B6D8-1E0A2C4E6F82}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{F8D2A30E-F729-47FB-973A-64E3038AA351}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8D2A30E-F729-47FB-973A-64E3038AA351}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8D2A30E-F729-47FB-973A-64E3038AA351}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4F2B8A0-3C7E-4F9A-B6D8-1E0A2C4E6F82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4F2B8A0-3C7E-4F9A-B6D8-1E0A2C4E6F82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4F2B8A0-3C7E-4F9A-B6D8-1E0A2C4E6F82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4F2B8A0-3C7E-4F9A-B6D8-1E0A2C4E6F82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
