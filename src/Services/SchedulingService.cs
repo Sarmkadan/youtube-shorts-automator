@@ -22,13 +22,20 @@ public class SchedulingService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Tolerance window for scheduling time validation. Allows scheduling for "now"
+    /// without failing due to clock drift between caller and method evaluation.
+    /// </summary>
+    private static readonly TimeSpan SchedulingTolerance = TimeSpan.FromSeconds(5);
+
     public async Task<UploadJob> ScheduleUploadAsync(int videoShortId, DateTime scheduledTime,
         CancellationToken cancellationToken = default)
     {
         // Schedules a video upload for a specific time
-        if (scheduledTime < DateTime.UtcNow)
+        if (scheduledTime < DateTime.UtcNow.Subtract(SchedulingTolerance))
         {
-            throw new SchedulingException("Scheduled time cannot be in the past");
+            throw new SchedulingException(
+                $"Scheduled time cannot be in the past (received {scheduledTime:O}, current UTC is {DateTime.UtcNow:O})");
         }
 
         try
@@ -104,9 +111,10 @@ public class SchedulingService
         CancellationToken cancellationToken = default)
     {
         // Reschedules an upload job to a different time
-        if (newScheduledTime < DateTime.UtcNow)
+        if (newScheduledTime < DateTime.UtcNow.Subtract(SchedulingTolerance))
         {
-            throw new SchedulingException("New scheduled time cannot be in the past");
+            throw new SchedulingException(
+                $"New scheduled time cannot be in the past (received {newScheduledTime:O}, current UTC is {DateTime.UtcNow:O})");
         }
 
         try
