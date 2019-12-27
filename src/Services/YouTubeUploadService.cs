@@ -80,7 +80,8 @@ public class YouTubeUploadService
             
             var fileInfo = new FileInfo(filePath);
             long totalBytes = fileInfo.Length;
-            long uploadedBytes = 0;
+            // Hotfix: Resume upload from last saved position instead of starting from 0
+            long uploadedBytes = uploadJob.UploadedBytes;
 
             // Simulate upload with progress tracking
             _logger.LogInformation($"Starting upload of video {uploadJob.VideoShortId}");

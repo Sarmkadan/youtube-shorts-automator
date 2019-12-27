@@ -81,4 +81,19 @@ public class UploadJobModelTests
         job.UploadedAt.Should().NotBeNull();
         job.UploadedAt.Should().BeOnOrAfter(before);
     }
+
+    [Fact]
+    public void UploadedBytes_WhenSet_PreservesValueForResume()
+    {
+        // Arrange
+        var job = new UploadJob { UploadedBytes = 5242880 }; // 5MB
+        var totalBytes = 10485760; // 10MB
+
+        // Act
+        job.UpdateProgress(job.UploadedBytes, totalBytes);
+
+        // Assert
+        job.UploadedBytes.Should().Be(5242880);
+        job.UploadProgressPercentage.Should().Be(50.0);
+    }
 }
