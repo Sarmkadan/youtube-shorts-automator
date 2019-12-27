@@ -1,3 +1,16 @@
+## [2.0.2] - 2026-05-27
+### Fixed
+- Fix upload retry not resuming from last chunk on network timeout
+- Added regression test for the fix
+
+## [2.0.1] - 2026-05-26
+### Security
+- Added input validation and length limits to prevent potential DoS from overly long strings
+- Added request timeout configuration to HttpClient calls to prevent hanging requests
+- Added CancellationToken parameters to async methods without timeout handling
+- Added security policy and vulnerability reporting process
+- Enhanced logging to prevent accidental credential exposure in logs
+
 ## [2.0.0] - 2026-05-18
 ### Added
 - Add content calendar with smart title/description optimization
