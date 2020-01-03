@@ -15,6 +15,7 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - [Architecture](#architecture)
 - [System Requirements](#system-requirements)
 - [Installation](#installation)
+- [FFmpeg Setup](#ffmpeg-setup)
 - [Quick Start](#quick-start)
 - [Testing](#testing)
 - [Configuration Guide](#configuration-guide)
@@ -193,7 +194,7 @@ public class ProcessingTask
 ### Software Requirements
 - **.NET 10 SDK** (or later) - [Download](https://dotnet.microsoft.com/download)
 - **SQL Server 2019+** (or LocalDB for development) - [Download](https://www.microsoft.com/sql-server/sql-server-downloads)
-- **FFmpeg 4.0+** - [Download](https://ffmpeg.org/download.html)
+- **FFmpeg 4.4+** (see [FFmpeg Setup](#ffmpeg-setup) below) - [Download](https://ffmpeg.org/download.html)
 - **Git** (for version control) - [Download](https://git-scm.com/download)
 
 ### Hardware Requirements
@@ -230,6 +231,124 @@ sudo apt-get install ffmpeg
 # Verify FFmpeg
 ffmpeg -version
 ```
+
+---
+
+## FFmpeg Setup
+
+### Minimum Version
+
+**FFmpeg 4.4** or later is required. Version 4.4 introduced stability improvements to
+the AAC encoder and libx264 integration that this pipeline relies on.  
+FFmpeg 6.x or 7.x is recommended for production workloads.
+
+### Required Codec Support
+
+The encoding profiles used by this application require the following codecs to be
+compiled into your FFmpeg build:
+
+| Codec | Flag | Used For |
+|-------|------|----------|
+| H.264 | `--enable-libx264` | Video encoding (all profiles) |
+| AAC | built-in **or** `--enable-libfdk-aac` | Audio encoding (all profiles) |
+
+> **Note:** Most package-manager builds (`apt`, `brew`, `winget`) ship with both
+> codecs enabled. Custom or minimal builds (e.g. Alpine Linux) may omit them.
+> If you see `Unknown encoder 'libx264'` errors, install a full build.
+
+### Verifying Your Build
+
+```bash
+# Check version (4.4+ required)
+ffmpeg -version
+
+# Confirm libx264 and aac are available
+ffmpeg -encoders 2>/dev/null | grep -E "libx264|aac"
+# Expected output includes lines like:
+#  V..... libx264              libx264 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10
+#  A..... aac                  AAC (Advanced Audio Coding)
+```
+
+### Installation by Operating System
+
+#### Linux (Ubuntu / Debian)
+
+```bash
+sudo apt-get update
+sudo apt-get install -y ffmpeg
+
+# Verify
+ffmpeg -version
+ffmpeg -encoders 2>/dev/null | grep libx264
+```
+
+#### Linux (RHEL / Fedora / CentOS)
+
+```bash
+# Enable RPM Fusion (provides a full-featured FFmpeg build)
+sudo dnf install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+sudo dnf install -y ffmpeg
+
+# Verify
+ffmpeg -version
+```
+
+#### macOS (Homebrew)
+
+```bash
+brew install ffmpeg
+
+# Verify
+ffmpeg -version
+ffmpeg -encoders 2>/dev/null | grep libx264
+```
+
+#### Windows
+
+**Option A — winget (Windows Package Manager)**
+```powershell
+winget install --id Gyan.FFmpeg -e
+```
+
+**Option B — Manual installation**
+1. Download a full build from <https://www.gyan.dev/ffmpeg/builds/> (choose the
+   `ffmpeg-release-full.7z` archive).
+2. Extract to `C:\ffmpeg`.
+3. Add `C:\ffmpeg\bin` to your `PATH` environment variable.
+4. Open a new terminal and verify:
+   ```cmd
+   ffmpeg -version
+   ffmpeg -encoders | findstr libx264
+   ```
+
+### Configuring the FFmpeg Path
+
+By default the application expects `ffmpeg` and `ffprobe` to be on `PATH`.
+Override the paths in `appsettings.json` if your installation is non-standard:
+
+```json
+"Processing": {
+  "FFmpegPath": "/usr/local/bin/ffmpeg",
+  "FFprobePath": "/usr/local/bin/ffprobe",
+  "FFmpegTimeoutSeconds": 300
+}
+```
+
+`FFmpegTimeoutSeconds` controls how long a single encode is allowed to run before
+the process is forcibly terminated (default: 300 seconds / 5 minutes). Increase
+this value when processing long source videos.
+
+### Troubleshooting
+
+| Error | Likely Cause | Solution |
+|-------|-------------|----------|
+| `FFmpegNotFoundException` | `ffmpeg` is not on `PATH` | Add FFmpeg to `PATH` or set `Processing:FFmpegPath` in config |
+| `Unknown encoder 'libx264'` | Minimal FFmpeg build without libx264 | Install a full FFmpeg build (see above) |
+| `Unknown encoder 'aac'` | Minimal build without AAC | Install a full FFmpeg build |
+| Encode hangs indefinitely | Input video has no audio/video stream | Update to latest release — fixed in #9; check source file integrity |
+| Very slow encoding | Hardware acceleration not enabled | Consider using `-hwaccel auto` via a custom profile |
+
+---
 
 #### Step 2: Clone Repository
 
