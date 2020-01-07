@@ -61,6 +61,28 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - **Webhook Integration**: Receive real-time notifications for upload events
 - **System Health Monitoring**: CPU, memory, and processing queue metrics
 
+### Thumbnail Generator
+- **Frame Extraction**: Capture any frame from a video at a precise timestamp using FFmpeg
+- **Aspect Ratio Presets**: Vertical 9:16 (720×1280, Shorts-optimised), horizontal 16:9 (1280×720), and square 1:1 (720×720)
+- **Text Overlays**: Render titles and channel names via the FFmpeg `drawtext` filter with nine anchor positions, configurable font size, colour and semi-transparent background box
+- **Output Formats**: JPEG (quality-tunable), PNG (lossless) and WebP
+- **Batch Generation**: Extract multiple candidate frames evenly spaced across the video's duration for easy selection
+- **A/B Test Integration**: Works alongside `ThumbnailAbTestService` to serve, track and evaluate competing thumbnail variants
+
+### Title & Description Optimizer
+- **Heuristic Scoring**: Data-driven `ScoreTitle` method rates titles on length (40–70 characters optimal), power-word presence, question format and numeric hooks — returns a `[0,1]` confidence score
+- **Keyword Extraction**: `ExtractKeywords` strips stop-words, filters short tokens and returns the top-10 content-bearing terms from title and description
+- **Strategy Suggestions**: Produces up to three ranked `OptimizationSuggestion` records per call — power-word injection, question reformatting and keyword-alignment variants
+- **Hashtag Recommendations**: Appends configured trending hashtags (`#shorts`, `#fyp`, …) plus content-derived hashtags to every optimised description
+- **Posting-Time Prediction**: `RecommendPostingTimesAsync` derives optimal UTC upload slots from historical engagement patterns, skipping Sundays and enforcing a configurable minimum gap between slots
+
+### Scheduling Calendar
+- **Full Entry Lifecycle**: Draft → Optimised → Approved → Scheduled → Published state machine with `Approve`, `Cancel`, `Archive` and `ApplyOptimization` transitions
+- **REST API**: `ContentCalendarController` exposes ten endpoints: create, read, update, delete, upcoming window, date-range query, optimise, apply-suggestion, schedule and recommended-slot retrieval
+- **Auto-Optimisation**: Optionally invokes the title/description engine immediately on entry creation (`AutoOptimizeOnCreate` setting)
+- **Scheduling Integration**: `ScheduleEntryAsync` links a calendar entry to an `UploadJob` via `SchedulingService`, storing the job reference on the entry
+- **Validation**: Title length, description length, tag count and channel-ID checks are enforced at creation and update time
+
 ### Enterprise Features
 - **Multi-Channel Support**: Manage multiple YouTube channels from single platform
 - **Role-based Access Control**: User permissions and channel delegation
@@ -158,6 +180,26 @@ public class ProcessingTask
 ```
 
 ### Service Layer
+
+**ThumbnailGeneratorService**: Generates thumbnail images from video files
+- FFmpeg-backed frame extraction at any timestamp
+- Text overlay via `drawtext` filter with configurable appearance
+- Aspect ratio presets (Shorts 9:16, landscape 16:9, square 1:1)
+- Batch generation of candidate frames
+- Registered as `IThumbnailGeneratorService`
+
+**TitleOptimizationEngine**: Analyses and improves video metadata
+- Deterministic, data-driven scoring against historical analytics
+- Power-word injection, question-format and keyword-alignment strategies
+- Hashtag recommendations and UTC posting-slot prediction
+- Registered as `ITitleOptimizationEngine`
+
+**ContentCalendarService**: Orchestrates the content publishing calendar
+- Full entry lifecycle from Draft through to Published
+- Integrated title/description optimisation pass
+- Scheduling integration that creates `UploadJob` records
+- REST surface via `ContentCalendarController` (10 endpoints)
+- Registered as `IContentCalendarService`
 
 **VideoProcessingService**: Handles FFmpeg operations
 - Transcoding with multiple profiles
@@ -758,7 +800,163 @@ await channelService.SetDefaultChannelAsync(channel.Id);
 await uploadService.UploadVideoAsync(uploadJob, targetChannel: channel);
 ```
 
+### Example: Generating a Thumbnail with Text Overlay
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+var generator = serviceProvider.GetRequiredService<IThumbnailGeneratorService>();
+
+// Extract a frame from a Shorts video at the 3-second mark
+var result = await generator.GenerateFromVideoAsync(
+    videoPath: "/uploads/my-short.mp4",
+    request: new ThumbnailGenerationRequest
+    {
+        CaptureTimestamp = TimeSpan.FromSeconds(3),
+        AspectRatio      = ThumbnailAspectRatio.Vertical,   // 720×1280 — Shorts format
+        Format           = ThumbnailOutputFormat.Jpeg,
+        Quality          = 90,
+        OutputDirectory  = "/thumbnails",
+        OverlayText      = "5 Python Tips You NEED to Know",
+        TextOverlay = new TextOverlayOptions
+        {
+            FontSize  = 52,
+            FontColor = "white",
+            Position  = TextPosition.BottomCenter,
+            ShowBox   = true,
+            BoxColor  = "black@0.6"
+        }
+    });
+
+if (result.Success)
+    Console.WriteLine($"Thumbnail saved: {result.OutputPath} ({result.FileSizeBytes} bytes)");
+
+// Generate 5 candidate frames for manual selection
+var candidates = await generator.GenerateBatchAsync(
+    videoPath: "/uploads/my-short.mp4",
+    request: new ThumbnailGenerationRequest { OutputDirectory = "/thumbnails" },
+    frameCount: 5,
+    videoDuration: TimeSpan.FromSeconds(45));
+
+var best = candidates.Where(r => r.Success).ToList();
+Console.WriteLine($"Generated {best.Count} candidate thumbnails.");
+```
+
+### Example: Title & Description Optimisation
+
+```csharp
+using YouTubeShortAutomator.Services;
+
+var optimizer = serviceProvider.GetRequiredService<ITitleOptimizationEngine>();
+
+// Score an existing title
+double score = optimizer.ScoreTitle("Learn Python in 30 days");
+Console.WriteLine($"Title score: {score:F2}");  // e.g. 0.65
+
+// Extract meaningful keywords
+string[] keywords = optimizer.ExtractKeywords(
+    "How to build a REST API with .NET",
+    "Step-by-step tutorial covering controllers, routing and authentication.");
+
+// Get ranked optimisation suggestions
+var result = await optimizer.OptimizeAsync(
+    title: "Build a REST API",
+    description: "Learn to build APIs with .NET",
+    tags: new[] { "dotnet", "api" },
+    channelId: 1);
+
+Console.WriteLine($"Best suggestion: {result.BestSuggestion?.SuggestedTitle}");
+Console.WriteLine($"Confidence:      {result.BestSuggestion?.ConfidenceScore:F2}");
+Console.WriteLine($"Optimal posting: {result.NextOptimalSlot():u} UTC");
+Console.WriteLine($"Hashtags:        {string.Join(' ', result.RecommendedHashtags)}");
+```
+
+### Example: Managing the Scheduling Calendar
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+var calendar = serviceProvider.GetRequiredService<IContentCalendarService>();
+
+// Create a draft entry
+var entry = await calendar.CreateEntryAsync(new ContentCalendarEntry
+{
+    Title            = "10 Python Tips for Beginners",
+    Description      = "Quick tips every Python developer should know",
+    Tags             = new[] { "python", "tips", "tutorial" },
+    Category         = ContentCategory.Tutorial,
+    ScheduledPublishAt = DateTime.UtcNow.AddDays(3),
+    YouTubeChannelId = 1
+});
+
+// Run the optimisation engine and apply the best suggestion
+await calendar.OptimizeEntryAsync(entry.Id);
+entry = await calendar.ApplyOptimizationAsync(entry.Id, suggestionIndex: 0);
+
+// Approve, then link to an upload job
+entry.Approve();
+await calendar.UpdateEntryAsync(entry);
+
+entry = await calendar.ScheduleEntryAsync(entry.Id, DateTime.UtcNow.AddDays(3).AddHours(17));
+
+// Query upcoming entries
+var upcoming = await calendar.GetUpcomingEntriesAsync(daysAhead: 7);
+foreach (var e in upcoming)
+    Console.WriteLine($"{e.ScheduledPublishAt:u} — {e.Title} [{e.Status}]");
+
+// Get engine-recommended posting slots for the channel
+var slots = await calendar.GetRecommendedSlotsAsync(channelId: 1, count: 5);
+foreach (var slot in slots)
+    Console.WriteLine($"Recommended slot: {slot:u} UTC");
+```
+
 ## API Reference
+
+### Content Calendar Endpoints
+
+**POST** `/api/content-calendar`
+- Create a new calendar entry
+- Body: `{ title, description, tags, category, scheduledPublishAt, youTubeChannelId, notes, keywords }`
+- Response: `201 Created` with the persisted entry
+
+**GET** `/api/content-calendar/{id}`
+- Retrieve a single entry by id
+- Response: `200 OK` with entry, `404` if not found
+
+**GET** `/api/content-calendar/upcoming?daysAhead=7`
+- List non-cancelled, non-archived entries scheduled within the next N days
+- Response: `200 OK` with `{ data: [...], count }`
+
+**GET** `/api/content-calendar/range?from=&to=`
+- List entries scheduled between two UTC timestamps
+- Response: `200 OK` with `{ data: [...], count }`
+
+**PUT** `/api/content-calendar/{id}`
+- Update title, description, tags, category, scheduledPublishAt, notes or keywords
+- Response: `200 OK` with updated entry
+
+**DELETE** `/api/content-calendar/{id}`
+- Permanently remove a calendar entry
+- Response: `200 OK` or `404`
+
+**POST** `/api/content-calendar/{id}/optimize`
+- Run the title/description optimisation engine and store the result
+- Response: `200 OK` with `TitleOptimizationResult` (suggestions + posting-time)
+
+**POST** `/api/content-calendar/{id}/apply-optimization?suggestionIndex=0`
+- Apply a ranked suggestion to the entry's title, description and tags
+- Response: `200 OK` with updated entry
+
+**POST** `/api/content-calendar/{id}/schedule`
+- Body: `{ scheduledAt: "2025-06-01T17:00:00Z" }`
+- Links the entry to a new upload job and sets `ScheduledPublishAt`
+- Response: `200 OK` with updated entry
+
+**GET** `/api/content-calendar/recommended-slots?channelId=1&count=5`
+- Return engine-recommended UTC posting timestamps for the channel
+- Response: `200 OK` with `{ data: [...DateTime], count }`
 
 ### Processing Endpoints
 
