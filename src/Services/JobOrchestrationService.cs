@@ -39,7 +39,7 @@ public class JobOrchestrationService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<Pipeline PipelineResult> ProcessFullPipelineAsync(int videoShortId, 
+    public async Task<Pipeline> ProcessFullPipelineAsync(int videoShortId,
         ProcessingProfile processingProfile, YouTubeChannel channel,
         DateTime scheduledUploadTime, CancellationToken cancellationToken = default)
     {

@@ -363,6 +363,7 @@ public class ScheduleController : ControllerBase
             return string.Empty;
         return cols[idx].Trim();
     }
+}
 
 #region Schedule Models
 
