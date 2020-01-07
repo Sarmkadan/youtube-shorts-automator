@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped(sp => new VideoShortRepository(sp.GetRequiredService<DatabaseContext>()));
         services.AddScoped(sp => new UploadJobRepository(sp.GetRequiredService<DatabaseContext>()));
         services.AddScoped(sp => new AnalyticsRepository(sp.GetRequiredService<DatabaseContext>()));
+        services.AddScoped(sp => new UploadHistoryRepository(sp.GetRequiredService<DatabaseContext>()));
 
         // Register services
         services.AddScoped((sp) => new VideoProcessingService(
@@ -36,6 +37,7 @@ public static class DependencyInjection
 
         services.AddScoped((sp) => new YouTubeUploadService(
             sp.GetRequiredService<UploadJobRepository>(),
+            sp.GetRequiredService<UploadHistoryRepository>(),
             sp.GetRequiredService<ILogger<YouTubeUploadService>>()
         ));
 

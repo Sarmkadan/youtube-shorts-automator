@@ -38,6 +38,17 @@ public class Program
         try
         {
             logger.LogInformation("Starting YouTube Shorts Automator application");
+
+            // Ensure the upload history table exists
+            var historyRepo = serviceProvider.GetRequiredService<UploadHistoryRepository>();
+            await historyRepo.EnsureTableExistsAsync();
+
+            // Handle sub-commands
+            if (args.Length > 0 && args[0].Equals("history", StringComparison.OrdinalIgnoreCase))
+            {
+                await PrintUploadHistoryAsync(historyRepo, args);
+                return;
+            }
             
             // Initialize directories
             InitializeDirectories(appSettings);
@@ -55,6 +66,42 @@ public class Program
         finally
         {
             await serviceProvider.DisposeAsync();
+        }
+    }
+
+    private static async Task PrintUploadHistoryAsync(UploadHistoryRepository historyRepo, string[] args)
+    {
+        // Parses an optional --limit argument (default 50)
+        int limit = 50;
+        for (int i = 1; i < args.Length - 1; i++)
+        {
+            if (args[i].Equals("--limit", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(args[i + 1], out var parsed))
+            {
+                limit = parsed;
+            }
+        }
+
+        var entries = (await historyRepo.GetRecentAsync(limit)).ToList();
+
+        if (entries.Count == 0)
+        {
+            Console.WriteLine("No upload history found.");
+            return;
+        }
+
+        Console.WriteLine($"{"ID",-6} {"File",-40} {"YouTube ID",-14} {"Status",-9} {"Uploaded At (UTC)",-22} Error");
+        Console.WriteLine(new string('-', 110));
+
+        foreach (var e in entries)
+        {
+            var file    = e.VideoFileName.Length > 38 ? "…" + e.VideoFileName[^37..] : e.VideoFileName;
+            var ytId    = e.YouTubeVideoId ?? "-";
+            var status  = e.Status.ToString();
+            var error   = e.ErrorMessage ?? string.Empty;
+            if (error.Length > 40) error = error[..37] + "…";
+
+            Console.WriteLine($"{e.Id,-6} {file,-40} {ytId,-14} {status,-9} {e.UploadedAt:yyyy-MM-dd HH:mm:ss,-22} {error}");
         }
     }
 
