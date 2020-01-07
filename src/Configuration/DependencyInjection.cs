@@ -60,6 +60,11 @@ public static class DependencyInjection
             sp.GetRequiredService<ILogger<ThumbnailAbTestService>>()
         ));
 
+        services.AddScoped<IThumbnailGeneratorService>(sp =>
+            new ThumbnailGeneratorService(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<ILogger<ThumbnailGeneratorService>>()));
+
         services.AddScoped((sp) => new JobOrchestrationService(
             sp.GetRequiredService<VideoProcessingService>(),
             sp.GetRequiredService<YouTubeUploadService>(),
