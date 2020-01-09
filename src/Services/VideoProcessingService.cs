@@ -11,6 +11,10 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Services;
 
+/// <summary>
+/// Service for processing video files for YouTube Shorts uploads.
+/// Handles video transcoding, watermark application, color grading, and thumbnail generation.
+/// </summary>
 public class VideoProcessingService
 {
     private readonly VideoShortRepository _videoRepository;
@@ -22,6 +26,12 @@ public class VideoProcessingService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Validates that a video file meets requirements before processing.
+    /// </summary>
+    /// <param name="filePath">Path to the video file to validate</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>True if file is valid, false otherwise</returns>
     public async Task<bool> ValidateVideoFileAsync(string filePath, CancellationToken cancellationToken = default)
     {
         // Validates a video file before processing
@@ -55,6 +65,12 @@ public class VideoProcessingService
         }
     }
 
+    /// <summary>
+    /// Creates a new processing task for a video short.
+    /// </summary>
+    /// <param name="videoShort">Video short to create task for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created video short</returns>
     public async Task<VideoShort> CreateProcessingTaskAsync(VideoShort videoShort, CancellationToken cancellationToken = default)
     {
         // Creates a new processing task for a video short

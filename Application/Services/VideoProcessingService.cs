@@ -29,8 +29,13 @@ public class VideoProcessingService
     }
 
     /// <summary>
-    /// Creates and starts a new processing job for a video
+    /// Creates and starts a new processing job for a video.
     /// </summary>
+    /// <param name="videoId">The unique identifier of the video.</param>
+    /// <param name="jobType">The type of processing job to perform.</param>
+    /// <returns>The created processing job.</returns>
+    /// <exception cref="ResourceNotFoundException">Thrown if video not found.</exception>
+    /// <exception cref="VideoValidationException">Thrown if video validation fails.</exception>
     public async Task<ProcessingJob> CreateProcessingJobAsync(Guid videoId, ProcessingJobType jobType)
     {
         _logger.LogInformation($"Creating processing job for video {videoId}, type: {jobType}");
@@ -63,8 +68,11 @@ public class VideoProcessingService
     }
 
     /// <summary>
-    /// Processes a video through all required steps
+    /// Processes a video through all required steps including validation, preparation, encoding, optimization, thumbnail generation, and metadata extraction.
     /// </summary>
+    /// <param name="job">The processing job to execute.</param>
+    /// <returns>The updated processing job.</returns>
+    /// <exception cref="InvalidStateException">Thrown if job is not in queued state.</exception>
     public async Task<ProcessingJob> ProcessVideoAsync(ProcessingJob job)
     {
         _logger.LogInformation($"Starting processing for job {job.Id}");
