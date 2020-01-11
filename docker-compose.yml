@@ -1,8 +1,7 @@
-# =============================================================================
+# ==============================================================================
 # YouTube Shorts Automator - docker-compose.yml
 # Minimal configuration for development and production
-# =============================================================================
-
+# ==============================================================================
 version: '3.8'
 
 services:
@@ -11,11 +10,10 @@ services:
     container_name: youtube-shorts-automator
     restart: unless-stopped
     ports:
-      - "5000:5000"
-      - "5001:5001"
+      - "8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ASPNETCORE_URLS: http://+:5000
+      ASPNETCORE_URLS: http://+:8080
       ConnectionString: "Server=db;Database=YouTubeShortsAutomator;User Id=sa;Password=${SA_PASSWORD:-YourSecurePassword123!};"
       YouTubeApiKey: ${YOUTUBE_API_KEY}
       YouTubeClientId: ${YOUTUBE_CLIENT_ID}
@@ -24,8 +22,10 @@ services:
       MaxConcurrentProcessing: 2
       AnalyticsSyncIntervalHours: 6
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
       - ./processing:/app/processing
@@ -33,10 +33,11 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health/ready"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
