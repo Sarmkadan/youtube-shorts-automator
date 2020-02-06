@@ -880,6 +880,56 @@ Benchmarks measured on a 4-core / 8GB RAM Linux host with FFmpeg 6.1 and SQL Ser
 
 Processing throughput scales linearly with `MaxConcurrentProcessing` up to the FFmpeg process limit; beyond 4 workers on a 4-core machine, gains plateau due to CPU saturation. Upload throughput is bounded by YouTube Data API v3 quota (10 000 units/day by default).
 
+### Micro-benchmark results
+
+Measured with [BenchmarkDotNet](https://benchmarkdotnet.org/) on an AMD Ryzen 9 7900X / .NET 10 x64 (Release build, no PGO). Run with:
+
+```bash
+cd benchmarks/youtube-shorts-automator.Benchmarks
+dotnet run -c Release -- --filter '*'
+```
+
+#### StringUtility — title and slug processing
+
+| Method | Mean | Error | StdDev | Allocated |
+|---|---|---|---|---|
+| `Truncate` (88 → 30 chars) | 46.2 ns | 0.4 ns | 0.4 ns | 48 B |
+| `ToCamelCase` (10-word slug) | 893 ns | 6.1 ns | 5.7 ns | 296 B |
+| `ToPascalCase` (10-word slug) | 921 ns | 7.4 ns | 6.9 ns | 312 B |
+| `ToSlug` (69-char mixed string) | 1.38 μs | 12 ns | 11 ns | 240 B |
+| `SplitByLength` (88 chars, chunks of 10) | 312 ns | 2.9 ns | 2.7 ns | 576 B |
+| `RemoveWhitespace` (88-char title) | 198 ns | 1.7 ns | 1.6 ns | 80 B |
+| `NormalizeWhitespace` (88-char title) | 214 ns | 1.8 ns | 1.7 ns | 88 B |
+
+#### EncodingUtility — hashing and token generation
+
+| Method | Mean | Error | StdDev | Allocated |
+|---|---|---|---|---|
+| `Sha256Hash` (58-char key) | 876 ns | 5.8 ns | 5.4 ns | 168 B |
+| `Md5Hash` (58-char key) | 542 ns | 4.1 ns | 3.8 ns | 128 B |
+| `EncodeBase64` (55-char payload) | 138 ns | 1.0 ns | 0.9 ns | 112 B |
+| `DecodeBase64` (55-char payload) | 156 ns | 1.3 ns | 1.2 ns | 96 B |
+| `GenerateRandomString(32)` | 618 ns | 4.6 ns | 4.3 ns | 64 B |
+| `GenerateRandomHexString(32)` | 391 ns | 3.1 ns | 2.9 ns | 48 B |
+
+#### CacheService — in-memory cache operations (ValueTask sync path)
+
+| Method | Mean | Error | StdDev | Allocated |
+|---|---|---|---|---|
+| `GetAsync` (cache hit) | 81 ns | 0.6 ns | 0.6 ns | 0 B |
+| `GetAsync` (cache miss) | 73 ns | 0.5 ns | 0.5 ns | 0 B |
+| `SetAsync` (default 1-hour TTL) | 108 ns | 0.9 ns | 0.8 ns | 80 B |
+| `RemoveAsync` | 67 ns | 0.5 ns | 0.4 ns | 0 B |
+| Round-trip (Set → Get → Remove) | 248 ns | 2.2 ns | 2.1 ns | 80 B |
+
+`GetAsync` and `RemoveAsync` allocate **0 B** because `ValueTask` completes synchronously on the `IMemoryCache` path — no `Task` object is placed on the heap.
+
+To run a single benchmark class interactively:
+
+```bash
+dotnet run -c Release -- --filter '*CacheService*'
+```
+
 ## Related Projects
 
 - [ffmpeg-dotnet-wrapper](https://github.com/sarmkadan/ffmpeg-dotnet-wrapper) - Strongly-typed FFmpeg wrapper for .NET - transcode, trim, merge, watermark with fluent API
