@@ -16,6 +16,11 @@ public class ApiCredential
     public string AccessToken { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
     public DateTime AccessTokenExpiresAt { get; set; }
+    /// <summary>
+    /// Tracks when the refresh token itself expires (e.g. 7-day limit in OAuth testing mode).
+    /// Null means no expiry is tracked.
+    /// </summary>
+    public DateTime? RefreshTokenExpiresAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsValid { get; set; } = true;
@@ -29,6 +34,14 @@ public class ApiCredential
     public bool IsAccessTokenExpired()
     {
         return DateTime.UtcNow >= AccessTokenExpiresAt;
+    }
+
+    /// <summary>
+    /// Returns true when the refresh token has a known expiry that has already passed.
+    /// </summary>
+    public bool IsRefreshTokenExpired()
+    {
+        return RefreshTokenExpiresAt.HasValue && DateTime.UtcNow >= RefreshTokenExpiresAt.Value;
     }
 
     /// <summary>
@@ -64,6 +77,18 @@ public class ApiCredential
             Status = CredentialStatus.RefreshFailed;
             IsValid = false;
         }
+    }
+
+    /// <summary>
+    /// Immediately marks this credential as having an expired refresh token.
+    /// Prevents any further automatic retry attempts.
+    /// </summary>
+    public void MarkRefreshTokenExpired()
+    {
+        IsValid = false;
+        Status = CredentialStatus.Expired;
+        RefreshTokenExpiresAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>

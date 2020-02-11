@@ -56,6 +56,15 @@ public class ApiCredentialService : IApiCredentialService
 
         if (expiredCredential != null)
         {
+            if (expiredCredential.IsRefreshTokenExpired())
+            {
+                _logger.LogError(
+                    "Refresh token for credential {CredentialId} (user {UserId}) has expired. " +
+                    "Re-authorization is required.",
+                    expiredCredential.Id, userId);
+                throw new OAuthTokenExpiredException(expiredCredential.Id);
+            }
+
             _logger.LogInformation($"Attempting to refresh expired credential");
             await RefreshAccessTokenAsync(expiredCredential.Id);
             return expiredCredential;
@@ -127,7 +136,10 @@ public class ApiCredentialService : IApiCredentialService
 
         try
         {
-            // Simulate OAuth token refresh
+            // Simulate OAuth token refresh call.
+            // In a real implementation this calls the OAuth token endpoint and inspects the
+            // HTTP response.  A 400 with error=invalid_grant means the refresh token has
+            // expired (common after 7 days in OAuth testing mode) and is not retryable.
             var newAccessToken = $"access_{Guid.NewGuid().ToString().Substring(0, 20)}";
             var newExpiresAt = DateTime.UtcNow.AddHours(1);
 
@@ -138,6 +150,17 @@ public class ApiCredentialService : IApiCredentialService
 
             _logger.LogInformation($"Access token refreshed successfully");
             return true;
+        }
+        catch (OAuthTokenExpiredException)
+        {
+            // Refresh token itself has expired — mark immediately and do not retry.
+            credential.MarkRefreshTokenExpired();
+            await _credentialRepository.UpdateAsync(credential);
+            _logger.LogError(
+                "Refresh token for credential {CredentialId} has expired (invalid_grant). " +
+                "Re-authorization is required. Uploads for this credential will be halted.",
+                credentialId);
+            throw;
         }
         catch (Exception ex)
         {
