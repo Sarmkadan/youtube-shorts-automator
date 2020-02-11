@@ -1,41 +1,47 @@
 # =============================================================================
-# Author: Vladyslav Zaiets | https://sarmkadan.com
-# CTO & Software Architect
+# YouTube Shorts Automator - Dockerfile
+# Minimal multi-stage build with Alpine images
 # =============================================================================
 
-# Multi-stage build for YouTube Shorts Automator
-
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS builder
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS builder
 
 WORKDIR /src
 
+# Copy project files and restore dependencies
 COPY ["YouTubeShortsAutomator.csproj", "./"]
 RUN dotnet restore "YouTubeShortsAutomator.csproj"
 
+# Copy source files
 COPY . .
 RUN dotnet build "YouTubeShortsAutomator.csproj" -c Release -o /app/build
 
+# Publish stage
 FROM builder AS publish
-RUN dotnet publish "YouTubeShortsAutomator.csproj" -c Release -o /app/publish
+RUN dotnet publish "YouTubeShortsAutomator.csproj" -c Release -o /app/publish --no-restore
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:10.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine
 
 # Install FFmpeg and required dependencies
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     ffmpeg \
     curl \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    ttf-dejavu \
+    && rm -rf /var/cache/apk/*
 
 WORKDIR /app
+
+# Create non-root user
+RUN adduser -D -u 1001 appuser
 
 # Copy published application
 COPY --from=publish /app/publish .
 
 # Create directories for processing and logs
 RUN mkdir -p /app/logs /app/processing /app/output && \
+    chown -R appuser:appuser /app/logs /app/processing /app/output && \
     chmod -R 755 /app/logs /app/processing /app/output
 
 # Set environment variables
@@ -45,10 +51,13 @@ ENV PATH="/app:$PATH"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:5000/api/health || exit 1
+    CMD curl -f http://localhost:5000/health/ready || exit 1
 
 # Expose ports
 EXPOSE 5000 5001
+
+# Switch to non-root user
+USER appuser
 
 # Run application
 ENTRYPOINT ["dotnet", "YouTubeShortsAutomator.dll"]
