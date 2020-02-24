@@ -433,18 +433,74 @@ dotnet run
 
 ### Method 2: Docker Installation
 
-```bash
-# Build Docker image
-docker build -t youtube-shorts-automator .
+Run the application in Docker containers for easy deployment and dependency management.
 
-# Run with Docker Compose
+```bash
+# Option 1: Quick Start (uses default passwords - change in production!)
+# Set required environment variables
+export YOUTUBE_API_KEY="your-youtube-api-key"
+export YOUTUBE_CLIENT_ID="your-client-id"
+export YOUTUBE_CLIENT_SECRET="your-client-secret"
+
+# Start all services (app, database, Redis)
 docker-compose up -d
 
-# View logs
-docker-compose logs -f
+# View application logs
+docker-compose logs -f app
 
-# Stop services
+# Stop all services
 docker-compose down
+
+# Clean up volumes (removes database data!)
+docker-compose down -v
+```
+
+#### Environment Variables
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `YOUTUBE_API_KEY` | YouTube Data API v3 key | Yes | - |
+| `YOUTUBE_CLIENT_ID` | OAuth 2.0 Client ID | Yes | - |
+| `YOUTUBE_CLIENT_SECRET` | OAuth 2.0 Client Secret | Yes | - |
+| `SA_PASSWORD` | SQL Server password | No | `YourSecurePassword123!` |
+| `MaxConcurrentUploads` | Max concurrent uploads | No | `3` |
+| `MaxConcurrentProcessing` | Max concurrent processing | No | `2` |
+| `AnalyticsSyncIntervalHours` | Analytics sync interval in hours | No | `6` |
+
+#### Production Configuration
+
+For production, create a `.env` file:
+
+```env
+YOUTUBE_API_KEY=your-api-key-here
+YOUTUBE_CLIENT_ID=your-client-id-here
+YOUTUBE_CLIENT_SECRET=your-client-secret-here
+SA_PASSWORD=your-strong-sql-password-here
+MaxConcurrentUploads=5
+MaxConcurrentProcessing=3
+```
+
+Then run:
+```bash
+docker-compose --env-file .env up -d
+```
+
+#### Development with Hot Reload
+
+```bash
+# Start development environment with hot reload
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+# The application will automatically recompile on file changes
+```
+
+#### Custom Port Mapping
+
+```bash
+# Map to different host ports
+docker-compose up -d -p 8081:8080
+
+# Access on http://localhost:8081
 ```
 
 ### Method 3: Release Build
