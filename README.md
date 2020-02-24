@@ -611,6 +611,8 @@ The test suite covers domain model validation, repository logic, and service-lay
 
 ## Usage Examples
 
+For more comprehensive, standalone examples, see the [examples/](examples/) directory.
+
 ### Example 1: Basic Video Upload and Schedule
 
 ```csharp
