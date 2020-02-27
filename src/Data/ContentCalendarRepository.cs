@@ -194,7 +194,7 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
     public async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         const string query = "SELECT COUNT(1) FROM ContentCalendarEntries";
-        return await _context.ExecuteScalarAsync<int>(query) ?? 0;
+        return (int?)await _context.ExecuteScalarAsync<int>(query) ?? 0;
     }
 
     /// <inheritdoc />

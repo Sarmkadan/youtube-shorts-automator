@@ -43,10 +43,10 @@ class BatchProcessingExample
             // Define videos to process
             var videosToProcess = new[]
             {
-                ("video1.mp4", "Morning Motivation"),
-                ("video2.mp4", "Workout Tips"),
-                ("video3.mp4", "Healthy Recipes"),
-                ("video4.mp4", "Evening Reflection")
+                (fileName: "video1.mp4", title: "Morning Motivation"),
+                (fileName: "video2.mp4", title: "Workout Tips"),
+                (fileName: "video3.mp4", title: "Healthy Recipes"),
+                (fileName: "video4.mp4", title: "Evening Reflection")
             };
 
             Console.WriteLine($"Processing {videosToProcess.Length} videos...\n");

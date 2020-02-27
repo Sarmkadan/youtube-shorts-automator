@@ -4,6 +4,7 @@
 // =============================================================================
 
 using YouTubeShortsAutomator.Domain.Constants;
+using YouTubeShortsAutomator.Application.Repositories;
 using YouTubeShortsAutomator.Domain.Exceptions;
 using YouTubeShortsAutomator.Domain.Models;
 using YouTubeShortsAutomator.Integration;

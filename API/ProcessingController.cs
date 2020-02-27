@@ -4,6 +4,7 @@
 // =============================================================================
 
 using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.Caching;
 using YouTubeShortsAutomator.Utilities;
 using YouTubeShortsAutomator.Formatters;
 

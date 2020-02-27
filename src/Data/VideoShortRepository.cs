@@ -155,7 +155,7 @@ public class VideoShortRepository : IRepository<VideoShort>
     {
         // Returns the total count of video shorts
         var query = "SELECT COUNT(1) FROM VideoShorts";
-        return await _context.ExecuteScalarAsync<int>(query) ?? 0;
+        return (int?)await _context.ExecuteScalarAsync<int>(query) ?? 0;
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

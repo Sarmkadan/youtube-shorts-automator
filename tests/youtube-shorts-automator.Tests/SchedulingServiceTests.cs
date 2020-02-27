@@ -139,7 +139,7 @@ public class SchedulingServiceTests
         var result = await _service.GetUpcomingJobsAsync(12);
 
         result.Should().HaveCount(2);
-        result.Should().AllSatisfy(j => j.ScheduledAt.Should().BeLessThanOrEqualTo(now.AddHours(12)));
+        result.Should().AllSatisfy(j => j.ScheduledAt.Should().BeOnOrBefore(now.AddHours(12)));
     }
 
     [Fact]
@@ -356,8 +356,7 @@ public class SchedulingServiceTests
 
         var timeSpan = _service.CalculateOptimalUploadTime(createdAt, estimatedProcessingMinutes);
 
-        timeSpan.Should().NotBeNull();
-        timeSpan.Value.TotalMinutes.Should().BeGreaterThanOrEqualTo(5);
+        timeSpan.TotalMinutes.Should().BeGreaterThanOrEqualTo(5);
     }
 
     [Fact]

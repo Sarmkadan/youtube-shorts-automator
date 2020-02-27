@@ -8,6 +8,7 @@ using YouTubeShortsAutomator.Caching;
 using YouTubeShortsAutomator.Events;
 using YouTubeShortsAutomator.Formatters;
 using YouTubeShortsAutomator.Integration;
+using YouTubeShortsAutomator.Middleware;
 
 namespace YouTubeShortsAutomator.Extensions;
 
@@ -28,7 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<CsvExportFormatter>();
 
         // Integration services
-        services.AddSingleton<IHttpClientFactory, DefaultHttpClientFactory>();
+        services.AddSingleton<YouTubeShortsAutomator.Integration.IHttpClientFactory, DefaultHttpClientFactory>();
         services.AddScoped<IWebhookPublisher, WebhookPublisher>();
         services.AddScoped<IFFmpegWrapper, FFmpegWrapper>();
 
@@ -69,4 +70,31 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(options);
         return services;
     }
+
+    /// <summary>
+    /// Registers all core YouTubeShortsAutomator services (caching, formatters, integration,
+    /// event system) using the supplied options.
+    /// </summary>
+    public static IServiceCollection AddYouTubeShortsAutomator(
+        this IServiceCollection services,
+        Action<YouTubeShortsAutomatorOptions>? configure = null)
+    {
+        var options = new YouTubeShortsAutomatorOptions();
+        configure?.Invoke(options);
+
+        services.AddSingleton(options);
+        services.AddApplicationServices();
+        services.AddBackgroundServices();
+
+        return services;
+    }
+}
+
+/// <summary>
+/// Configuration options for <see cref="ServiceCollectionExtensions.AddYouTubeShortsAutomator"/>.
+/// </summary>
+public class YouTubeShortsAutomatorOptions
+{
+    public string? ApiKey { get; set; }
+    public string? ConnectionString { get; set; }
 }

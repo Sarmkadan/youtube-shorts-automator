@@ -3,6 +3,9 @@
 // CTO & Software Architect
 // =============================================================================
 
+using YouTubeShortsAutomator.Caching;
+using YouTubeShortsAutomator.Integration;
+
 namespace YouTubeShortsAutomator.Events;
 
 /// <summary>

@@ -1,5 +1,10 @@
 <Project>
   <PropertyGroup>
+    <!-- Two top-level projects (YouTubeShortsAutomator.csproj and youtube-shorts-automator.csproj)
+         live side by side in the repo root. Without per-project intermediate/output paths,
+         their restore and build artifacts collide in a shared obj\/bin\ folder. -->
+    <BaseIntermediateOutputPath>obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin\$(MSBuildProjectName)\</BaseOutputPath>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

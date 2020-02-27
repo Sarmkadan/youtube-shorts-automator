@@ -4,6 +4,7 @@
 // =============================================================================
 
 using YouTubeShortsAutomator.Domain.Constants;
+using YouTubeShortsAutomator.Application.Repositories;
 using YouTubeShortsAutomator.Domain.Exceptions;
 using YouTubeShortsAutomator.Domain.Models;
 
@@ -12,7 +13,7 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// Handles video processing, encoding, and optimization using FFmpeg
 /// </summary>
-public class VideoProcessingService
+public class VideoProcessingService : IVideoProcessingService
 {
     private readonly ILogger<VideoProcessingService> _logger;
     private readonly IVideoRepository _videoRepository;

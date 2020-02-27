@@ -231,7 +231,7 @@ public sealed class ContentCalendarService : IContentCalendarService
             ?? throw new InvalidOperationException(
                 $"VideoShort {entry.VideoShortId} linked to entry {entryId} was not found.");
 
-        if (!videoShort.CanBeProcessed() && videoShort.Status != Domain.Models.ProcessingStatus.Completed)
+        if (!videoShort.CanBeProcessed() && videoShort.Status != Constants.ProcessingStatus.Completed)
         {
             _logger.LogWarning(
                 "Scheduling entry {EntryId} whose VideoShort {VideoShortId} has status {Status}",

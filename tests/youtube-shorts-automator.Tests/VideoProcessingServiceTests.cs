@@ -321,8 +321,8 @@ public class VideoProcessingServiceTests
 
         result1.OutputWidth.Should().Be(720);
         result2.OutputWidth.Should().Be(1080);
-        result1.VideoBitrate.Should().Be(2000);
-        result2.VideoBitrate.Should().Be(5000);
+        result1.OutputBitrate.Should().Be(2000);
+        result2.OutputBitrate.Should().Be(5000);
     }
 
     [Fact]

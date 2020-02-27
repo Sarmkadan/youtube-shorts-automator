@@ -65,7 +65,7 @@ public class UploadHistoryRepository
             { "@CreatedAt",      DateTime.UtcNow }
         };
 
-        entry.Id = await _context.ExecuteScalarAsync<int>(sql, CommandType.Text, parameters) ?? 0;
+        entry.Id = (int?)await _context.ExecuteScalarAsync<int>(sql, CommandType.Text, parameters) ?? 0;
         return entry;
     }
 
