@@ -7,6 +7,7 @@ using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using YouTubeShortAutomator.Exceptions;
 
 namespace YouTubeShortAutomator.Configuration;
 
@@ -18,8 +19,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, AppSettings appSettings)
     {
+        if (services == null) throw new ArgumentNullException(nameof(services));
+        if (appSettings == null) throw new ArgumentNullException(nameof(appSettings));
+
         // Adds all application services to the dependency injection container
-        
+
         // Configure database context
         services.AddSingleton(_ => new DatabaseContext(appSettings.ConnectionString));
 
@@ -89,6 +93,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         Action<ContentCalendarOptions>? configure = null)
     {
+        if (services == null) throw new ArgumentNullException(nameof(services));
+
         var options = new ContentCalendarOptions();
         configure?.Invoke(options);
         services.AddSingleton(options);
@@ -118,6 +124,9 @@ public static class DependencyInjection
     /// <summary>Configures the application logging pipeline.</summary>
     public static IServiceCollection AddApplicationLogging(this IServiceCollection services, AppSettings appSettings)
     {
+        if (services == null) throw new ArgumentNullException(nameof(services));
+        if (appSettings == null) throw new ArgumentNullException(nameof(appSettings));
+
         // Configures logging
         services.AddLogging(builder =>
         {

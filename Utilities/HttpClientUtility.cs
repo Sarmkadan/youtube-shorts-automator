@@ -5,6 +5,7 @@
 
 using System.Net.Http.Headers;
 using System.Text.Json;
+using YouTubeShortAutomator.Exceptions;
 
 namespace YouTubeShortsAutomator.Utilities;
 
@@ -38,16 +39,26 @@ public static class HttpClientUtility
 
     public static void AddAuthorizationHeader(HttpClient client, string scheme, string token)
     {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (string.IsNullOrWhiteSpace(scheme)) throw new ArgumentException("Scheme cannot be null or empty.", nameof(scheme));
+        if (string.IsNullOrWhiteSpace(token)) throw new ArgumentException("Token cannot be null or empty.", nameof(token));
+
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, token);
     }
 
     public static void AddApiKeyHeader(HttpClient client, string apiKey)
     {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (string.IsNullOrWhiteSpace(apiKey)) throw new ArgumentException("API key cannot be null or empty.", nameof(apiKey));
+
         client.DefaultRequestHeaders.Add("X-API-Key", apiKey);
     }
 
     public static void AddBearerToken(HttpClient client, string token)
     {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (string.IsNullOrWhiteSpace(token)) throw new ArgumentException("Token cannot be null or empty.", nameof(token));
+
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
@@ -56,16 +67,26 @@ public static class HttpClientUtility
         string url,
         int maxRetries = 3)
     {
-        return await ExecuteWithRetryAsync(async () =>
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+
+        try
         {
-            var response = await client.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+            return await ExecuteWithRetryAsync(async () =>
             {
-                PropertyNameCaseInsensitive = true
-            });
-        }, maxRetries);
+                var response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }, maxRetries);
+        }
+        catch (Exception ex)
+        {
+            throw new YoutubeShortsAutomatorException($"GET request to '{url}' failed.", ex);
+        }
     }
 
     public static async Task<HttpResponseMessage> PostAsJsonAsync<T>(
@@ -74,12 +95,23 @@ public static class HttpClientUtility
         T data,
         int maxRetries = 3)
     {
-        return await ExecuteWithRetryAsync(async () =>
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        if (data == null) throw new ArgumentNullException(nameof(data));
+
+        try
         {
-            var json = JsonSerializer.Serialize(data);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            return await client.PostAsync(url, content);
-        }, maxRetries);
+            return await ExecuteWithRetryAsync(async () =>
+            {
+                var json = JsonSerializer.Serialize(data);
+                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                return await client.PostAsync(url, content);
+            }, maxRetries);
+        }
+        catch (Exception ex)
+        {
+            throw new YoutubeShortsAutomatorException($"POST request to '{url}' failed.", ex);
+        }
     }
 
     public static async Task<string> GetAsStringAsync(
@@ -87,12 +119,22 @@ public static class HttpClientUtility
         string url,
         int maxRetries = 3)
     {
-        return await ExecuteWithRetryAsync(async () =>
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+
+        try
         {
-            var response = await client.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
-        }, maxRetries);
+            return await ExecuteWithRetryAsync(async () =>
+            {
+                var response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStringAsync();
+            }, maxRetries);
+        }
+        catch (Exception ex)
+        {
+            throw new YoutubeShortsAutomatorException($"GET (string) request to '{url}' failed.", ex);
+        }
     }
 
     public static async Task<HttpResponseMessage> PutAsJsonAsync<T>(
@@ -101,12 +143,23 @@ public static class HttpClientUtility
         T data,
         int maxRetries = 3)
     {
-        return await ExecuteWithRetryAsync(async () =>
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        if (data == null) throw new ArgumentNullException(nameof(data));
+
+        try
         {
-            var json = JsonSerializer.Serialize(data);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            return await client.PutAsync(url, content);
-        }, maxRetries);
+            return await ExecuteWithRetryAsync(async () =>
+            {
+                var json = JsonSerializer.Serialize(data);
+                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                return await client.PutAsync(url, content);
+            }, maxRetries);
+        }
+        catch (Exception ex)
+        {
+            throw new YoutubeShortsAutomatorException($"PUT request to '{url}' failed.", ex);
+        }
     }
 
     public static async Task<HttpResponseMessage> DeleteAsync(
@@ -114,10 +167,20 @@ public static class HttpClientUtility
         string url,
         int maxRetries = 3)
     {
-        return await ExecuteWithRetryAsync(async () =>
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+
+        try
         {
-            return await client.DeleteAsync(url);
-        }, maxRetries);
+            return await ExecuteWithRetryAsync(async () =>
+            {
+                return await client.DeleteAsync(url);
+            }, maxRetries);
+        }
+        catch (Exception ex)
+        {
+            throw new YoutubeShortsAutomatorException($"DELETE request to '{url}' failed.", ex);
+        }
     }
 
     private static async Task<T> ExecuteWithRetryAsync<T>(
@@ -143,28 +206,18 @@ public static class HttpClientUtility
             }
         }
 
-        // Final attempt without catching
+        // Final attempt – let any exception bubble up (it will be wrapped by the caller)
         return await operation();
     }
 
-    public static bool IsSuccessStatusCode(int statusCode)
-    {
-        return statusCode >= 200 && statusCode < 300;
-    }
+    public static bool IsSuccessStatusCode(int statusCode) => statusCode >= 200 && statusCode < 300;
 
-    public static bool IsClientError(int statusCode)
-    {
-        return statusCode >= 400 && statusCode < 500;
-    }
+    public static bool IsClientError(int statusCode) => statusCode >= 400 && statusCode < 500;
 
-    public static bool IsServerError(int statusCode)
-    {
-        return statusCode >= 500;
-    }
+    public static bool IsServerError(int statusCode) => statusCode >= 500;
 
-    public static string GetStatusCodeDescription(int statusCode)
-    {
-        return statusCode switch
+    public static string GetStatusCodeDescription(int statusCode) =>
+        statusCode switch
         {
             200 => "OK",
             201 => "Created",
@@ -179,5 +232,4 @@ public static class HttpClientUtility
             503 => "Service Unavailable",
             _ => "Unknown"
         };
-    }
 }

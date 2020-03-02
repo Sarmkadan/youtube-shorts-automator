@@ -5,6 +5,7 @@
 
 using System.Data;
 using System.Data.SqlClient;
+using YouTubeShortAutomator.Exceptions;
 
 namespace YouTubeShortAutomator.Data;
 
@@ -33,93 +34,111 @@ public class DatabaseContext : IAsyncDisposable
     public async Task<int> ExecuteCommandAsync(string commandText, CommandType commandType = CommandType.Text,
         Dictionary<string, object?>? parameters = null)
     {
-        // Executes a SQL command with optional parameters
+        if (string.IsNullOrWhiteSpace(commandText))
+            throw new ArgumentException("Command text cannot be null or empty.", nameof(commandText));
+
         try
         {
             var connection = await GetConnectionAsync();
-            using (var command = new SqlCommand(commandText, connection))
+            using var command = new SqlCommand(commandText, connection)
             {
-                command.CommandType = commandType;
-                command.CommandTimeout = 30;
+                CommandType = commandType,
+                CommandTimeout = 30
+            };
 
-                if (parameters != null)
+            if (parameters != null)
+            {
+                foreach (var param in parameters)
                 {
-                    foreach (var param in parameters)
-                    {
-                        command.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
-                    }
+                    command.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
                 }
-
-                return await command.ExecuteNonQueryAsync();
             }
+
+            return await command.ExecuteNonQueryAsync();
         }
         catch (SqlException ex)
         {
-            throw new InvalidOperationException($"Database command execution failed: {ex.Message}", ex);
+            throw new YoutubeShortsAutomatorException($"Database command execution failed: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new YoutubeShortsAutomatorException("Unexpected error during ExecuteCommandAsync.", ex);
         }
     }
 
     public async Task<T?> ExecuteScalarAsync<T>(string commandText, CommandType commandType = CommandType.Text,
         Dictionary<string, object?>? parameters = null)
     {
-        // Executes a command and returns a scalar value
+        if (string.IsNullOrWhiteSpace(commandText))
+            throw new ArgumentException("Command text cannot be null or empty.", nameof(commandText));
+
         try
         {
             var connection = await GetConnectionAsync();
-            using (var command = new SqlCommand(commandText, connection))
+            using var command = new SqlCommand(commandText, connection)
             {
-                command.CommandType = commandType;
-                command.CommandTimeout = 30;
+                CommandType = commandType,
+                CommandTimeout = 30
+            };
 
-                if (parameters != null)
+            if (parameters != null)
+            {
+                foreach (var param in parameters)
                 {
-                    foreach (var param in parameters)
-                    {
-                        command.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
-                    }
+                    command.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
                 }
-
-                var result = await command.ExecuteScalarAsync();
-                return result != null && result != DBNull.Value ? (T?)Convert.ChangeType(result, typeof(T)) : default;
             }
+
+            var result = await command.ExecuteScalarAsync();
+            return result != null && result != DBNull.Value
+                ? (T?)Convert.ChangeType(result, typeof(T))
+                : default;
         }
         catch (SqlException ex)
         {
-            throw new InvalidOperationException($"Database scalar query failed: {ex.Message}", ex);
+            throw new YoutubeShortsAutomatorException($"Database scalar query failed: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new YoutubeShortsAutomatorException("Unexpected error during ExecuteScalarAsync.", ex);
         }
     }
 
     public async Task<DataTable> ExecuteDataTableAsync(string commandText, CommandType commandType = CommandType.Text,
         Dictionary<string, object?>? parameters = null)
     {
-        // Executes a query and returns results as a DataTable
+        if (string.IsNullOrWhiteSpace(commandText))
+            throw new ArgumentException("Command text cannot be null or empty.", nameof(commandText));
+
         try
         {
             var connection = await GetConnectionAsync();
-            using (var command = new SqlCommand(commandText, connection))
+            using var command = new SqlCommand(commandText, connection)
             {
-                command.CommandType = commandType;
-                command.CommandTimeout = 30;
+                CommandType = commandType,
+                CommandTimeout = 30
+            };
 
-                if (parameters != null)
+            if (parameters != null)
+            {
+                foreach (var param in parameters)
                 {
-                    foreach (var param in parameters)
-                    {
-                        command.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
-                    }
-                }
-
-                using (var adapter = new SqlDataAdapter(command))
-                {
-                    var dataTable = new DataTable();
-                    await Task.Run(() => adapter.Fill(dataTable));
-                    return dataTable;
+                    command.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
                 }
             }
+
+            using var adapter = new SqlDataAdapter(command);
+            var dataTable = new DataTable();
+            await Task.Run(() => adapter.Fill(dataTable));
+            return dataTable;
         }
         catch (SqlException ex)
         {
-            throw new InvalidOperationException($"Database table query failed: {ex.Message}", ex);
+            throw new YoutubeShortsAutomatorException($"Database table query failed: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new YoutubeShortsAutomatorException("Unexpected error during ExecuteDataTableAsync.", ex);
         }
     }
 
