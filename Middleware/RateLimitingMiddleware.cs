@@ -76,6 +76,8 @@ public class RateLimitBucket
 
     public int RemainingRequests => _tokens;
 
+    public int GetCapacity() => _capacity;
+
     public RateLimitBucket(int capacity)
     {
         _capacity = capacity;
