@@ -20,8 +20,11 @@ public static class AnalyticsControllerExtensions
     /// </summary>
     /// <param name="response">The VideoAnalyticsResponse instance</param>
     /// <returns>Average engagement per view (0-1 scale)</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="response"/> is null</exception>
     public static double CalculateEngagementPerView(this VideoAnalyticsResponse response)
     {
+        ArgumentNullException.ThrowIfNull(response);
+
         if (response.ViewCount == 0)
             return 0.0;
 
@@ -34,9 +37,11 @@ public static class AnalyticsControllerExtensions
     /// </summary>
     /// <param name="response">The VideoAnalyticsResponse instance</param>
     /// <returns>Formatted engagement rate percentage (e.g., "12.5%")</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="response"/> is null</exception>
     public static string GetEngagementRatePercentage(this VideoAnalyticsResponse response)
     {
-        return response.EngagementRate.ToString("0.0") + "%";
+        ArgumentNullException.ThrowIfNull(response);
+        return response.EngagementRate.ToString("0.0", CultureInfo.InvariantCulture) + "%";
     }
 
     /// <summary>
@@ -44,8 +49,10 @@ public static class AnalyticsControllerExtensions
     /// </summary>
     /// <param name="response">The VideoAnalyticsResponse instance</param>
     /// <returns>Watch time in hours</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="response"/> is null</exception>
     public static double GetWatchTimeHours(this VideoAnalyticsResponse response)
     {
+        ArgumentNullException.ThrowIfNull(response);
         return Math.Round((double)response.WatchTimeMinutes / 60, 2);
     }
 
@@ -54,8 +61,10 @@ public static class AnalyticsControllerExtensions
     /// </summary>
     /// <param name="response">The VideoAnalyticsResponse instance</param>
     /// <returns>Average watch duration in minutes</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="response"/> is null</exception>
     public static double GetAverageWatchDurationMinutes(this VideoAnalyticsResponse response)
     {
+        ArgumentNullException.ThrowIfNull(response);
         return Math.Round((double)response.AverageWatchDurationSeconds / 60, 2);
     }
 
@@ -65,8 +74,11 @@ public static class AnalyticsControllerExtensions
     /// <param name="controller">The AnalyticsController instance</param>
     /// <param name="videoId">The video ID</param>
     /// <returns>VideoAnalyticsResponse with default data</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="controller"/> is null</exception>
     public static VideoAnalyticsResponse CreateVideoAnalyticsResponse(this AnalyticsController controller, Guid videoId)
     {
+        ArgumentNullException.ThrowIfNull(controller);
+
         return new VideoAnalyticsResponse
         {
             VideoId = videoId,
@@ -89,8 +101,14 @@ public static class AnalyticsControllerExtensions
     /// <param name="controller">The AnalyticsController instance</param>
     /// <param name="days">Number of days for the summary</param>
     /// <returns>AnalyticsSummaryResponse with calculated metrics</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="controller"/> is null</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="days"/> is less than 1 or greater than 365</exception>
     public static AnalyticsSummaryResponse CreateAnalyticsSummary(this AnalyticsController controller, int days = 30)
     {
+        ArgumentNullException.ThrowIfNull(controller);
+        ArgumentOutOfRangeException.ThrowIfLessThan(days, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(days, 365);
+
         return new AnalyticsSummaryResponse
         {
             TotalVideos = 45,
