@@ -20,10 +20,15 @@ public static class RepositoryExtensions
     /// <param name="repository">Repository instance</param>
     /// <param name="predicate">Filter expression</param>
     /// <returns>Matching entity or null</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null</exception>
     public static async Task<TEntity?> FirstOrDefaultAsync<TEntity>(
         this IRepository<TEntity> repository,
         Expression<Func<TEntity, bool>> predicate) where TEntity : class
     {
+        ArgumentNullException.ThrowIfNull(repository);
+        ArgumentNullException.ThrowIfNull(predicate);
+
         var allEntities = await repository.GetAllAsync();
         return allEntities.FirstOrDefault(predicate.Compile());
     }
@@ -35,11 +40,16 @@ public static class RepositoryExtensions
     /// <param name="repository">Repository instance</param>
     /// <param name="predicate">Filter expression</param>
     /// <returns>Matching entity</returns>
-    /// <exception cref="InvalidOperationException">Thrown if no entity matches</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null</exception>
+    /// <exception cref="InvalidOperationException">Thrown if no entity matches the predicate</exception>
     public static async Task<TEntity> FirstAsync<TEntity>(
         this IRepository<TEntity> repository,
         Expression<Func<TEntity, bool>> predicate) where TEntity : class
     {
+        ArgumentNullException.ThrowIfNull(repository);
+        ArgumentNullException.ThrowIfNull(predicate);
+
         var allEntities = await repository.GetAllAsync();
         return allEntities.First(predicate.Compile());
     }
@@ -51,10 +61,15 @@ public static class RepositoryExtensions
     /// <param name="repository">Repository instance</param>
     /// <param name="predicate">Filter expression</param>
     /// <returns>List of matching entities</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null</exception>
     public static async Task<List<TEntity>> WhereAsync<TEntity>(
         this IRepository<TEntity> repository,
         Expression<Func<TEntity, bool>> predicate) where TEntity : class
     {
+        ArgumentNullException.ThrowIfNull(repository);
+        ArgumentNullException.ThrowIfNull(predicate);
+
         var allEntities = await repository.GetAllAsync();
         return allEntities.Where(predicate.Compile()).ToList();
     }
@@ -66,11 +81,16 @@ public static class RepositoryExtensions
     /// <param name="repository">Repository instance</param>
     /// <param name="predicate">Filter expression</param>
     /// <returns>Single matching entity or null</returns>
-    /// <exception cref="InvalidOperationException">Thrown if multiple entities match</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null</exception>
+    /// <exception cref="InvalidOperationException">Thrown if multiple entities match the predicate</exception>
     public static async Task<TEntity?> SingleOrDefaultAsync<TEntity>(
         this IRepository<TEntity> repository,
         Expression<Func<TEntity, bool>> predicate) where TEntity : class
     {
+        ArgumentNullException.ThrowIfNull(repository);
+        ArgumentNullException.ThrowIfNull(predicate);
+
         var allEntities = await repository.GetAllAsync();
         return allEntities.SingleOrDefault(predicate.Compile());
     }
