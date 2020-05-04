@@ -14,7 +14,7 @@ namespace YouTubeShortsAutomator.Benchmarks;
 /// Extension benchmarks for collection utilities, providing additional scenarios
 /// and edge cases for chunking, grouping, and distinct operations.
 /// </summary>
-public static class CollectionUtilityBenchmarksExtensions
+public sealed class CollectionUtilityBenchmarksExtensions
 {
     [Benchmark(Description = "ChunkBy — empty collection")]
     public static List<List<int>> ChunkByEmptyCollection()
