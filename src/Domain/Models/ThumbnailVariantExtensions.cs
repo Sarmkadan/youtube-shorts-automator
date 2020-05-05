@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System;
+
 namespace YouTubeShortAutomator.Domain.Models;
 
 /// <summary>
@@ -16,8 +18,11 @@ public static class ThumbnailVariantExtensions
     /// </summary>
     /// <param name="variant">The thumbnail variant to calculate conversion for.</param>
     /// <returns>The conversion rate percentage (0-100), or 0 if no impressions recorded.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="variant"/> is null.</exception>
     public static double GetConversionRate(this ThumbnailVariant variant)
     {
+        ArgumentNullException.ThrowIfNull(variant);
+
         if (variant.ImpressionCount == 0)
             return 0;
 
@@ -29,13 +34,13 @@ public static class ThumbnailVariantExtensions
     /// </summary>
     /// <param name="variant">The current variant.</param>
     /// <param name="other">The variant to compare against.</param>
-    /// <returns>True if this variant has a higher view rate than the other.</returns>
-    public static bool IsBetterThan(this ThumbnailVariant variant, ThumbnailVariant other)
+    /// <returns>True if this variant has a higher view rate than the other; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="variant"/> is null.</exception>
+    public static bool IsBetterThan(this ThumbnailVariant variant, ThumbnailVariant? other)
     {
-        if (other == null)
-            return true;
+        ArgumentNullException.ThrowIfNull(variant);
 
-        return variant.ViewRate > other.ViewRate;
+        return other is null || variant.ViewRate > other.ViewRate;
     }
 
     /// <summary>
@@ -44,8 +49,13 @@ public static class ThumbnailVariantExtensions
     /// <param name="variant">The thumbnail variant.</param>
     /// <param name="minimumImpressions">Minimum impressions threshold for meaningful analysis.</param>
     /// <returns>A string representing the performance status: "Excellent", "Good", "Needs More Data", or "Poor".</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="variant"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minimumImpressions"/> is less than 0.</exception>
     public static string GetPerformanceStatus(this ThumbnailVariant variant, long minimumImpressions = 500)
     {
+        ArgumentNullException.ThrowIfNull(variant);
+        ArgumentOutOfRangeException.ThrowIfNegative(minimumImpressions);
+
         if (!variant.HasSufficientData(minimumImpressions))
             return "Needs More Data";
 
@@ -64,9 +74,12 @@ public static class ThumbnailVariantExtensions
     /// <param name="variant">The current variant.</param>
     /// <param name="baseline">The baseline variant to compare against.</param>
     /// <returns>The relative improvement percentage, or 0 if baseline has no data.</returns>
-    public static double GetRelativeImprovement(this ThumbnailVariant variant, ThumbnailVariant baseline)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="variant"/> is null.</exception>
+    public static double GetRelativeImprovement(this ThumbnailVariant variant, ThumbnailVariant? baseline)
     {
-        if (baseline == null || baseline.ImpressionCount == 0 || baseline.ViewRate == 0)
+        ArgumentNullException.ThrowIfNull(variant);
+
+        if (baseline is null || baseline.ImpressionCount == 0 || baseline.ViewRate == 0)
             return 0;
 
         return ((variant.ViewRate - baseline.ViewRate) / baseline.ViewRate) * 100.0;
