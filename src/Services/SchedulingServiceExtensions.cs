@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Services;
 
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public static class SchedulingServiceExtensions
 {
     /// <summary>
@@ -17,23 +18,18 @@ public static class SchedulingServiceExtensions
     /// <param name="jobs">Collection of upload job specifications</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Collection of created upload jobs</returns>
+    /// <exception cref="ArgumentNullException">Thrown when service or jobs is null</exception>
     public static async Task<IEnumerable<UploadJob>> ScheduleUploadsAsync(
         this SchedulingService service,
         IEnumerable<(int VideoShortId, DateTime ScheduledTime)> jobs,
         CancellationToken cancellationToken = default)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
-
-        if (jobs == null)
-        {
-            throw new ArgumentNullException(nameof(jobs));
-        }
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(jobs);
 
         var createdJobs = new List<UploadJob>();
-        var logger = service.GetServiceLogger();
+        var logger = (ILogger?)service.GetType().GetField("_logger",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(service);
 
         foreach (var (videoShortId, scheduledTime) in jobs)
         {
@@ -60,21 +56,15 @@ public static class SchedulingServiceExtensions
     /// <param name="videoShortIds">Filter by specific video short IDs</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Filtered collection of upcoming upload jobs</returns>
+    /// <exception cref="ArgumentNullException">Thrown when service or videoShortIds is null</exception>
     public static async Task<IEnumerable<UploadJob>> GetUpcomingJobsAsync(
         this SchedulingService service,
         int hoursAhead,
         IEnumerable<int> videoShortIds,
         CancellationToken cancellationToken = default)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
-
-        if (videoShortIds == null)
-        {
-            throw new ArgumentNullException(nameof(videoShortIds));
-        }
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(videoShortIds);
 
         var allJobs = await service.GetUpcomingJobsAsync(hoursAhead, cancellationToken);
         var idSet = new HashSet<int>(videoShortIds);
@@ -89,20 +79,14 @@ public static class SchedulingServiceExtensions
     /// <param name="videoShortIds">Filter by specific video short IDs</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Filtered collection of overdue upload jobs</returns>
+    /// <exception cref="ArgumentNullException">Thrown when service or videoShortIds is null</exception>
     public static async Task<IEnumerable<UploadJob>> GetOverdueJobsAsync(
         this SchedulingService service,
         IEnumerable<int> videoShortIds,
         CancellationToken cancellationToken = default)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
-
-        if (videoShortIds == null)
-        {
-            throw new ArgumentNullException(nameof(videoShortIds));
-        }
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(videoShortIds);
 
         var allJobs = await service.GetOverdueJobsAsync(cancellationToken);
         var idSet = new HashSet<int>(videoShortIds);
@@ -117,23 +101,18 @@ public static class SchedulingServiceExtensions
     /// <param name="rescheduleJobs">Collection of reschedule operations</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Collection of reschedule results</returns>
+    /// <exception cref="ArgumentNullException">Thrown when service or rescheduleJobs is null</exception>
     public static async Task<IEnumerable<bool>> RescheduleUploadsAsync(
         this SchedulingService service,
         IEnumerable<(int UploadJobId, DateTime NewScheduledTime)> rescheduleJobs,
         CancellationToken cancellationToken = default)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
-
-        if (rescheduleJobs == null)
-        {
-            throw new ArgumentNullException(nameof(rescheduleJobs));
-        }
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(rescheduleJobs);
 
         var results = new List<bool>();
-        var logger = service.GetServiceLogger();
+        var logger = (ILogger?)service.GetType().GetField("_logger",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(service);
 
         foreach (var (uploadJobId, newScheduledTime) in rescheduleJobs)
         {
@@ -159,23 +138,18 @@ public static class SchedulingServiceExtensions
     /// <param name="uploadJobIds">Collection of upload job IDs to cancel</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Collection of cancellation results</returns>
+    /// <exception cref="ArgumentNullException">Thrown when service or uploadJobIds is null</exception>
     public static async Task<IEnumerable<bool>> CancelUploadsAsync(
         this SchedulingService service,
         IEnumerable<int> uploadJobIds,
         CancellationToken cancellationToken = default)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
-
-        if (uploadJobIds == null)
-        {
-            throw new ArgumentNullException(nameof(uploadJobIds));
-        }
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(uploadJobIds);
 
         var results = new List<bool>();
-        var logger = service.GetServiceLogger();
+        var logger = (ILogger?)service.GetType().GetField("_logger",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(service);
 
         foreach (var uploadJobId in uploadJobIds)
         {
@@ -200,14 +174,12 @@ public static class SchedulingServiceExtensions
     /// <param name="service">The scheduling service instance</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if any overdue jobs exist, false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when service is null</exception>
     public static async Task<bool> HasOverdueJobsAsync(
         this SchedulingService service,
         CancellationToken cancellationToken = default)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
+        ArgumentNullException.ThrowIfNull(service);
 
         var overdueJobs = await service.GetOverdueJobsAsync(cancellationToken);
         return overdueJobs.Any();
@@ -220,34 +192,15 @@ public static class SchedulingServiceExtensions
     /// <param name="hoursAhead">Hours ahead to count</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Count of upcoming jobs</returns>
+    /// <exception cref="ArgumentNullException">Thrown when service is null</exception>
     public static async Task<int> GetUpcomingJobsCountAsync(
         this SchedulingService service,
         int hoursAhead = 24,
         CancellationToken cancellationToken = default)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
+        ArgumentNullException.ThrowIfNull(service);
 
         var jobs = await service.GetUpcomingJobsAsync(hoursAhead, cancellationToken);
         return jobs.Count();
-    }
-
-    /// <summary>
-    /// Helper method to get logger from service (using reflection to access private field)
-    /// </summary>
-    private static ILogger? GetServiceLogger(this SchedulingService service)
-    {
-        if (service == null)
-        {
-            return null;
-        }
-
-        var loggerField = typeof(SchedulingService).GetField(
-            "_logger",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        return loggerField?.GetValue(service) as ILogger;
     }
 }
