@@ -3,6 +3,7 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System;
 using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Services;
@@ -26,6 +27,8 @@ public static class ContentCalendarServiceExtensions
     /// <param name="notes">Optional internal notes.</param>
     /// <param name="optimizeImmediately">Whether to immediately optimize the entry after creation.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="service"/> or <paramref name="title"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="channelId"/> is not a positive integer.</exception>
     /// <returns>The created content calendar entry.</returns>
     public static async Task<ContentCalendarEntry> CreateEntryAsync(
         this ContentCalendarService service,
@@ -39,6 +42,10 @@ public static class ContentCalendarServiceExtensions
         bool optimizeImmediately = false,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(title);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(channelId, 0);
+
         var entry = new ContentCalendarEntry
         {
             Title = title,
@@ -67,12 +74,16 @@ public static class ContentCalendarServiceExtensions
     /// <param name="entryId">The entry identifier.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The content calendar entry.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="service"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="entryId"/> is not a positive integer.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the entry does not exist.</exception>
     public static async Task<ContentCalendarEntry> GetRequiredEntryAsync(
         this ContentCalendarService service,
         int entryId,
         CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(entryId, 0);
+
         var entry = await service.GetEntryAsync(entryId, cancellationToken);
         return entry ?? throw new InvalidOperationException($"Content calendar entry {entryId} not found.");
     }
@@ -81,6 +92,8 @@ public static class ContentCalendarServiceExtensions
     /// Retrieves all content calendar entries within a specified date range.
     /// </summary>
     /// <param name="service">The content calendar service instance.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="service"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="from"/> is after <paramref name="to"/>.</exception>
     /// <param name="from">The start date (inclusive).</param>
     /// <param name="to">The end date (inclusive).</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
@@ -91,6 +104,7 @@ public static class ContentCalendarServiceExtensions
         DateTime to,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(service);
         if (from > to)
         {
             throw new ArgumentException("Range start cannot be after range end.", nameof(from));
@@ -101,6 +115,8 @@ public static class ContentCalendarServiceExtensions
 
     /// <summary>
     /// Retrieves all upcoming content calendar entries scheduled for publication within the specified
+        /// <exception cref="ArgumentNullException"><paramref name="service"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="daysAhead"/> is not a positive integer.</exception>
     /// number of days.
     /// </summary>
     /// <param name="service">The content calendar service instance.</param>
@@ -112,6 +128,7 @@ public static class ContentCalendarServiceExtensions
         int daysAhead = 7,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(service);
         if (daysAhead <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(daysAhead), "Days ahead must be a positive integer.");
@@ -120,6 +137,8 @@ public static class ContentCalendarServiceExtensions
         return await service.GetUpcomingEntriesAsync(daysAhead, cancellationToken);
     }
 
+        /// <exception cref="ArgumentNullException"><paramref name="service"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="entryId"/> is not a positive integer.</exception>
     /// <summary>
     /// Optimizes a content calendar entry and applies the best suggestion automatically.
     /// </summary>
@@ -134,6 +153,8 @@ public static class ContentCalendarServiceExtensions
         bool applyBestSuggestion = true,
         CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(entryId, 0);
+
         var result = await service.OptimizeEntryAsync(entryId, cancellationToken);
         ContentCalendarEntry? entry = null;
 
@@ -143,6 +164,9 @@ public static class ContentCalendarServiceExtensions
         }
 
         return (result, entry);
+        /// <exception cref="ArgumentNullException"><paramref name="service"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="entryId"/> or <paramref name="videoShortId"/> is not a positive integer.</exception>
+        /// <exception cref="InvalidOperationException">No optimal posting time could be determined for this entry.</exception>
     }
 
     /// <summary>
@@ -159,11 +183,16 @@ public static class ContentCalendarServiceExtensions
         int videoShortId,
         CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(entryId, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(videoShortId, 0);
+
         var recommendedSlots = await service.GetRecommendedSlotsAsync(videoShortId, 5, cancellationToken);
         var optimalSlot = recommendedSlots.FirstOrDefault();
 
         if (optimalSlot == default)
         {
+        /// <exception cref="ArgumentNullException"><paramref name="service"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="entryId"/> is not a positive integer.</exception>
             throw new InvalidOperationException("No optimal posting time could be determined for this entry.");
         }
 
@@ -180,8 +209,12 @@ public static class ContentCalendarServiceExtensions
     public static async Task<bool> IsReadyToPublishAsync(
         this ContentCalendarService service,
         int entryId,
+        /// <exception cref="ArgumentNullException"><paramref name="service"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="daysOlderThan"/> is negative.</exception>
         CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(entryId, 0);
+
         var entry = await service.GetEntryAsync(entryId, cancellationToken);
         return entry?.IsReadyToPublish() == true;
     }
@@ -198,6 +231,12 @@ public static class ContentCalendarServiceExtensions
         int? daysOlderThan = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(service);
+        if (daysOlderThan.HasValue && daysOlderThan < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(daysOlderThan), "Days older than cannot be negative.");
+        }
+
         var cutoffDate = daysOlderThan.HasValue
             ? DateTime.UtcNow.AddDays(-daysOlderThan.Value)
             : DateTime.MinValue;
