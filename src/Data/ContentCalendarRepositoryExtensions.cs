@@ -14,6 +14,15 @@ namespace YouTubeShortAutomator.Data;
 public static class ContentCalendarRepositoryExtensions
 {
     /// <summary>
+    /// Ensures the repository instance is not null.
+    /// </summary>
+    /// <param name="repository">The repository instance.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
+    private static void ValidateRepository(ContentCalendarRepository repository)
+    {
+        ArgumentNullException.ThrowIfNull(repository);
+    }
+    /// <summary>
     /// Gets the first upcoming entry that matches the specified status.
     /// </summary>
     /// <param name="repository">The repository instance.</param>
@@ -21,12 +30,14 @@ public static class ContentCalendarRepositoryExtensions
     /// <param name="cutoffUtc">The upper bound of the upcoming window (UTC).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The first matching entry or null if none found.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
     public static async Task<ContentCalendarEntry?> GetFirstUpcomingByStatusAsync(
         this ContentCalendarRepository repository,
         CalendarEntryStatus status,
         DateTime cutoffUtc,
         CancellationToken cancellationToken = default)
     {
+        ValidateRepository(repository);
         var entries = await repository.GetUpcomingAsync(cutoffUtc, cancellationToken);
         return entries.FirstOrDefault(e => e.Status == status);
     }
@@ -38,11 +49,13 @@ public static class ContentCalendarRepositoryExtensions
     /// <param name="channelId">The YouTube channel ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Collection of entries for the specified channel.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
     public static async Task<IEnumerable<ContentCalendarEntry>> GetByChannelIdAsync(
         this ContentCalendarRepository repository,
         int channelId,
         CancellationToken cancellationToken = default)
     {
+        ValidateRepository(repository);
         var allEntries = await repository.GetAllAsync(cancellationToken);
         return allEntries.Where(e => e.YouTubeChannelId == channelId).ToList();
     }
@@ -54,11 +67,13 @@ public static class ContentCalendarRepositoryExtensions
     /// <param name="status">The status to filter by.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Collection of entries with the specified status.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
     public static async Task<IEnumerable<ContentCalendarEntry>> GetByStatusAsync(
         this ContentCalendarRepository repository,
         CalendarEntryStatus status,
         CancellationToken cancellationToken = default)
     {
+        ValidateRepository(repository);
         var allEntries = await repository.GetAllAsync(cancellationToken);
         return allEntries.Where(e => e.Status == status).ToList();
     }
@@ -70,11 +85,13 @@ public static class ContentCalendarRepositoryExtensions
     /// <param name="date">The date to filter by (time portion is ignored).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Collection of entries scheduled for the specified date.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
     public static async Task<IEnumerable<ContentCalendarEntry>> GetByDateAsync(
         this ContentCalendarRepository repository,
         DateTime date,
         CancellationToken cancellationToken = default)
     {
+        ValidateRepository(repository);
         var startOfDay = date.Date;
         var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
@@ -88,11 +105,13 @@ public static class ContentCalendarRepositoryExtensions
     /// <param name="currentEntryId">The ID of the current entry.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The next entry or null if this is the last entry.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
     public static async Task<ContentCalendarEntry?> GetNextEntryAsync(
         this ContentCalendarRepository repository,
         int currentEntryId,
         CancellationToken cancellationToken = default)
     {
+        ValidateRepository(repository);
         var allEntries = await repository.GetAllAsync(cancellationToken);
         var orderedEntries = allEntries.OrderBy(e => e.ScheduledPublishAt).ToList();
 
@@ -109,11 +128,13 @@ public static class ContentCalendarRepositoryExtensions
     /// <param name="currentEntryId">The ID of the current entry.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The previous entry or null if this is the first entry.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
     public static async Task<ContentCalendarEntry?> GetPreviousEntryAsync(
         this ContentCalendarRepository repository,
         int currentEntryId,
         CancellationToken cancellationToken = default)
     {
+        ValidateRepository(repository);
         var allEntries = await repository.GetAllAsync(cancellationToken);
         var orderedEntries = allEntries.OrderBy(e => e.ScheduledPublishAt).ToList();
 
@@ -129,10 +150,12 @@ public static class ContentCalendarRepositoryExtensions
     /// <param name="repository">The repository instance.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Collection of entries with optimization applied.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
     public static async Task<IEnumerable<ContentCalendarEntry>> GetWithOptimizationAppliedAsync(
         this ContentCalendarRepository repository,
         CancellationToken cancellationToken = default)
     {
+        ValidateRepository(repository);
         var allEntries = await repository.GetAllAsync(cancellationToken);
         return allEntries.Where(e => e.OptimizationApplied).ToList();
     }
@@ -143,10 +166,12 @@ public static class ContentCalendarRepositoryExtensions
     /// <param name="repository">The repository instance.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Collection of entries with video short IDs.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
     public static async Task<IEnumerable<ContentCalendarEntry>> GetWithVideoShortsAsync(
         this ContentCalendarRepository repository,
         CancellationToken cancellationToken = default)
     {
+        ValidateRepository(repository);
         var allEntries = await repository.GetAllAsync(cancellationToken);
         return allEntries.Where(e => e.VideoShortId.HasValue).ToList();
     }
@@ -157,10 +182,12 @@ public static class ContentCalendarRepositoryExtensions
     /// <param name="repository">The repository instance.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Collection of entries with upload job IDs.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
     public static async Task<IEnumerable<ContentCalendarEntry>> GetWithUploadJobsAsync(
         this ContentCalendarRepository repository,
         CancellationToken cancellationToken = default)
     {
+        ValidateRepository(repository);
         var allEntries = await repository.GetAllAsync(cancellationToken);
         return allEntries.Where(e => e.UploadJobId.HasValue).ToList();
     }
