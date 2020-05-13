@@ -11,12 +11,21 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Services;
 
+/// <summary>
+/// Provides functionality for uploading videos to YouTube.
+/// </summary>
 public class YouTubeUploadService
 {
     private readonly UploadJobRepository _uploadRepository;
     private readonly UploadHistoryRepository _historyRepository;
     private readonly ILogger<YouTubeUploadService> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="YouTubeUploadService"/> class.
+    /// </summary>
+    /// <param name="uploadRepository">The repository for upload jobs.</param>
+    /// <param name="historyRepository">The repository for upload history.</param>
+    /// <param name="logger">The logger for the service.</param>
     public YouTubeUploadService(
         UploadJobRepository uploadRepository,
         UploadHistoryRepository historyRepository,
@@ -27,6 +36,13 @@ public class YouTubeUploadService
         _logger            = logger            ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Creates a new upload job for a video short.
+    /// </summary>
+    /// <param name="videoShortId">The ID of the video short.</param>
+    /// <param name="scheduledTime">The scheduled time for the upload.</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>The created upload job.</returns>
     public async Task<UploadJob> CreateUploadJobAsync(int videoShortId, DateTime scheduledTime,
         CancellationToken cancellationToken = default)
     {
@@ -61,6 +77,15 @@ public class YouTubeUploadService
         }
     }
 
+    /// <summary>
+    /// Uploads a video to YouTube.
+    /// </summary>
+    /// <param name="uploadJob">The upload job for the video.</param>
+    /// <param name="filePath">The path to the video file.</param>
+    /// <param name="channel">The YouTube channel to upload to.</param>
+    /// <param name="videoShort">The video short being uploaded.</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>The updated upload job.</returns>
     public async Task<UploadJob> UploadVideoAsync(UploadJob uploadJob, string filePath,
         YouTubeChannel channel, VideoShort videoShort, CancellationToken cancellationToken = default)
     {
@@ -172,6 +197,15 @@ public class YouTubeUploadService
         }
     }
 
+    /// <summary>
+    /// Retries a failed upload job.
+    /// </summary>
+    /// <param name="uploadJob">The upload job to retry.</param>
+    /// <param name="filePath">The path to the video file.</param>
+    /// <param name="channel">The YouTube channel to upload to.</param>
+    /// <param name="videoShort">The video short being uploaded.</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>True if the retry was successful, false otherwise.</returns>
     public async Task<bool> RetryFailedUploadAsync(UploadJob uploadJob, string filePath,
         YouTubeChannel channel, VideoShort videoShort, CancellationToken cancellationToken = default)
     {
@@ -199,6 +233,16 @@ public class YouTubeUploadService
         }
     }
 
+    /// <summary>
+    /// Updates video metadata on YouTube.
+    /// </summary>
+    /// <param name="videoId">The ID of the video to update.</param>
+    /// <param name="title">The new title for the video.</param>
+    /// <param name="description">The new description for the video.</param>
+    /// <param name="tags">The new tags for the video.</param>
+    /// <param name="channel">The YouTube channel that owns the video.</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>True if the update was successful, false otherwise.</returns>
     public async Task<bool> UpdateVideoMetadataAsync(string videoId, string title, string description,
         string[] tags, YouTubeChannel channel, CancellationToken cancellationToken = default)
     {
@@ -234,6 +278,13 @@ public class YouTubeUploadService
         }
     }
 
+    /// <summary>
+    /// Publishes a video to the YouTube channel.
+    /// </summary>
+    /// <param name="videoId">The ID of the video to publish.</param>
+    /// <param name="channel">The YouTube channel to publish to.</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>True if the publish was successful, false otherwise.</returns>
     public async Task<bool> PublishVideoAsync(string videoId, YouTubeChannel channel,
         CancellationToken cancellationToken = default)
     {
@@ -260,6 +311,12 @@ public class YouTubeUploadService
         }
     }
 
+    /// <summary>
+    /// Retrieves an upload job by ID.
+    /// </summary>
+    /// <param name="jobId">The ID of the upload job to retrieve.</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>The upload job, or null if not found.</returns>
     public async Task<UploadJob?> GetUploadJobAsync(int jobId, CancellationToken cancellationToken = default)
     {
         // Retrieves an upload job by ID
@@ -274,6 +331,11 @@ public class YouTubeUploadService
         }
     }
 
+    /// <summary>
+    /// Retrieves all jobs scheduled for upload.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>A collection of upload jobs scheduled for upload.</returns>
     public async Task<IEnumerable<UploadJob>> GetScheduledJobsAsync(CancellationToken cancellationToken = default)
     {
         // Retrieves all jobs scheduled for upload
@@ -288,6 +350,10 @@ public class YouTubeUploadService
         }
     }
 
+    /// <summary>
+    /// Generates a mock YouTube video ID.
+    /// </summary>
+    /// <returns>A mock YouTube video ID.</returns>
     private string GenerateYouTubeVideoId()
     {
         // Generates a mock YouTube video ID
