@@ -11,15 +11,27 @@ using System.Runtime.CompilerServices;
 
 namespace YouTubeShortAutomator.Services;
 
+/// <summary>
+/// Provides methods for managing YouTube channel status and credentials.
+/// </summary>
 public class ChannelService
 {
     private readonly ILogger<ChannelService> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChannelService"/> class.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
     public ChannelService(ILogger<ChannelService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Checks if the channel's access token is still valid.
+    /// </summary>
+    /// <param name="channel">The YouTube channel instance.</param>
+    /// <returns>true if the token is valid; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsChannelTokenValid(YouTubeChannel channel)
     {
@@ -32,6 +44,11 @@ public class ChannelService
         return !channel.IsTokenExpired() && channel.IsActive;
     }
 
+    /// <summary>
+    /// Checks if the token should be refreshed proactively.
+    /// </summary>
+    /// <param name="channel">The YouTube channel instance.</param>
+    /// <returns>true if the token should be refreshed; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool NeedsTokenRefresh(YouTubeChannel channel)
     {
@@ -44,6 +61,11 @@ public class ChannelService
         return channel.NeedsTokenRefresh();
     }
 
+    /// <summary>
+    /// Updates the active status of a channel.
+    /// </summary>
+    /// <param name="channel">The YouTube channel instance.</param>
+    /// <param name="isActive">true to activate the channel; otherwise, false.</param>
     public void UpdateChannelStatus(YouTubeChannel channel, bool isActive)
     {
         // Fix: Add null check for channel parameter.
@@ -64,6 +86,11 @@ public class ChannelService
         _logger.LogInformation($"Updated channel {channel.ChannelName} status to {(isActive ? "active" : "inactive")}");
     }
 
+    /// <summary>
+    /// Returns a human-readable summary of channel status.
+    /// </summary>
+    /// <param name="channel">The YouTube channel instance.</param>
+    /// <returns>A string containing the channel status summary.</returns>
     public string GetChannelStatusSummary(YouTubeChannel channel)
     {
         // Fix: Add null check for channel parameter.
@@ -84,6 +111,11 @@ public class ChannelService
         return summary;
     }
 
+    /// <summary>
+    /// Validates that all required credentials are present.
+    /// </summary>
+    /// <param name="channel">The YouTube channel instance.</param>
+    /// <returns>true if the credentials are valid; otherwise, false.</returns>
     public bool ValidateChannelCredentials(YouTubeChannel channel)
     {
         // Fix: Add null check for channel parameter.
