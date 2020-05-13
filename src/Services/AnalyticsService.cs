@@ -10,12 +10,23 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Services;
 
+/// <summary>
+/// Provides analytics services for YouTube Shorts videos, including tracking metrics, syncing data from YouTube API,
+/// and generating performance reports.
+/// </summary>
 public class AnalyticsService
 {
     private readonly AnalyticsRepository _analyticsRepository;
     private readonly VideoShortRepository _videoRepository;
     private readonly ILogger<AnalyticsService> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AnalyticsService"/> class.
+    /// </summary>
+    /// <param name="analyticsRepository">The analytics repository for data persistence.</param>
+    /// <param name="videoRepository">The video repository for accessing video data.</param>
+    /// <param name="logger">The logger for recording operational messages.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public AnalyticsService(AnalyticsRepository analyticsRepository, VideoShortRepository videoRepository,
         ILogger<AnalyticsService> logger)
     {
@@ -24,6 +35,13 @@ public class AnalyticsService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Creates a new analytics record for a YouTube Short video.
+    /// </summary>
+    /// <param name="videoShortId">The ID of the video short to create analytics for.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>The created analytics data record.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the analytics record cannot be created.</exception>
     public async Task<AnalyticsData> CreateAnalyticsRecordAsync(int videoShortId,
         CancellationToken cancellationToken = default)
     {
@@ -58,6 +76,16 @@ public class AnalyticsService
         }
     }
 
+    /// <summary>
+    /// Synchronizes analytics data from YouTube API for a specific video short.
+    /// </summary>
+    /// <param name="videoShortId">The ID of the video short to sync analytics for.</param>
+    /// <param name="youtubeVideoId">The YouTube video ID to fetch analytics from.</param>
+    /// <param name="channel">The YouTube channel associated with the video.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>The updated analytics data, or null if sync failed.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when youtubeVideoId is null or empty, or channel is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the analytics sync operation fails.</exception>
     public async Task<AnalyticsData?> SyncAnalyticsFromYouTubeAsync(int videoShortId, string youtubeVideoId,
         YouTubeChannel channel, CancellationToken cancellationToken = default)
     {
@@ -102,6 +130,13 @@ public class AnalyticsService
         }
     }
 
+    /// <summary>
+    /// Retrieves analytics data for a specific video short.
+    /// </summary>
+    /// <param name="videoShortId">The ID of the video short to retrieve analytics for.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>The analytics data for the specified video, or null if not found.</returns>
+    /// <exception cref="Exception">Thrown when an error occurs while retrieving analytics.</exception>
     public async Task<AnalyticsData?> GetVideoAnalyticsAsync(int videoShortId, CancellationToken cancellationToken = default)
     {
         // Retrieves analytics for a specific video
@@ -116,6 +151,14 @@ public class AnalyticsService
         }
     }
 
+    /// <summary>
+    /// Retrieves the top performing videos based on engagement rate.
+    /// </summary>
+    /// <param name="limit">The maximum number of top videos to retrieve. Must be a positive integer.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>An enumerable of analytics data for the top performing videos.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when limit is not a positive integer.</exception>
+    /// <exception cref="Exception">Thrown when an error occurs while retrieving top performers.</exception>
     public async Task<IEnumerable<AnalyticsData>> GetTopPerformingVideosAsync(int limit = 10,
         CancellationToken cancellationToken = default)
     {
@@ -138,6 +181,15 @@ public class AnalyticsService
         }
     }
 
+    /// <summary>
+    /// Generates an analytics report for a specified date range.
+    /// </summary>
+    /// <param name="startDate">The start date of the reporting period (inclusive).</param>
+    /// <param name="endDate">The end date of the reporting period (inclusive).</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>An analytics report containing aggregated metrics for the specified period.</returns>
+    /// <exception cref="ArgumentException">Thrown when startDate is after endDate.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the report generation fails.</exception>
     public async Task<AnalyticsReport> GeneratePeriodReportAsync(DateTime startDate, DateTime endDate,
         CancellationToken cancellationToken = default)
     {
@@ -175,6 +227,11 @@ public class AnalyticsService
         }
     }
 
+    /// <summary>
+    /// Analyzes performance metrics for a video and provides insights and recommendations.
+    /// </summary>
+    /// <param name="analytics">The analytics data to analyze.</param>
+    /// <returns>A formatted string containing performance analysis and recommendations.</returns>
     public string AnalyzePerformanceMetrics(AnalyticsData analytics)
     {
         // Analyzes performance metrics and provides insights
@@ -202,6 +259,13 @@ public class AnalyticsService
         return insights;
     }
 
+    /// <summary>
+    /// Calculates the overall channel growth based on analytics data across all videos.
+    /// </summary>
+    /// <param name="channelId">The ID of the YouTube channel to calculate growth for.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>The net subscriber growth (subscribers gained minus subscribers lost).</returns>
+    /// <exception cref="Exception">Thrown when an error occurs while calculating channel growth.</exception>
     public async Task<double> CalculateChannelGrowthAsync(int channelId, CancellationToken cancellationToken = default)
     {
         // Calculates the overall channel growth based on analytics
@@ -221,6 +285,9 @@ public class AnalyticsService
     }
 }
 
+/// <summary>
+/// Represents an analytics report containing aggregated metrics for a specified date range.
+/// </summary>
 public class AnalyticsReport
 {
     public DateTime PeriodStart { get; set; }
