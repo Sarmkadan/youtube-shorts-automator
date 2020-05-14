@@ -8,15 +8,22 @@ using System.Data;
 
 namespace YouTubeShortAutomator.Data;
 
+/// <summary> Provides repository functionality for managing <see cref="AnalyticsData"/> in the database. </summary>
 public class AnalyticsRepository : IRepository<AnalyticsData>
 {
     private readonly DatabaseContext _context;
 
+    /// <summary> Initializes a new instance of the <see cref="AnalyticsRepository"/> class. </summary>
+    /// <param name="context"> The database context. </param>
     public AnalyticsRepository(DatabaseContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
+    /// <summary> Retrieves an <see cref="AnalyticsData"/> record by its unique identifier. </summary>
+    /// <param name="id"> The unique identifier of the analytics record. </param>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
+    /// <returns> The <see cref="AnalyticsData"/> record, or null if not found. </returns>
     public async Task<AnalyticsData?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         // Retrieves analytics by ID
@@ -31,6 +38,9 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         return row.Rows.Count > 0 ? MapToEntity(row.Rows[0]) : null;
     }
 
+    /// <summary> Retrieves all analytics records ordered by update date in descending order. </summary>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
+    /// <returns> An enumerable collection of all analytics records. </returns>
     public async Task<IEnumerable<AnalyticsData>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         // Retrieves all analytics records
@@ -44,6 +54,10 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         return dataTable.Rows.Cast<DataRow>().Select(MapToEntity).ToList();
     }
 
+    /// <summary> Retrieves analytics data for a specific video short. </summary>
+    /// <param name="videoShortId"> The unique identifier of the video short. </param>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
+    /// <returns> The analytics data associated with the video, or null if not found. </returns>
     public async Task<AnalyticsData?> GetByVideoIdAsync(int videoShortId, CancellationToken cancellationToken = default)
     {
         // Retrieves analytics for a specific video
@@ -58,6 +72,10 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         return row.Rows.Count > 0 ? MapToEntity(row.Rows[0]) : null;
     }
 
+    /// <summary> Retrieves a collection of top-performing videos sorted by engagement rate and view count. </summary>
+    /// <param name="limit"> The maximum number of records to return. </param>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
+    /// <returns> A collection of top-performing <see cref="AnalyticsData"/> records. </returns>
     public async Task<IEnumerable<AnalyticsData>> GetTopPerformersAsync(int limit = 10, CancellationToken cancellationToken = default)
     {
         // Retrieves top performing videos by engagement rate
@@ -73,6 +91,10 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         return dataTable.Rows.Cast<DataRow>().Select(MapToEntity).ToList();
     }
 
+    /// <summary> Inserts a new analytics record into the database. </summary>
+    /// <param name="entity"> The analytics data to add. </param>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
+    /// <returns> The added <see cref="AnalyticsData"/> entity. </returns>
     public async Task<AnalyticsData> AddAsync(AnalyticsData entity, CancellationToken cancellationToken = default)
     {
         // Inserts new analytics record
@@ -110,6 +132,10 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         return entity;
     }
 
+    /// <summary> Updates an existing analytics record in the database. </summary>
+    /// <param name="entity"> The analytics data to update. </param>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
+    /// <returns> The updated <see cref="AnalyticsData"/> entity. </returns>
     public async Task<AnalyticsData> UpdateAsync(AnalyticsData entity, CancellationToken cancellationToken = default)
     {
         // Updates existing analytics record
@@ -145,6 +171,10 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         return entity;
     }
 
+    /// <summary> Deletes an analytics record by its unique identifier. </summary>
+    /// <param name="id"> The unique identifier of the analytics record. </param>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
+    /// <returns> True if the record was successfully deleted, false otherwise. </returns>
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         // Deletes an analytics record
@@ -154,6 +184,10 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         return result > 0;
     }
 
+    /// <summary> Checks if an analytics record exists for the given ID. </summary>
+    /// <param name="id"> The unique identifier of the analytics record. </param>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
+    /// <returns> True if the record exists, false otherwise. </returns>
     public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
         // Checks if analytics record exists
@@ -163,6 +197,9 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         return count > 0;
     }
 
+    /// <summary> Returns the total count of analytics records. </summary>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
+    /// <returns> The total count of analytics records. </returns>
     public async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         // Returns total count of analytics records
@@ -170,6 +207,8 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         return (int?)await _context.ExecuteScalarAsync<int>(query) ?? 0;
     }
 
+    /// <summary> Saves changes made to the repository. </summary>
+    /// <param name="cancellationToken"> A token to cancel the operation. </param>
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         // Placeholder for save changes
