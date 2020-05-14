@@ -9,17 +9,28 @@ using YouTubeShortAutomator.Exceptions;
 
 namespace YouTubeShortAutomator.Data;
 
+/// <summary>
+/// Represents a database context for interacting with the database.
+/// </summary>
 public class DatabaseContext : IAsyncDisposable
 {
     private readonly string _connectionString;
     private SqlConnection? _connection;
     private bool _disposed;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DatabaseContext"/> class.
+    /// </summary>
+    /// <param name="connectionString">The connection string to use for the database context.</param>
     public DatabaseContext(string connectionString)
     {
         _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
     }
 
+    /// <summary>
+    /// Gets a database connection.
+    /// </summary>
+    /// <returns>A database connection.</returns>
     public async Task<SqlConnection> GetConnectionAsync()
     {
         // Opens and returns a database connection
@@ -31,6 +42,13 @@ public class DatabaseContext : IAsyncDisposable
         return _connection;
     }
 
+    /// <summary>
+    /// Executes a database command.
+    /// </summary>
+    /// <param name="commandText">The command text to execute.</param>
+    /// <param name="commandType">The command type.</param>
+    /// <param name="parameters">The parameters for the command.</param>
+    /// <returns>The number of rows affected by the command.</returns>
     public async Task<int> ExecuteCommandAsync(string commandText, CommandType commandType = CommandType.Text,
         Dictionary<string, object?>? parameters = null)
     {
@@ -66,6 +84,13 @@ public class DatabaseContext : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Executes a database scalar query.
+    /// </summary>
+    /// <param name="commandText">The command text to execute.</param>
+    /// <param name="commandType">The command type.</param>
+    /// <param name="parameters">The parameters for the command.</param>
+    /// <returns>The result of the scalar query.</returns>
     public async Task<T?> ExecuteScalarAsync<T>(string commandText, CommandType commandType = CommandType.Text,
         Dictionary<string, object?>? parameters = null)
     {
@@ -104,6 +129,13 @@ public class DatabaseContext : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Executes a database table query.
+    /// </summary>
+    /// <param name="commandText">The command text to execute.</param>
+    /// <param name="commandType">The command type.</param>
+    /// <param name="parameters">The parameters for the command.</param>
+    /// <returns>A DataTable containing the results of the query.</returns>
     public async Task<DataTable> ExecuteDataTableAsync(string commandText, CommandType commandType = CommandType.Text,
         Dictionary<string, object?>? parameters = null)
     {
@@ -142,6 +174,9 @@ public class DatabaseContext : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Disposes the database context.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         // Properly closes and disposes the database connection
