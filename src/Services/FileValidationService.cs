@@ -10,16 +10,28 @@ using System.Runtime.CompilerServices;
 
 namespace YouTubeShortAutomator.Services;
 
+/// <summary>
+/// Provides file validation and manipulation services.
+/// </summary>
 public class FileValidationService
 {
     private readonly ILogger<FileValidationService> _logger;
     private readonly string[] _supportedFormats = Constants.Constants.SUPPORTED_INPUT_FORMATS.Split(',');
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FileValidationService"/> class.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
     public FileValidationService(ILogger<FileValidationService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Validates a video file for processing.
+    /// </summary>
+    /// <param name="filePath">The path to the video file.</param>
+    /// <returns>true if the file is valid; otherwise, false.</returns>
     public bool ValidateVideoFile(string filePath)
     {
         // Fix: Add validation for filePath to prevent null or empty paths.
@@ -86,6 +98,11 @@ public class FileValidationService
         }
     }
 
+    /// <summary>
+    /// Calculates the SHA256 hash of a file for integrity verification.
+    /// </summary>
+    /// <param name="filePath">The path to the file.</param>
+    /// <returns>The SHA256 hash of the file.</returns>
     public string GetFileHash(string filePath)
     {
         // Fix: Add validation for filePath to prevent null or empty paths.
@@ -112,6 +129,11 @@ public class FileValidationService
         }
     }
 
+    /// <summary>
+    /// Attempts to get the video duration (in production, would use FFprobe).
+    /// </summary>
+    /// <param name="filePath">The path to the video file.</param>
+    /// <returns>The video duration in TimeSpan format; otherwise, null.</returns>
     public TimeSpan? GetVideoDuration(string filePath)
     {
         // Fix: Add validation for filePath to prevent null or empty paths.
@@ -138,6 +160,10 @@ public class FileValidationService
         }
     }
 
+    /// <summary>
+    /// Safely deletes a temporary file.
+    /// </summary>
+    /// <param name="filePath">The path to the temporary file.</param>
     public void DeleteTemporaryFile(string filePath)
     {
         // Fix: Add validation for filePath to prevent null or empty paths.
@@ -160,6 +186,10 @@ public class FileValidationService
         }
     }
 
+    /// <summary>
+    /// Cleans up temporary files in a directory.
+    /// </summary>
+    /// <param name="directoryPath">The path to the temporary directory.</param>
     public void CleanupTemporaryDirectory(string directoryPath)
     {
         // Fix: Add validation for directoryPath to prevent null or empty paths.
@@ -187,6 +217,10 @@ public class FileValidationService
         }
     }
 
+    /// <summary>
+    /// Returns a string of supported video formats.
+    /// </summary>
+    /// <returns>A string of supported video formats.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string GetSupportedFormats()
     {
