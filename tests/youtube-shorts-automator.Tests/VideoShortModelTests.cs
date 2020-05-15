@@ -9,8 +9,15 @@ using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Contains unit tests for the <see cref="VideoShort"/> class validation and processing logic.
+/// </summary>
 public class VideoShortModelTests
 {
+    /// <summary>
+    /// Creates a valid <see cref="VideoShort"/> instance with default test values.
+    /// </summary>
+    /// <returns>A configured <see cref="VideoShort"/> instance with valid properties.</returns>
     private static VideoShort BuildValidVideoShort() => new()
     {
         Title = "My YouTube Short",
@@ -21,6 +28,9 @@ public class VideoShortModelTests
         YouTubeChannelId = 1
     };
 
+    /// <summary>
+    /// Verifies that a <see cref="VideoShort"/> with valid metadata returns true for <see cref="VideoShort.IsValid"/>.
+    /// </summary>
     [Fact]
     public void IsValid_WithValidMetadata_ReturnsTrue()
     {
@@ -34,6 +44,9 @@ public class VideoShortModelTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Verifies that a <see cref="VideoShort"/> with empty title returns false for <see cref="VideoShort.IsValid"/>.
+    /// </summary>
     [Fact]
     public void IsValid_WithEmptyTitle_ReturnsFalse()
     {
@@ -48,6 +61,9 @@ public class VideoShortModelTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Verifies that a <see cref="VideoShort"/> with duration exceeding 60 seconds returns false for <see cref="VideoShort.IsValid"/>.
+    /// </summary>
     [Fact]
     public void IsValid_WithDurationBeyond60Seconds_ReturnsFalse()
     {
@@ -62,6 +78,9 @@ public class VideoShortModelTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="VideoShort.MarkAsProcessed"/> sets the status to Completed, clears error message, and records the processed timestamp.
+    /// </summary>
     [Fact]
     public void MarkAsProcessed_WithoutError_SetsCompletedStatusAndTimestamp()
     {
@@ -80,6 +99,10 @@ public class VideoShortModelTests
         video.ProcessedAt.Should().BeOnOrAfter(before);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="VideoShort.MarkAsProcessed(string)"/> sets the status to Failed, preserves the error message, and clears the processed timestamp.
+    /// </summary>
+    /// <param name="errorMessage">The error message to pass to <see cref="VideoShort.MarkAsProcessed(string)"/>.</param>
     [Fact]
     public void MarkAsProcessed_WithErrorMessage_SetsFailedStatusAndPreservesError()
     {
