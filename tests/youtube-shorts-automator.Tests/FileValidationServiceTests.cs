@@ -11,12 +11,20 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Contains unit tests for the <see cref="FileValidationService"/> class.
+/// Tests file validation, hash calculation, duration extraction, and temporary file cleanup functionality.
+/// </summary>
 public class FileValidationServiceTests
 {
     private readonly Mock<ILogger<FileValidationService>> _mockLogger;
     private readonly FileValidationService _service;
     private readonly string _testDirectory;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FileValidationServiceTests"/> class.
+    /// Sets up mock logger, creates test service instance, and initializes temporary test directory.
+    /// </summary>
     public FileValidationServiceTests()
     {
         _mockLogger = new Mock<ILogger<FileValidationService>>();
@@ -25,6 +33,12 @@ public class FileValidationServiceTests
         Directory.CreateDirectory(_testDirectory);
     }
 
+    /// <summary>
+    /// Creates a test file with the specified filename and size in the temporary test directory.
+    /// </summary>
+    /// <param name="filename">The name of the file to create.</param>
+    /// <param name="sizeBytes">The size of the file in bytes.</param>
+    /// <returns>The full path to the created test file.</returns>
     private string CreateTestFile(string filename, long sizeBytes)
     {
         var filePath = Path.Combine(_testDirectory, filename);
@@ -34,6 +48,9 @@ public class FileValidationServiceTests
         return filePath;
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.ValidateVideoFile"/> returns true for a valid MP4 file within size limits.
+    /// </summary>
     [Fact]
     public void ValidateVideoFile_WithValidMp4File_ReturnsTrue()
     {
@@ -44,6 +61,9 @@ public class FileValidationServiceTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.ValidateVideoFile"/> throws <see cref="ArgumentException"/> when provided with null file path.
+    /// </summary>
     [Fact]
     public void ValidateVideoFile_WithNullPath_ThrowsArgumentException()
     {
@@ -53,6 +73,9 @@ public class FileValidationServiceTests
             .WithMessage("*cannot be null or whitespace*");
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.ValidateVideoFile"/> throws <see cref="ArgumentException"/> when provided with empty or whitespace file path.
+    /// </summary>
     [Fact]
     public void ValidateVideoFile_WithEmptyPath_ThrowsArgumentException()
     {
@@ -61,6 +84,9 @@ public class FileValidationServiceTests
         act.Should().Throw<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.ValidateVideoFile"/> returns false when the file does not exist.
+    /// </summary>
     [Fact]
     public void ValidateVideoFile_WithNonExistentFile_ReturnsFalse()
     {
@@ -69,6 +95,9 @@ public class FileValidationServiceTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.ValidateVideoFile"/> returns false when the file exceeds maximum allowed size.
+    /// </summary>
     [Fact]
     public void ValidateVideoFile_WithFileTooLarge_ReturnsFalse()
     {
@@ -79,6 +108,9 @@ public class FileValidationServiceTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.ValidateVideoFile"/> returns false when the file is smaller than minimum allowed size.
+    /// </summary>
     [Fact]
     public void ValidateVideoFile_WithFileTooSmall_ReturnsFalse()
     {
@@ -89,6 +121,9 @@ public class FileValidationServiceTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.ValidateVideoFile"/> returns false when the file has an unsupported format.
+    /// </summary>
     [Fact]
     public void ValidateVideoFile_WithUnsupportedFormat_ReturnsFalse()
     {
@@ -99,6 +134,9 @@ public class FileValidationServiceTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.ValidateVideoFile"/> returns false when the file is empty.
+    /// </summary>
     [Fact]
     public void ValidateVideoFile_WithEmptyFile_ReturnsFalse()
     {
@@ -109,6 +147,10 @@ public class FileValidationServiceTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.ValidateVideoFile"/> returns true for various supported video file formats.
+    /// </summary>
+    /// <param name="filename">The video filename with supported extension (mp4, avi, mov, mkv).</param>
     [Theory]
     [InlineData("video.mp4")]
     [InlineData("video.avi")]
@@ -123,6 +165,9 @@ public class FileValidationServiceTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetFileHash"/> returns consistent SHA256 hash for the same file.
+    /// </summary>
     [Fact]
     public void GetFileHash_WithValidFile_ReturnsConsistentHash()
     {
@@ -136,6 +181,9 @@ public class FileValidationServiceTests
         hash1.Length.Should().Be(64); // SHA256 hex length
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetFileHash"/> throws <see cref="ArgumentException"/> when provided with null file path.
+    /// </summary>
     [Fact]
     public void GetFileHash_WithNullPath_ThrowsArgumentException()
     {
@@ -144,6 +192,9 @@ public class FileValidationServiceTests
         act.Should().Throw<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetFileHash"/> throws <see cref="ArgumentException"/> when provided with empty or whitespace file path.
+    /// </summary>
     [Fact]
     public void GetFileHash_WithEmptyPath_ThrowsArgumentException()
     {
@@ -152,6 +203,9 @@ public class FileValidationServiceTests
         act.Should().Throw<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetFileHash"/> throws <see cref="InvalidOperationException"/> when the file does not exist.
+    /// </summary>
     [Fact]
     public void GetFileHash_WithNonExistentFile_ThrowsInvalidOperationException()
     {
@@ -160,6 +214,9 @@ public class FileValidationServiceTests
         act.Should().Throw<InvalidOperationException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetFileHash"/> returns different hashes for different files.
+    /// </summary>
     [Fact]
     public void GetFileHash_WithDifferentFiles_ReturnsDifferentHashes()
     {
@@ -172,6 +229,9 @@ public class FileValidationServiceTests
         hash1.Should().NotBe(hash2);
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetVideoDuration"/> returns a valid TimeSpan for an existing video file.
+    /// </summary>
     [Fact]
     public void GetVideoDuration_WithExistentFile_ReturnsTimeSpan()
     {
@@ -183,6 +243,9 @@ public class FileValidationServiceTests
         duration.Should().Be(TimeSpan.FromSeconds(30));
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetVideoDuration"/> throws <see cref="ArgumentException"/> when provided with null file path.
+    /// </summary>
     [Fact]
     public void GetVideoDuration_WithNullPath_ThrowsArgumentException()
     {
@@ -191,6 +254,9 @@ public class FileValidationServiceTests
         act.Should().Throw<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetVideoDuration"/> throws <see cref="ArgumentException"/> when provided with empty or whitespace file path.
+    /// </summary>
     [Fact]
     public void GetVideoDuration_WithEmptyPath_ThrowsArgumentException()
     {
@@ -199,6 +265,9 @@ public class FileValidationServiceTests
         act.Should().Throw<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetVideoDuration"/> returns null when the file does not exist.
+    /// </summary>
     [Fact]
     public void GetVideoDuration_WithNonExistentFile_ReturnsNull()
     {
@@ -207,6 +276,9 @@ public class FileValidationServiceTests
         duration.Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.DeleteTemporaryFile"/> successfully deletes an existing temporary file.
+    /// </summary>
     [Fact]
     public void DeleteTemporaryFile_WithExistingFile_DeletesFile()
     {
@@ -218,6 +290,9 @@ public class FileValidationServiceTests
         File.Exists(filePath).Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.DeleteTemporaryFile"/> throws <see cref="ArgumentException"/> when provided with null file path.
+    /// </summary>
     [Fact]
     public void DeleteTemporaryFile_WithNullPath_ThrowsArgumentException()
     {
@@ -226,6 +301,9 @@ public class FileValidationServiceTests
         act.Should().Throw<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.DeleteTemporaryFile"/> does not throw when attempting to delete a non-existent file.
+    /// </summary>
     [Fact]
     public void DeleteTemporaryFile_WithNonExistentFile_DoesNotThrow()
     {
@@ -234,6 +312,9 @@ public class FileValidationServiceTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.CleanupTemporaryDirectory"/> deletes all files in the specified temporary directory.
+    /// </summary>
     [Fact]
     public void CleanupTemporaryDirectory_WithMultipleFiles_DeletesAll()
     {
@@ -246,6 +327,9 @@ public class FileValidationServiceTests
         Directory.GetFiles(_testDirectory).Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.CleanupTemporaryDirectory"/> does not throw when cleaning up an empty directory.
+    /// </summary>
     [Fact]
     public void CleanupTemporaryDirectory_WithEmptyDirectory_DoesNotThrow()
     {
@@ -257,6 +341,9 @@ public class FileValidationServiceTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.CleanupTemporaryDirectory"/> throws <see cref="ArgumentException"/> when provided with null directory path.
+    /// </summary>
     [Fact]
     public void CleanupTemporaryDirectory_WithNullPath_ThrowsArgumentException()
     {
@@ -265,6 +352,9 @@ public class FileValidationServiceTests
         act.Should().Throw<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.CleanupTemporaryDirectory"/> does not throw when attempting to clean up a non-existent directory.
+    /// </summary>
     [Fact]
     public void CleanupTemporaryDirectory_WithNonExistentDirectory_DoesNotThrow()
     {
@@ -273,6 +363,9 @@ public class FileValidationServiceTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that <see cref="FileValidationService.GetSupportedFormats"/> returns a non-empty string containing supported video file formats.
+    /// </summary>
     [Fact]
     public void GetSupportedFormats_ReturnsFormatsString()
     {
@@ -283,6 +376,9 @@ public class FileValidationServiceTests
         formats.Should().Contain("avi");
     }
 
+    /// <summary>
+    /// Finalizer that cleans up the temporary test directory when the test class is disposed.
+    /// </summary>
     ~FileValidationServiceTests()
     {
         if (Directory.Exists(_testDirectory))
