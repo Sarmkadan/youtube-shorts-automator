@@ -14,12 +14,20 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Integration test suite that validates end-to-end workflows for the YouTube Shorts Automator application.
+/// Tests service interactions, database operations, and business logic through the full dependency injection container.
+/// </summary>
 public class IntegrationTests : IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
     private readonly string _testDirectory;
 
-    public IntegrationTests()
+    /// <summary>
+/// Initializes a new instance of the <see cref="IntegrationTests"/> class.
+/// Sets up an in-memory dependency injection container with all required services and creates temporary directories for testing.
+/// </summary>
+public IntegrationTests()
     {
         _testDirectory = Path.Combine(Path.GetTempPath(), $"integration-test-{Guid.NewGuid()}");
         Directory.CreateDirectory(_testDirectory);
@@ -52,7 +60,12 @@ public class IntegrationTests : IDisposable
         InitializeDirectories(appSettings);
     }
 
-    private void InitializeDirectories(AppSettings appSettings)
+    /// <summary>
+/// Initializes the required directory structure from application settings.
+/// Creates log, processing, and output directories if they don't exist.
+/// </summary>
+/// <param name="appSettings">The application settings containing directory paths.</param>
+private void InitializeDirectories(AppSettings appSettings)
     {
         var directories = new[] { appSettings.LogDirectory, appSettings.ProcessingDirectory, appSettings.OutputDirectory };
         foreach (var dir in directories)
@@ -62,6 +75,11 @@ public class IntegrationTests : IDisposable
         }
     }
 
+    /// <summary>
+    /// Tests the complete scheduling workflow from upload scheduling to database persistence.
+    /// Validates that upload jobs can be scheduled and retrieved correctly.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task EndToEnd_ScheduleUpload_CompletesSuccessfully()
     {
@@ -81,6 +99,11 @@ public class IntegrationTests : IDisposable
         retrievedJob.ScheduledAt.Should().Be(scheduledTime);
     }
 
+    /// <summary>
+    /// Tests the complete video processing and analytics workflow.
+    /// Validates that videos can be created, analytics records generated, and metrics synchronized.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task EndToEnd_CreateVideo_CreateAnalytics_SyncMetrics()
     {
@@ -110,6 +133,11 @@ public class IntegrationTests : IDisposable
         analyticsRecord.ViewCount.Should().Be(0);
     }
 
+    /// <summary>
+    /// Tests concurrent scheduling operations to ensure thread safety and proper job handling.
+    /// Validates that multiple upload jobs can be scheduled simultaneously without conflicts.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task ConcurrencyTest_MultipleSchedulesSimultaneously()
     {
@@ -131,6 +159,11 @@ public class IntegrationTests : IDisposable
         });
     }
 
+    /// <summary>
+    /// Tests concurrent video processing operations to ensure thread safety and proper task handling.
+    /// Validates that multiple videos can be processed simultaneously without conflicts.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task ConcurrencyTest_MultipleVideoCreationsSimultaneously()
     {
@@ -164,6 +197,11 @@ public class IntegrationTests : IDisposable
         uniqueIds.Should().HaveCount(5);
     }
 
+    /// <summary>
+    /// Tests video processing with different processing profiles to validate profile-specific settings.
+    /// Validates that videos are processed according to their assigned profile's specifications.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task ConfigurationTest_DifferentProcessingProfiles()
     {
@@ -237,6 +275,11 @@ public class IntegrationTests : IDisposable
         results[2].OutputWidth.Should().Be(540);
     }
 
+    /// <summary>
+    /// Tests the scheduling workflow including job creation and retrieval of upcoming jobs.
+    /// Validates that scheduled jobs can be filtered by time window and retrieved correctly.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task SchedulingWorkflow_CreateScheduleAndRetrieveUpcoming()
     {
@@ -255,6 +298,11 @@ public class IntegrationTests : IDisposable
         upcoming.Should().NotContain(j => j.Id == job3.Id);
     }
 
+    /// <summary>
+    /// Tests the scheduling workflow for rescheduling existing upload jobs.
+    /// Validates that scheduled jobs can be modified and changes persist in the database.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task SchedulingWorkflow_RescheduleAndVerify()
     {
@@ -274,6 +322,11 @@ public class IntegrationTests : IDisposable
         updatedJob.ScheduledAt.Should().Be(newTime);
     }
 
+    /// <summary>
+    /// Tests the scheduling workflow for canceling upload jobs.
+    /// Validates that scheduled jobs can be canceled and the status is updated correctly in the database.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task SchedulingWorkflow_CancelUpload()
     {
@@ -291,6 +344,11 @@ public class IntegrationTests : IDisposable
         cancelledJob.Status.Should().Be(UploadStatus.Cancelled);
     }
 
+    /// <summary>
+    /// Tests the analytics workflow including creation of analytics records and report generation.
+    /// Validates that analytics data can be created and period-based reports can be generated correctly.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task AnalyticsWorkflow_CreateAndGenerateReport()
     {
@@ -309,6 +367,11 @@ public class IntegrationTests : IDisposable
         report.TotalVideos.Should().BeGreaterThanOrEqualTo(1);
     }
 
+    /// <summary>
+    /// Tests the file validation workflow including video file validation and hashing operations.
+    /// Validates that video files can be validated, hashed, and duration can be extracted correctly.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task FileValidationWorkflow_ValidateAndHash()
     {
@@ -342,6 +405,11 @@ public class IntegrationTests : IDisposable
         }
     }
 
+    /// <summary>
+    /// Tests the main use case workflow: processing a video and scheduling it for upload.
+    /// Validates the complete end-to-end flow from video creation through processing to scheduling and analytics.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task MainUseCase_ProcessVideoAndScheduleUpload()
     {
@@ -378,6 +446,10 @@ public class IntegrationTests : IDisposable
         upcoming.Should().Contain(j => j.Id == uploadJob.Id);
     }
 
+    /// <summary>
+    /// Disposes the service provider and cleans up temporary test directories.
+    /// Ensures all resources are properly released after test execution.
+    /// </summary>
     public void Dispose()
     {
         _serviceProvider?.Dispose();
