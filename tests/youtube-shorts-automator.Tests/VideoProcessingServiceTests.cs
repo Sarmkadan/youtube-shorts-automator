@@ -14,12 +14,18 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Provides unit tests for the <see cref="VideoProcessingService"/> class.
+/// </summary>
 public class VideoProcessingServiceTests
 {
     private readonly Mock<VideoShortRepository> _mockRepository;
     private readonly Mock<ILogger<VideoProcessingService>> _mockLogger;
     private readonly VideoProcessingService _service;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VideoProcessingServiceTests"/> class.
+    /// </summary>
     public VideoProcessingServiceTests()
     {
         _mockRepository = new Mock<VideoShortRepository>();
@@ -39,6 +45,9 @@ public class VideoProcessingServiceTests
         YouTubeChannelId = 1
     };
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.ValidateVideoFileAsync"/> returns true when provided with a valid file path.
+    /// </summary>
     [Fact]
     public async Task ValidateVideoFileAsync_WithValidFile_ReturnsTrue()
     {
@@ -61,6 +70,9 @@ public class VideoProcessingServiceTests
         }
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.ValidateVideoFileAsync"/> returns false when the file does not exist.
+    /// </summary>
     [Fact]
     public async Task ValidateVideoFileAsync_WithNonExistentFile_ReturnsFalse()
     {
@@ -69,6 +81,9 @@ public class VideoProcessingServiceTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.ValidateVideoFileAsync"/> returns false when the file exceeds the maximum size.
+    /// </summary>
     [Fact]
     public async Task ValidateVideoFileAsync_WithFileTooLarge_ReturnsFalse()
     {
@@ -91,6 +106,9 @@ public class VideoProcessingServiceTests
         }
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.ValidateVideoFileAsync"/> returns false when the file is too small.
+    /// </summary>
     [Fact]
     public async Task ValidateVideoFileAsync_WithFileTooSmall_ReturnsFalse()
     {
@@ -113,6 +131,9 @@ public class VideoProcessingServiceTests
         }
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.CreateProcessingTaskAsync"/> creates a processing task when provided with a valid video.
+    /// </summary>
     [Fact]
     public async Task CreateProcessingTaskAsync_WithValidVideo_CreatesTask()
     {
@@ -137,6 +158,9 @@ public class VideoProcessingServiceTests
         _mockRepository.Verify(r => r.AddAsync(It.IsAny<VideoShort>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.CreateProcessingTaskAsync"/> throws <see cref="ValidationException"/> when provided with an invalid video.
+    /// </summary>
     [Fact]
     public async Task CreateProcessingTaskAsync_WithInvalidVideo_ThrowsValidationException()
     {
@@ -148,6 +172,9 @@ public class VideoProcessingServiceTests
         await act.Should().ThrowAsync<ValidationException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.CreateProcessingTaskAsync"/> throws <see cref="ValidationException"/> when the video duration is too long.
+    /// </summary>
     [Fact]
     public async Task CreateProcessingTaskAsync_WithDurationTooLong_ThrowsValidationException()
     {
@@ -159,6 +186,9 @@ public class VideoProcessingServiceTests
         await act.Should().ThrowAsync<ValidationException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.CreateProcessingTaskAsync"/> throws <see cref="VideoProcessingException"/> when a repository exception occurs.
+    /// </summary>
     [Fact]
     public async Task CreateProcessingTaskAsync_WithRepositoryException_ThrowsVideoProcessingException()
     {
@@ -173,6 +203,9 @@ public class VideoProcessingServiceTests
         await act.Should().ThrowAsync<VideoProcessingException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.CreateProcessingTaskAsync"/> sets the video status to pending.
+    /// </summary>
     [Fact]
     public async Task CreateProcessingTaskAsync_SetsStatusToPending()
     {
@@ -189,6 +222,9 @@ public class VideoProcessingServiceTests
         capturedVideo.Status.Should().Be(ProcessingStatus.Pending);
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.CreateProcessingTaskAsync"/> sets the creation timestamp of the video.
+    /// </summary>
     [Fact]
     public async Task CreateProcessingTaskAsync_SetsCreatedAtToCurrentTime()
     {
@@ -208,6 +244,9 @@ public class VideoProcessingServiceTests
         capturedVideo.CreatedAt.Should().BeOnOrBefore(afterTime);
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.ProcessVideoAsync"/> returns a valid processing task for valid inputs.
+    /// </summary>
     [Fact]
     public async Task ProcessVideoAsync_WithValidInputs_ReturnsProcessingTask()
     {
@@ -235,6 +274,9 @@ public class VideoProcessingServiceTests
         result.OutputHeight.Should().Be(1920);
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.ProcessVideoAsync"/> throws <see cref="ValidationException"/> when provided with an invalid profile.
+    /// </summary>
     [Fact]
     public async Task ProcessVideoAsync_WithInvalidProfile_ThrowsValidationException()
     {
@@ -246,6 +288,9 @@ public class VideoProcessingServiceTests
         await act.Should().ThrowAsync<ValidationException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.ProcessVideoAsync"/> sets the correct priority based on the input data.
+    /// </summary>
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
@@ -283,6 +328,9 @@ public class VideoProcessingServiceTests
         result.Priority.Should().Be(5);
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.ProcessVideoAsync"/> applies correct settings when different profiles are used.
+    /// </summary>
     [Fact]
     public async Task ProcessVideoAsync_WithDifferentProfiles_AppliesCorrectSettings()
     {
@@ -325,6 +373,9 @@ public class VideoProcessingServiceTests
         result2.OutputBitrate.Should().Be(5000);
     }
 
+    /// <summary>
+    /// Tests that <see cref="VideoProcessingService.ProcessVideoAsync"/> sets the task type to "FFmpegTranscode".
+    /// </summary>
     [Fact]
     public async Task ProcessVideoAsync_Sets_FFmpegTranscodeTaskType()
     {
