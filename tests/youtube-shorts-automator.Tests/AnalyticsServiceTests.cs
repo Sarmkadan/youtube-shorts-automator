@@ -12,6 +12,11 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Unit tests for the <see cref="AnalyticsService"/> class.
+/// Tests various scenarios including analytics record creation, synchronization from YouTube,
+/// retrieval of analytics data, performance analysis, and channel growth calculations.
+/// </summary>
 public class AnalyticsServiceTests
 {
     private readonly Mock<AnalyticsRepository> _mockAnalyticsRepository;
@@ -19,6 +24,9 @@ public class AnalyticsServiceTests
     private readonly Mock<ILogger<AnalyticsService>> _mockLogger;
     private readonly AnalyticsService _service;
 
+    /// <summary>
+    /// Initializes mock dependencies and creates an instance of <see cref="AnalyticsService"/> for testing.
+    /// </summary>
     public AnalyticsServiceTests()
     {
         _mockAnalyticsRepository = new Mock<AnalyticsRepository>();
@@ -27,6 +35,10 @@ public class AnalyticsServiceTests
         _service = new AnalyticsService(_mockAnalyticsRepository.Object, _mockVideoRepository.Object, _mockLogger.Object);
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.CreateAnalyticsRecordAsync"/> successfully creates an analytics record
+    /// when provided with a valid video ID.
+    /// </summary>
     [Fact]
     public async Task CreateAnalyticsRecordAsync_WithValidVideoId_CreatesRecord()
     {
@@ -53,6 +65,10 @@ public class AnalyticsServiceTests
         _mockAnalyticsRepository.Verify(r => r.AddAsync(It.IsAny<AnalyticsData>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.CreateAnalyticsRecordAsync"/> throws an <see cref="InvalidOperationException"/>
+    /// when the repository encounters an error during analytics record creation.
+    /// </summary>
     [Fact]
     public async Task CreateAnalyticsRecordAsync_WithRepositoryException_ThrowsInvalidOperationException()
     {
@@ -66,6 +82,10 @@ public class AnalyticsServiceTests
             .WithMessage("*Failed to create analytics record*");
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.SyncAnalyticsFromYouTubeAsync"/> successfully updates existing analytics
+    /// when provided with valid video ID, YouTube video ID, and channel information.
+    /// </summary>
     [Fact]
     public async Task SyncAnalyticsFromYouTubeAsync_WithValidInputs_UpdatesAnalytics()
     {
@@ -98,6 +118,10 @@ public class AnalyticsServiceTests
         _mockAnalyticsRepository.Verify(r => r.UpdateAsync(It.IsAny<AnalyticsData>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.SyncAnalyticsFromYouTubeAsync"/> throws an <see cref="ArgumentNullException"/>
+    /// when the YouTube video ID parameter is null.
+    /// </summary>
     [Fact]
     public async Task SyncAnalyticsFromYouTubeAsync_WithNullYoutubeId_ThrowsArgumentNullException()
     {
@@ -108,6 +132,10 @@ public class AnalyticsServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.SyncAnalyticsFromYouTubeAsync"/> throws an <see cref="ArgumentNullException"/>
+    /// when the channel parameter is null.
+    /// </summary>
     [Fact]
     public async Task SyncAnalyticsFromYouTubeAsync_WithNullChannel_ThrowsArgumentNullException()
     {
@@ -116,6 +144,10 @@ public class AnalyticsServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.SyncAnalyticsFromYouTubeAsync"/> creates a new analytics record
+    /// when no existing record is found for the specified video ID.
+    /// </summary>
     [Fact]
     public async Task SyncAnalyticsFromYouTubeAsync_WhenNoExistingRecord_CreatesNew()
     {
@@ -141,6 +173,10 @@ public class AnalyticsServiceTests
         _mockAnalyticsRepository.Verify(r => r.AddAsync(It.IsAny<AnalyticsData>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.GetVideoAnalyticsAsync"/> successfully retrieves analytics data
+    /// when provided with a valid video ID that exists in the repository.
+    /// </summary>
     [Fact]
     public async Task GetVideoAnalyticsAsync_WithValidVideoId_ReturnsAnalytics()
     {
@@ -157,6 +193,10 @@ public class AnalyticsServiceTests
         result.ViewCount.Should().Be(1000);
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.GetVideoAnalyticsAsync"/> returns null
+    /// when no analytics record exists for the specified video ID.
+    /// </summary>
     [Fact]
     public async Task GetVideoAnalyticsAsync_WhenNotFound_ReturnsNull()
     {
@@ -169,6 +209,10 @@ public class AnalyticsServiceTests
         result.Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.GetTopPerformingVideosAsync"/> successfully retrieves top performing videos
+    /// when provided with a valid limit value.
+    /// </summary>
     [Fact]
     public async Task GetTopPerformingVideosAsync_WithValidLimit_ReturnsTopVideos()
     {
@@ -188,6 +232,10 @@ public class AnalyticsServiceTests
         result.First().ViewCount.Should().Be(10000);
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.GetTopPerformingVideosAsync"/> throws an <see cref="ArgumentOutOfRangeException"/>
+    /// when the limit parameter is zero.
+    /// </summary>
     [Fact]
     public async Task GetTopPerformingVideosAsync_WithInvalidLimit_ThrowsArgumentOutOfRangeException()
     {
@@ -196,6 +244,10 @@ public class AnalyticsServiceTests
         await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.GetTopPerformingVideosAsync"/> throws an <see cref="ArgumentOutOfRangeException"/>
+    /// when the limit parameter is negative.
+    /// </summary>
     [Fact]
     public async Task GetTopPerformingVideosAsync_WithNegativeLimit_ThrowsArgumentOutOfRangeException()
     {
@@ -204,6 +256,10 @@ public class AnalyticsServiceTests
         await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.GeneratePeriodReportAsync"/> successfully generates a period report
+    /// when provided with valid date range parameters.
+    /// </summary>
     [Fact]
     public async Task GeneratePeriodReportAsync_WithValidDateRange_ReturnsReport()
     {
@@ -229,6 +285,10 @@ public class AnalyticsServiceTests
         report.PeriodEnd.Should().Be(endDate);
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.GeneratePeriodReportAsync"/> throws an <see cref="ArgumentException"/>
+    /// when the start date is after the end date (inverted dates).
+    /// </summary>
     [Fact]
     public async Task GeneratePeriodReportAsync_WithInvertedDates_ThrowsArgumentException()
     {
@@ -240,6 +300,10 @@ public class AnalyticsServiceTests
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.GeneratePeriodReportAsync"/> returns an empty report
+    /// when no analytics data exists within the specified date range.
+    /// </summary>
     [Fact]
     public async Task GeneratePeriodReportAsync_WithEmptyAnalytics_ReturnsEmptyReport()
     {
@@ -258,6 +322,10 @@ public class AnalyticsServiceTests
         report.AverageEngagementRate.Should().Be(0);
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.AnalyzePerformanceMetrics"/> returns performance insights
+    /// when provided with valid analytics data containing engagement metrics.
+    /// </summary>
     [Fact]
     public void AnalyzePerformanceMetrics_WithValidData_ReturnsInsights()
     {
@@ -277,6 +345,10 @@ public class AnalyticsServiceTests
         insights.Should().Contain("Excellent engagement");
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.AnalyzePerformanceMetrics"/> returns a warning message
+    /// when analytics data indicates low engagement metrics.
+    /// </summary>
     [Fact]
     public void AnalyzePerformanceMetrics_WithLowEngagement_ReturnsWarning()
     {
@@ -296,6 +368,10 @@ public class AnalyticsServiceTests
         insights.Should().Contain("Low engagement");
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.AnalyzePerformanceMetrics"/> returns a default message
+    /// when provided with empty or invalid analytics data.
+    /// </summary>
     [Fact]
     public void AnalyzePerformanceMetrics_WithoutValidData_ReturnsDefaultMessage()
     {
@@ -306,6 +382,10 @@ public class AnalyticsServiceTests
         insights.Should().Be("No performance data available yet.");
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.CalculateChannelGrowthAsync"/> returns the total channel growth
+    /// by summing subscribers gained and subtracting subscribers lost across all analytics records.
+    /// </summary>
     [Fact]
     public async Task CalculateChannelGrowthAsync_WithMultipleAnalytics_ReturnsTotalGrowth()
     {
@@ -324,6 +404,10 @@ public class AnalyticsServiceTests
         growth.Should().Be(220); // (100 + 150) - (10 + 20)
     }
 
+    /// <summary>
+    /// Tests that <see cref="AnalyticsService.CalculateChannelGrowthAsync"/> returns a negative value
+    /// when subscribers lost exceeds subscribers gained in the analytics records.
+    /// </summary>
     [Fact]
     public async Task CalculateChannelGrowthAsync_WithNegativeGrowth_ReturnsNegativeValue()
     {
