@@ -23,12 +23,22 @@ public class SchedulingService
     }
 
     /// <summary>
+    /// Protected parameterless constructor to allow test mocking frameworks to
+    /// generate a class proxy without requiring real dependencies.
+    /// </summary>
+    protected SchedulingService()
+    {
+        _uploadRepository = null!;
+        _logger = null!;
+    }
+
+    /// <summary>
     /// Tolerance window for scheduling time validation. Allows scheduling for "now"
     /// without failing due to clock drift between caller and method evaluation.
     /// </summary>
     private static readonly TimeSpan SchedulingTolerance = TimeSpan.FromSeconds(5);
 
-    public async Task<UploadJob> ScheduleUploadAsync(int videoShortId, DateTime scheduledTime,
+    public virtual async Task<UploadJob> ScheduleUploadAsync(int videoShortId, DateTime scheduledTime,
         CancellationToken cancellationToken = default)
     {
         // Schedules a video upload for a specific time
@@ -64,7 +74,7 @@ public class SchedulingService
         }
     }
 
-    public async Task<IEnumerable<UploadJob>> GetUpcomingJobsAsync(int hoursAhead = 24,
+    public virtual async Task<IEnumerable<UploadJob>> GetUpcomingJobsAsync(int hoursAhead = 24,
         CancellationToken cancellationToken = default)
     {
         // Retrieves all scheduled jobs within the specified hours ahead
@@ -87,7 +97,7 @@ public class SchedulingService
         }
     }
 
-    public async Task<IEnumerable<UploadJob>> GetOverdueJobsAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<UploadJob>> GetOverdueJobsAsync(CancellationToken cancellationToken = default)
     {
         // Retrieves jobs that are overdue for upload
         try
@@ -107,7 +117,7 @@ public class SchedulingService
         }
     }
 
-    public async Task<bool> RescheduleUploadAsync(int uploadJobId, DateTime newScheduledTime,
+    public virtual async Task<bool> RescheduleUploadAsync(int uploadJobId, DateTime newScheduledTime,
         CancellationToken cancellationToken = default)
     {
         // Reschedules an upload job to a different time
@@ -144,7 +154,7 @@ public class SchedulingService
         }
     }
 
-    public async Task<bool> CancelUploadAsync(int uploadJobId, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> CancelUploadAsync(int uploadJobId, CancellationToken cancellationToken = default)
     {
         // Cancels a scheduled upload job
         try
@@ -174,7 +184,7 @@ public class SchedulingService
         }
     }
 
-    public async Task<int> GetQueuedJobCountAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<int> GetQueuedJobCountAsync(CancellationToken cancellationToken = default)
     {
         // Returns count of queued upload jobs
         try
@@ -192,26 +202,27 @@ public class SchedulingService
     public TimeSpan CalculateOptimalUploadTime(DateTime videoCreatedAt, int estimatedProcessingMinutes)
     {
         // Calculates an optimal upload time based on creation time and processing duration
+        var now = DateTime.UtcNow;
         var processingDuration = TimeSpan.FromMinutes(estimatedProcessingMinutes);
         var uploadTime = videoCreatedAt.Add(processingDuration);
-        
+
         // Add a small buffer (5 minutes)
         uploadTime = uploadTime.AddMinutes(5);
-        
+
         // Ensure it's not in the past
-        if (uploadTime < DateTime.UtcNow)
+        if (uploadTime < now)
         {
-            uploadTime = DateTime.UtcNow.AddMinutes(5);
+            uploadTime = now.AddMinutes(5);
         }
 
-        return uploadTime - DateTime.UtcNow;
+        return uploadTime - now;
     }
 
-    public bool IsWithinOptimalUploadWindow(DateTime scheduleTime)
+    public virtual bool IsWithinOptimalUploadWindow(DateTime scheduleTime)
     {
         // Checks if the scheduled time is within optimal upload hours (avoid off-peak times)
-        var hour = scheduleTime.Hour;
-        // Optimal: 9 AM to 11 PM in user's timezone
-        return hour >= 9 && hour <= 23;
+        var timeOfDay = scheduleTime.TimeOfDay;
+        // Optimal: 9:00 AM to 11:00 PM in user's timezone (inclusive of the 11 PM boundary itself)
+        return timeOfDay >= TimeSpan.FromHours(9) && timeOfDay <= TimeSpan.FromHours(23);
     }
 }

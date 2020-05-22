@@ -332,7 +332,7 @@ public class AnalyticsServiceTests
         var analytics = new AnalyticsData
         {
             ViewCount = 5000,
-            EngagementRate = 12.5,
+            LikeCount = 625, // 12.5% of views, recalculated below into EngagementRate
             AverageViewDuration = 25.5,
             AudienceRetentionPercentage = 75.0
         };
@@ -341,7 +341,7 @@ public class AnalyticsServiceTests
         var insights = _service.AnalyzePerformanceMetrics(analytics);
 
         insights.Should().NotBeNullOrEmpty();
-        insights.Should().Contain("5000");
+        insights.Should().Contain("5,000");
         insights.Should().Contain("Excellent engagement");
     }
 

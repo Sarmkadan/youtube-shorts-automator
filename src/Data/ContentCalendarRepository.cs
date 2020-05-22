@@ -15,7 +15,7 @@ namespace YouTubeShortAutomator.Data;
 /// The <c>TitleOptimizationResult</c> object graph is serialised to JSON and stored
 /// in the <c>OptimizationJson</c> column.
 /// </summary>
-public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry>
+public class ContentCalendarRepository : IRepository<ContentCalendarEntry>
 {
     private readonly DatabaseContext _context;
 
@@ -34,8 +34,17 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
+    /// <summary>
+    /// Protected parameterless constructor to allow test mocking frameworks to
+    /// generate a class proxy without requiring a real <see cref="DatabaseContext"/>.
+    /// </summary>
+    protected ContentCalendarRepository()
+    {
+        _context = null!;
+    }
+
     /// <inheritdoc />
-    public async Task<ContentCalendarEntry?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public virtual async Task<ContentCalendarEntry?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         const string query = @"
             SELECT Id, Title, Description, Tags, Category, Status, ScheduledPublishAt,
@@ -50,7 +59,7 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ContentCalendarEntry>> GetAllAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<ContentCalendarEntry>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         const string query = @"
             SELECT Id, Title, Description, Tags, Category, Status, ScheduledPublishAt,
@@ -70,7 +79,7 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
     /// <param name="from">Range start (inclusive, UTC).</param>
     /// <param name="to">Range end (inclusive, UTC).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public async Task<IEnumerable<ContentCalendarEntry>> GetByDateRangeAsync(
+    public virtual async Task<IEnumerable<ContentCalendarEntry>> GetByDateRangeAsync(
         DateTime from, DateTime to, CancellationToken cancellationToken = default)
     {
         const string query = @"
@@ -96,7 +105,7 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
     /// </summary>
     /// <param name="cutoffUtc">Upper bound of the upcoming window (UTC).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public async Task<IEnumerable<ContentCalendarEntry>> GetUpcomingAsync(
+    public virtual async Task<IEnumerable<ContentCalendarEntry>> GetUpcomingAsync(
         DateTime cutoffUtc, CancellationToken cancellationToken = default)
     {
         const string query = @"
@@ -121,7 +130,7 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
     }
 
     /// <inheritdoc />
-    public async Task<ContentCalendarEntry> AddAsync(ContentCalendarEntry entity, CancellationToken cancellationToken = default)
+    public virtual async Task<ContentCalendarEntry> AddAsync(ContentCalendarEntry entity, CancellationToken cancellationToken = default)
     {
         const string query = @"
             INSERT INTO ContentCalendarEntries
@@ -144,7 +153,7 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
     }
 
     /// <inheritdoc />
-    public async Task<ContentCalendarEntry> UpdateAsync(ContentCalendarEntry entity, CancellationToken cancellationToken = default)
+    public virtual async Task<ContentCalendarEntry> UpdateAsync(ContentCalendarEntry entity, CancellationToken cancellationToken = default)
     {
         const string query = @"
             UPDATE ContentCalendarEntries
@@ -173,7 +182,7 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
     }
 
     /// <inheritdoc />
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         const string query = "DELETE FROM ContentCalendarEntries WHERE Id = @Id";
         var parameters = new Dictionary<string, object?> { { "@Id", id } };
@@ -182,7 +191,7 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
     }
 
     /// <inheritdoc />
-    public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
         const string query = "SELECT COUNT(1) FROM ContentCalendarEntries WHERE Id = @Id";
         var parameters = new Dictionary<string, object?> { { "@Id", id } };
@@ -191,14 +200,14 @@ public sealed class ContentCalendarRepository : IRepository<ContentCalendarEntry
     }
 
     /// <inheritdoc />
-    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         const string query = "SELECT COUNT(1) FROM ContentCalendarEntries";
         return (int?)await _context.ExecuteScalarAsync<int>(query) ?? 0;
     }
 
     /// <inheritdoc />
-    public Task SaveChangesAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public virtual Task SaveChangesAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     // ── Private helpers ───────────────────────────────────────────────────────
 

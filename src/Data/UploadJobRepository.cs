@@ -28,6 +28,15 @@ public class UploadJobRepository : IRepository<UploadJob>
 	}
 
 	/// <summary>
+	/// Protected parameterless constructor to allow test mocking frameworks to
+	/// generate a class proxy without requiring a real <see cref="DatabaseContext"/>.
+	/// </summary>
+	protected UploadJobRepository()
+	{
+		_context = null!;
+	}
+
+	/// <summary>
 	/// Retrieves an upload job by its unique identifier.
 	/// </summary>
 	/// <param name="id">The unique identifier of the upload job to retrieve.</param>
@@ -35,7 +44,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// <returns>
 	/// An <see cref="UploadJob"/> instance if found, otherwise null.
 	/// </returns>
-	public async Task<UploadJob?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+	public virtual async Task<UploadJob?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
 		// Retrieves an upload job by ID
 		var query = @"
@@ -54,7 +63,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// </summary>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 	/// <returns>A list of all upload jobs ordered by scheduled date in descending order.</returns>
-	public async Task<IEnumerable<UploadJob>> GetAllAsync(CancellationToken cancellationToken = default)
+	public virtual async Task<IEnumerable<UploadJob>> GetAllAsync(CancellationToken cancellationToken = default)
 	{
 		// Retrieves all upload jobs
 		var query = @"
@@ -73,7 +82,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// <param name="status">The upload status to filter by.</param>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 	/// <returns>A list of upload jobs matching the specified status, ordered by scheduled date.</returns>
-	public async Task<IEnumerable<UploadJob>> GetByStatusAsync(UploadStatus status, CancellationToken cancellationToken = default)
+	public virtual async Task<IEnumerable<UploadJob>> GetByStatusAsync(UploadStatus status, CancellationToken cancellationToken = default)
 	{
 		// Retrieves upload jobs by status
 		var query = @"
@@ -92,7 +101,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// </summary>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 	/// <returns>A list of upload jobs that are queued or pending and scheduled for immediate processing.</returns>
-	public async Task<IEnumerable<UploadJob>> GetScheduledForUploadAsync(CancellationToken cancellationToken = default)
+	public virtual async Task<IEnumerable<UploadJob>> GetScheduledForUploadAsync(CancellationToken cancellationToken = default)
 	{
 		// Retrieves jobs scheduled for upload that haven't started yet
 		var query = @"
@@ -118,7 +127,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// </summary>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 	/// <returns>A list of failed upload jobs that haven't reached their maximum retry count.</returns>
-	public async Task<IEnumerable<UploadJob>> GetRetryableFailedJobsAsync(CancellationToken cancellationToken = default)
+	public virtual async Task<IEnumerable<UploadJob>> GetRetryableFailedJobsAsync(CancellationToken cancellationToken = default)
 	{
 		// Retrieves failed upload jobs that can be retried
 		var query = @"
@@ -140,7 +149,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// <param name="entity">The upload job entity to add.</param>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 	/// <returns>The added upload job entity with its generated identifier.</returns>
-	public async Task<UploadJob> AddAsync(UploadJob entity, CancellationToken cancellationToken = default)
+	public virtual async Task<UploadJob> AddAsync(UploadJob entity, CancellationToken cancellationToken = default)
 	{
 		// Inserts a new upload job
 		var query = @"
@@ -174,7 +183,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// <param name="entity">The upload job entity with updated values.</param>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 	/// <returns>The updated upload job entity.</returns>
-	public async Task<UploadJob> UpdateAsync(UploadJob entity, CancellationToken cancellationToken = default)
+	public virtual async Task<UploadJob> UpdateAsync(UploadJob entity, CancellationToken cancellationToken = default)
 	{
 		// Updates an existing upload job
 		var query = @"
@@ -209,7 +218,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// <param name="id">The unique identifier of the upload job to delete.</param>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 	/// <returns>True if the upload job was successfully deleted, otherwise false.</returns>
-	public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+	public virtual async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
 	{
 		// Deletes an upload job
 		var query = "DELETE FROM UploadJobs WHERE Id = @Id";
@@ -224,7 +233,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// <param name="id">The unique identifier to check for existence.</param>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 	/// <returns>True if the upload job exists, otherwise false.</returns>
-	public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
+	public virtual async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
 	{
 		// Checks if an upload job exists
 		var query = "SELECT COUNT(1) FROM UploadJobs WHERE Id = @Id";
@@ -238,7 +247,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// </summary>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 	/// <returns>The total number of upload jobs.</returns>
-	public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+	public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default)
 	{
 		// Returns total count of upload jobs
 		var query = "SELECT COUNT(1) FROM UploadJobs";
@@ -249,7 +258,7 @@ public class UploadJobRepository : IRepository<UploadJob>
 	/// Placeholder method for save changes operation.
 	/// </summary>
 	/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
-	public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+	public virtual async Task SaveChangesAsync(CancellationToken cancellationToken = default)
 	{
 		// Placeholder for save changes
 		await Task.CompletedTask;

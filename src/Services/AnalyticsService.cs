@@ -36,13 +36,24 @@ public class AnalyticsService
     }
 
     /// <summary>
+    /// Protected parameterless constructor to allow test mocking frameworks to
+    /// generate a class proxy without requiring real dependencies.
+    /// </summary>
+    protected AnalyticsService()
+    {
+        _analyticsRepository = null!;
+        _videoRepository = null!;
+        _logger = null!;
+    }
+
+    /// <summary>
     /// Creates a new analytics record for a YouTube Short video.
     /// </summary>
     /// <param name="videoShortId">The ID of the video short to create analytics for.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The created analytics data record.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the analytics record cannot be created.</exception>
-    public async Task<AnalyticsData> CreateAnalyticsRecordAsync(int videoShortId,
+    public virtual async Task<AnalyticsData> CreateAnalyticsRecordAsync(int videoShortId,
         CancellationToken cancellationToken = default)
     {
         // Creates an initial analytics record for a video short
@@ -86,7 +97,7 @@ public class AnalyticsService
     /// <returns>The updated analytics data, or null if sync failed.</returns>
     /// <exception cref="ArgumentNullException">Thrown when youtubeVideoId is null or empty, or channel is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the analytics sync operation fails.</exception>
-    public async Task<AnalyticsData?> SyncAnalyticsFromYouTubeAsync(int videoShortId, string youtubeVideoId,
+    public virtual async Task<AnalyticsData?> SyncAnalyticsFromYouTubeAsync(int videoShortId, string youtubeVideoId,
         YouTubeChannel channel, CancellationToken cancellationToken = default)
     {
         // Fix: Add validation for youtubeVideoId and channel to prevent null reference exceptions.
@@ -137,7 +148,7 @@ public class AnalyticsService
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The analytics data for the specified video, or null if not found.</returns>
     /// <exception cref="Exception">Thrown when an error occurs while retrieving analytics.</exception>
-    public async Task<AnalyticsData?> GetVideoAnalyticsAsync(int videoShortId, CancellationToken cancellationToken = default)
+    public virtual async Task<AnalyticsData?> GetVideoAnalyticsAsync(int videoShortId, CancellationToken cancellationToken = default)
     {
         // Retrieves analytics for a specific video
         try
@@ -159,7 +170,7 @@ public class AnalyticsService
     /// <returns>An enumerable of analytics data for the top performing videos.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when limit is not a positive integer.</exception>
     /// <exception cref="Exception">Thrown when an error occurs while retrieving top performers.</exception>
-    public async Task<IEnumerable<AnalyticsData>> GetTopPerformingVideosAsync(int limit = 10,
+    public virtual async Task<IEnumerable<AnalyticsData>> GetTopPerformingVideosAsync(int limit = 10,
         CancellationToken cancellationToken = default)
     {
         // Fix: Validate that the limit is a positive integer to avoid unexpected behavior.
@@ -190,7 +201,7 @@ public class AnalyticsService
     /// <returns>An analytics report containing aggregated metrics for the specified period.</returns>
     /// <exception cref="ArgumentException">Thrown when startDate is after endDate.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the report generation fails.</exception>
-    public async Task<AnalyticsReport> GeneratePeriodReportAsync(DateTime startDate, DateTime endDate,
+    public virtual async Task<AnalyticsReport> GeneratePeriodReportAsync(DateTime startDate, DateTime endDate,
         CancellationToken cancellationToken = default)
     {
         // Fix: Validate date range to ensure startDate is not after endDate.
@@ -232,7 +243,7 @@ public class AnalyticsService
     /// </summary>
     /// <param name="analytics">The analytics data to analyze.</param>
     /// <returns>A formatted string containing performance analysis and recommendations.</returns>
-    public string AnalyzePerformanceMetrics(AnalyticsData analytics)
+    public virtual string AnalyzePerformanceMetrics(AnalyticsData analytics)
     {
         // Analyzes performance metrics and provides insights
         if (!analytics.HasValidData())
@@ -266,7 +277,7 @@ public class AnalyticsService
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The net subscriber growth (subscribers gained minus subscribers lost).</returns>
     /// <exception cref="Exception">Thrown when an error occurs while calculating channel growth.</exception>
-    public async Task<double> CalculateChannelGrowthAsync(int channelId, CancellationToken cancellationToken = default)
+    public virtual async Task<double> CalculateChannelGrowthAsync(int channelId, CancellationToken cancellationToken = default)
     {
         // Calculates the overall channel growth based on analytics
         try

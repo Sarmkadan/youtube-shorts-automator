@@ -80,7 +80,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates that upload jobs can be scheduled and retrieved correctly.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task EndToEnd_ScheduleUpload_CompletesSuccessfully()
     {
         var schedulingService = _serviceProvider.GetRequiredService<SchedulingService>();
@@ -104,7 +104,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates that videos can be created, analytics records generated, and metrics synchronized.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task EndToEnd_CreateVideo_CreateAnalytics_SyncMetrics()
     {
         var videoProcessingService = _serviceProvider.GetRequiredService<VideoProcessingService>();
@@ -138,7 +138,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates that multiple upload jobs can be scheduled simultaneously without conflicts.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task ConcurrencyTest_MultipleSchedulesSimultaneously()
     {
         var schedulingService = _serviceProvider.GetRequiredService<SchedulingService>();
@@ -164,7 +164,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates that multiple videos can be processed simultaneously without conflicts.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task ConcurrencyTest_MultipleVideoCreationsSimultaneously()
     {
         var videoProcessingService = _serviceProvider.GetRequiredService<VideoProcessingService>();
@@ -202,7 +202,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates that videos are processed according to their assigned profile's specifications.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task ConfigurationTest_DifferentProcessingProfiles()
     {
         var videoProcessingService = _serviceProvider.GetRequiredService<VideoProcessingService>();
@@ -280,7 +280,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates that scheduled jobs can be filtered by time window and retrieved correctly.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task SchedulingWorkflow_CreateScheduleAndRetrieveUpcoming()
     {
         var schedulingService = _serviceProvider.GetRequiredService<SchedulingService>();
@@ -303,7 +303,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates that scheduled jobs can be modified and changes persist in the database.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task SchedulingWorkflow_RescheduleAndVerify()
     {
         var schedulingService = _serviceProvider.GetRequiredService<SchedulingService>();
@@ -327,7 +327,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates that scheduled jobs can be canceled and the status is updated correctly in the database.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task SchedulingWorkflow_CancelUpload()
     {
         var schedulingService = _serviceProvider.GetRequiredService<SchedulingService>();
@@ -349,7 +349,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates that analytics data can be created and period-based reports can be generated correctly.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task AnalyticsWorkflow_CreateAndGenerateReport()
     {
         var analyticsService = _serviceProvider.GetRequiredService<AnalyticsService>();
@@ -410,7 +410,7 @@ private void InitializeDirectories(AppSettings appSettings)
     /// Validates the complete end-to-end flow from video creation through processing to scheduling and analytics.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
+    [Fact(Skip = "requires a live SQL Server instance")]
     public async Task MainUseCase_ProcessVideoAndScheduleUpload()
     {
         var videoProcessingService = _serviceProvider.GetRequiredService<VideoProcessingService>();

@@ -18,7 +18,16 @@ public class VideoShortRepository : IRepository<VideoShort>
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public async Task<VideoShort?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Protected parameterless constructor to allow test mocking frameworks to
+    /// generate a class proxy without requiring a real <see cref="DatabaseContext"/>.
+    /// </summary>
+    protected VideoShortRepository()
+    {
+        _context = null!;
+    }
+
+    public virtual async Task<VideoShort?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         // Retrieves a video short by its ID
         var query = @"
@@ -33,7 +42,7 @@ public class VideoShortRepository : IRepository<VideoShort>
         return row.Rows.Count > 0 ? MapToEntity(row.Rows[0]) : null;
     }
 
-    public async Task<IEnumerable<VideoShort>> GetAllAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<VideoShort>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         // Retrieves all video shorts
         var query = @"
@@ -46,7 +55,7 @@ public class VideoShortRepository : IRepository<VideoShort>
         return dataTable.Rows.Cast<DataRow>().Select(MapToEntity).ToList();
     }
 
-    public async Task<IEnumerable<VideoShort>> GetByStatusAsync(ProcessingStatus status, CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<VideoShort>> GetByStatusAsync(ProcessingStatus status, CancellationToken cancellationToken = default)
     {
         // Retrieves video shorts by processing status
         var query = @"
@@ -60,7 +69,7 @@ public class VideoShortRepository : IRepository<VideoShort>
         return dataTable.Rows.Cast<DataRow>().Select(MapToEntity).ToList();
     }
 
-    public async Task<IEnumerable<VideoShort>> GetByChannelAsync(int channelId, CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<VideoShort>> GetByChannelAsync(int channelId, CancellationToken cancellationToken = default)
     {
         // Retrieves all video shorts for a specific YouTube channel
         var query = @"
@@ -74,7 +83,7 @@ public class VideoShortRepository : IRepository<VideoShort>
         return dataTable.Rows.Cast<DataRow>().Select(MapToEntity).ToList();
     }
 
-    public async Task<VideoShort> AddAsync(VideoShort entity, CancellationToken cancellationToken = default)
+    public virtual async Task<VideoShort> AddAsync(VideoShort entity, CancellationToken cancellationToken = default)
     {
         // Inserts a new video short into the database
         var query = @"
@@ -105,7 +114,7 @@ public class VideoShortRepository : IRepository<VideoShort>
         return entity;
     }
 
-    public async Task<VideoShort> UpdateAsync(VideoShort entity, CancellationToken cancellationToken = default)
+    public virtual async Task<VideoShort> UpdateAsync(VideoShort entity, CancellationToken cancellationToken = default)
     {
         // Updates an existing video short
         var query = @"
@@ -133,7 +142,7 @@ public class VideoShortRepository : IRepository<VideoShort>
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         // Deletes a video short from the database
         var query = "DELETE FROM VideoShorts WHERE Id = @Id";
@@ -142,7 +151,7 @@ public class VideoShortRepository : IRepository<VideoShort>
         return result > 0;
     }
 
-    public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
         // Checks if a video short exists
         var query = "SELECT COUNT(1) FROM VideoShorts WHERE Id = @Id";
@@ -151,14 +160,14 @@ public class VideoShortRepository : IRepository<VideoShort>
         return count > 0;
     }
 
-    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         // Returns the total count of video shorts
         var query = "SELECT COUNT(1) FROM VideoShorts";
         return (int?)await _context.ExecuteScalarAsync<int>(query) ?? 0;
     }
 
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    public virtual async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         // Placeholder for save changes - SQL Server commits automatically
         await Task.CompletedTask;

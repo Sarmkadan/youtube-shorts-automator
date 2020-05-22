@@ -254,6 +254,7 @@ public class VideoProcessingServiceTests
         var profile = new ProcessingProfile
         {
             Id = 1,
+            Name = "Test Profile",
             VideoWidth = 1080,
             VideoHeight = 1920,
             VideoBitrate = 4000,
@@ -269,7 +270,7 @@ public class VideoProcessingServiceTests
 
         result.Should().NotBeNull();
         result.VideoShortId.Should().Be(videoShort.Id);
-        result.Status.Should().Be(ProcessingStatus.Processing);
+        result.Status.Should().Be(ProcessingStatus.Completed);
         result.OutputWidth.Should().Be(1080);
         result.OutputHeight.Should().Be(1920);
     }
@@ -312,6 +313,7 @@ public class VideoProcessingServiceTests
         var profile = new ProcessingProfile
         {
             Id = 1,
+            Name = "Test Profile",
             VideoWidth = 1080,
             VideoHeight = 1920,
             VideoBitrate = 4000,
@@ -339,6 +341,7 @@ public class VideoProcessingServiceTests
         var profile1 = new ProcessingProfile
         {
             Id = 1,
+            Name = "Test Profile",
             VideoWidth = 720,
             VideoHeight = 1280,
             VideoBitrate = 2000,
@@ -353,6 +356,7 @@ public class VideoProcessingServiceTests
         var profile2 = new ProcessingProfile
         {
             Id = 2,
+            Name = "Test Profile",
             VideoWidth = 1080,
             VideoHeight = 1920,
             VideoBitrate = 5000,
@@ -383,6 +387,7 @@ public class VideoProcessingServiceTests
         var profile = new ProcessingProfile
         {
             Id = 1,
+            Name = "Test Profile",
             VideoWidth = 1080,
             VideoHeight = 1920,
             VideoBitrate = 4000,

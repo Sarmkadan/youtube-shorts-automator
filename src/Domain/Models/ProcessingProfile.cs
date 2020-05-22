@@ -43,7 +43,7 @@ public class ProcessingProfile
     /// Gets or sets the height of the video in pixels.
     /// </summary>
     /// <value>
-    /// The height of the video in pixels. It must be between 640 and 1080 inclusive.
+    /// The height of the video in pixels. It must be between 640 and 1920 inclusive.
     /// </value>
     public int VideoHeight { get; set; }
 
@@ -188,7 +188,7 @@ public class ProcessingProfile
             return false;
         if (VideoWidth < 360 || VideoWidth > 1920)
             return false;
-        if (VideoHeight < 640 || VideoHeight > 1080)
+        if (VideoHeight < 640 || VideoHeight > 1920)
             return false;
         if (VideoBitrate < 500 || VideoBitrate > 20000)
             return false;
