@@ -101,7 +101,10 @@ class BatchProcessingExample
             if (profiles.GetArrayLength() > 0)
                 return profiles[0].GetProperty("id").GetInt32();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"  Warning: could not look up existing profiles: {ex.Message}");
+        }
 
         // Create new profile if none exist
         var profile = new
@@ -216,7 +219,10 @@ class BatchProcessingExample
                     jobStatuses[jobId] = status;
                     Console.WriteLine($"  [{jobId}] {title}: {status}");
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"  [{jobId}] Warning: could not read job status: {ex.Message}");
+                }
             }
 
             if (jobStatuses.Values.All(s => s == "Uploaded" || s == "Failed"))

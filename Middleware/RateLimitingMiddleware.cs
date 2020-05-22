@@ -4,6 +4,7 @@
 // =============================================================================
 
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Net;
 
 namespace YouTubeShortsAutomator.Middleware;
@@ -28,14 +29,13 @@ public class RateLimitingMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var clientId = GetClientIdentifier(context);
-        var bucket = _buckets.AddOrUpdate(clientId,
-            new RateLimitBucket(_options.RequestsPerWindow),
-            (key, existing) => existing);
+        var bucket = _buckets.GetOrAdd(clientId,
+            _ => new RateLimitBucket(_options.RequestsPerWindow, _options.WindowSizeSeconds));
 
         if (!bucket.AllowRequest())
         {
             context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-            context.Response.Headers.Add("Retry-After", _options.WindowSizeSeconds.ToString());
+            context.Response.Headers["Retry-After"] = _options.WindowSizeSeconds.ToString(CultureInfo.InvariantCulture);
             await context.Response.WriteAsJsonAsync(new
             {
                 error = "Rate limit exceeded",
@@ -44,8 +44,8 @@ public class RateLimitingMiddleware
             return;
         }
 
-        context.Response.Headers.Add("X-RateLimit-Limit", _options.RequestsPerWindow.ToString());
-        context.Response.Headers.Add("X-RateLimit-Remaining", bucket.RemainingRequests.ToString());
+        context.Response.Headers["X-RateLimit-Limit"] = _options.RequestsPerWindow.ToString(CultureInfo.InvariantCulture);
+        context.Response.Headers["X-RateLimit-Remaining"] = bucket.RemainingRequests.ToString(CultureInfo.InvariantCulture);
 
         await _next(context);
     }
@@ -70,32 +70,52 @@ public class RateLimitingOptions
 
 public class RateLimitBucket
 {
+    private readonly object _sync = new();
     private readonly int _capacity;
+    private readonly double _windowSeconds;
     private int _tokens;
     private DateTime _lastRefill;
 
-    public int RemainingRequests => _tokens;
+    public int RemainingRequests
+    {
+        get
+        {
+            lock (_sync)
+            {
+                return _tokens;
+            }
+        }
+    }
 
     public int GetCapacity() => _capacity;
 
     public RateLimitBucket(int capacity)
+        : this(capacity, 60)
+    {
+    }
+
+    public RateLimitBucket(int capacity, int windowSeconds)
     {
         _capacity = capacity;
+        _windowSeconds = windowSeconds > 0 ? windowSeconds : 60;
         _tokens = capacity;
         _lastRefill = DateTime.UtcNow;
     }
 
     public bool AllowRequest()
     {
-        RefillTokens();
-
-        if (_tokens > 0)
+        lock (_sync)
         {
-            _tokens--;
-            return true;
-        }
+            RefillTokens();
 
-        return false;
+            if (_tokens > 0)
+            {
+                _tokens--;
+                return true;
+            }
+
+            return false;
+        }
     }
 
     private void RefillTokens()
@@ -103,7 +123,7 @@ public class RateLimitBucket
         var now = DateTime.UtcNow;
         var timePassed = (now - _lastRefill).TotalSeconds;
 
-        if (timePassed >= 60)
+        if (timePassed >= _windowSeconds)
         {
             _tokens = _capacity;
             _lastRefill = now;
