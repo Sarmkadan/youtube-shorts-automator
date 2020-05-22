@@ -13,11 +13,21 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Contains unit tests for the <see cref="ThumbnailGeneratorService"/> class.
+/// </summary>
 public class ThumbnailGeneratorServiceTests
 {
     private readonly ThumbnailGeneratorService _service;
     private readonly string _tempDir;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ThumbnailGeneratorServiceTests"/> class, setting up the service and a temporary directory.
+    /// </summary>
+    /// <remarks>
+    /// Creates a new <see cref="ThumbnailGeneratorService"/> instance with mocked configuration and logger,
+    /// and establishes a temporary directory for test file operations.
+    /// </remarks>
     public ThumbnailGeneratorServiceTests()
     {
         var config = new ConfigurationBuilder().Build();
@@ -29,6 +39,9 @@ public class ThumbnailGeneratorServiceTests
 
     // ── GetDimensions ─────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GetDimensions"/> returns 720x1280 for a vertical aspect ratio.
+    /// </summary>
     [Fact]
     public void GetDimensions_Vertical_Returns720x1280()
     {
@@ -38,6 +51,9 @@ public class ThumbnailGeneratorServiceTests
         h.Should().Be(1280);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GetDimensions"/> returns 1280x720 for a horizontal aspect ratio.
+    /// </summary>
     [Fact]
     public void GetDimensions_Horizontal_Returns1280x720()
     {
@@ -47,6 +63,9 @@ public class ThumbnailGeneratorServiceTests
         h.Should().Be(720);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GetDimensions"/> returns 720x720 for a square aspect ratio.
+    /// </summary>
     [Fact]
     public void GetDimensions_Square_Returns720x720()
     {
@@ -58,6 +77,9 @@ public class ThumbnailGeneratorServiceTests
 
     // ── GenerateFromVideoAsync validation ─────────────────────────────────────
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateFromVideoAsync"/> throws <see cref="ArgumentException"/> when the video path is null.
+    /// </summary>
     [Fact]
     public async Task GenerateFromVideoAsync_NullVideoPath_ThrowsArgumentException()
     {
@@ -68,6 +90,9 @@ public class ThumbnailGeneratorServiceTests
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateFromVideoAsync"/> throws <see cref="ArgumentException"/> when the video path is empty.
+    /// </summary>
     [Fact]
     public async Task GenerateFromVideoAsync_EmptyVideoPath_ThrowsArgumentException()
     {
@@ -78,6 +103,9 @@ public class ThumbnailGeneratorServiceTests
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateFromVideoAsync"/> throws <see cref="ArgumentNullException"/> when the request is null.
+    /// </summary>
     [Fact]
     public async Task GenerateFromVideoAsync_NullRequest_ThrowsArgumentNullException()
     {
@@ -86,6 +114,9 @@ public class ThumbnailGeneratorServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateFromVideoAsync"/> throws <see cref="VideoProcessingException"/> when the video file does not exist.
+    /// </summary>
     [Fact]
     public async Task GenerateFromVideoAsync_MissingVideoFile_ThrowsVideoProcessingException()
     {
@@ -97,6 +128,9 @@ public class ThumbnailGeneratorServiceTests
             .WithMessage("*Video file not found*");
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateFromVideoAsync"/> throws <see cref="ValidationException"/> when the output directory is empty.
+    /// </summary>
     [Fact]
     public async Task GenerateFromVideoAsync_EmptyOutputDirectory_ThrowsValidationException()
     {
@@ -110,8 +144,11 @@ public class ThumbnailGeneratorServiceTests
         await act.Should().ThrowAsync<ValidationException>();
     }
 
-    // ── GenerateWithTextOverlayAsync validation ───────────────────────────────
+    // ── GenerateWithTextOverlayAsync validation ───────────────────────────────────
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateWithTextOverlayAsync"/> throws <see cref="ArgumentException"/> when the image path is null.
+    /// </summary>
     [Fact]
     public async Task GenerateWithTextOverlayAsync_NullImagePath_ThrowsArgumentException()
     {
@@ -120,6 +157,9 @@ public class ThumbnailGeneratorServiceTests
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateWithTextOverlayAsync"/> throws <see cref="ArgumentException"/> when the text is empty.
+    /// </summary>
     [Fact]
     public async Task GenerateWithTextOverlayAsync_EmptyText_ThrowsArgumentException()
     {
@@ -128,6 +168,9 @@ public class ThumbnailGeneratorServiceTests
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateWithTextOverlayAsync"/> throws <see cref="VideoProcessingException"/> when the image file does not exist.
+    /// </summary>
     [Fact]
     public async Task GenerateWithTextOverlayAsync_MissingImageFile_ThrowsVideoProcessingException()
     {
@@ -140,6 +183,9 @@ public class ThumbnailGeneratorServiceTests
 
     // ── GenerateBatchAsync validation ─────────────────────────────────────────
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateBatchAsync"/> throws <see cref="ArgumentOutOfRangeException"/> when the frame count is zero.
+    /// </summary>
     [Fact]
     public async Task GenerateBatchAsync_ZeroFrameCount_ThrowsArgumentOutOfRangeException()
     {
@@ -152,6 +198,9 @@ public class ThumbnailGeneratorServiceTests
             .WithMessage("*Frame count must be at least 1*");
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateBatchAsync"/> throws <see cref="ArgumentOutOfRangeException"/> when the video duration is negative.
+    /// </summary>
     [Fact]
     public async Task GenerateBatchAsync_NegativeVideoDuration_ThrowsArgumentOutOfRangeException()
     {
@@ -164,8 +213,11 @@ public class ThumbnailGeneratorServiceTests
             .WithMessage("*Video duration must be positive*");
     }
 
-    // ── Default options ───────────────────────────────────────────────────────
+    // ── Default options ───────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGenerationRequest"/> sets correct default property values upon initialization.
+    /// </summary>
     [Fact]
     public void ThumbnailGenerationRequest_DefaultValues_AreCorrect()
     {
@@ -178,6 +230,9 @@ public class ThumbnailGeneratorServiceTests
         request.OverlayText.Should().BeNull();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="TextOverlayOptions"/> sets correct default property values upon initialization.
+    /// </summary>
     [Fact]
     public void TextOverlayOptions_DefaultValues_AreCorrect()
     {
@@ -192,6 +247,9 @@ public class ThumbnailGeneratorServiceTests
 
     // ── ThumbnailGenerationResult helpers ─────────────────────────────────────
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGenerationResult"/> initializes with Success set to false, OutputPath set to empty, and FileSizeBytes set to 0.
+    /// </summary>
     [Fact]
     public void ThumbnailGenerationResult_SuccessFalseByDefault()
     {
@@ -204,6 +262,9 @@ public class ThumbnailGeneratorServiceTests
 
     // ── OutputDirectory auto-creation ─────────────────────────────────────────
 
+    /// <summary>
+    /// Verifies that <see cref="ThumbnailGeneratorService.GenerateFromVideoAsync"/> creates the requested output directory if it does not exist before processing.
+    /// </summary>
     [Fact]
     public async Task GenerateFromVideoAsync_CreatesOutputDirectoryIfMissing()
     {
@@ -225,7 +286,9 @@ public class ThumbnailGeneratorServiceTests
         Directory.Exists(newSubDir).Should().BeTrue();
     }
 
-    // Teardown
+    /// <summary>
+    /// Finalizes an instance of the <see cref="ThumbnailGeneratorServiceTests"/> class, deleting the temporary directory.
+    /// </summary>
     ~ThumbnailGeneratorServiceTests()
     {
         try { if (Directory.Exists(_tempDir)) Directory.Delete(_tempDir, true); }
