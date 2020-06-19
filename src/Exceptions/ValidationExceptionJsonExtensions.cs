@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Text.Json;
+
 namespace YouTubeShortAutomator.Exceptions;
 
 public static class ValidationExceptionJsonExtensions
