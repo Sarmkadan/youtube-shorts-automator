@@ -27,7 +27,15 @@ public static class VideoProcessingExceptionJsonExtensions
     public static string ToJson(this VideoProcessingException value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
-        var options = _options with { WriteIndented = indented };
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = _options.PropertyNamingPolicy,
+            WriteIndented = indented
+        };
+        foreach (var converter in _options.Converters)
+        {
+            options.Converters.Add(converter);
+        }
         return JsonSerializer.Serialize(value, options);
     }
 
