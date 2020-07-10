@@ -13,12 +13,18 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Tests for the TitleOptimizationEngine class.
+/// </summary>
 public class TitleOptimizationEngineTests
 {
     private readonly TitleOptimizationEngine _engine;
     private readonly Mock<AnalyticsService> _mockAnalytics;
     private readonly ContentCalendarOptions _options;
 
+    /// <summary>
+    /// Initializes a new instance of the TitleOptimizationEngineTests class.
+    /// </summary>
     public TitleOptimizationEngineTests()
     {
         _mockAnalytics = new Mock<AnalyticsService>();
@@ -37,6 +43,9 @@ public class TitleOptimizationEngineTests
 
     // ── ScoreTitle ────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Tests that an empty string returns a score of 0.
+    /// </summary>
     [Fact]
     public void ScoreTitle_EmptyString_ReturnsZero()
     {
@@ -45,6 +54,9 @@ public class TitleOptimizationEngineTests
         score.Should().Be(0);
     }
 
+    /// <summary>
+    /// Tests that a null input returns a score of 0.
+    /// </summary>
     [Fact]
     public void ScoreTitle_NullInput_ReturnsZero()
     {
@@ -53,6 +65,9 @@ public class TitleOptimizationEngineTests
         score.Should().Be(0);
     }
 
+    /// <summary>
+    /// Tests that a short title returns a lower score than an optimal title.
+    /// </summary>
     [Fact]
     public void ScoreTitle_ShortTitle_ReturnsLowerScoreThanOptimal()
     {
@@ -62,6 +77,9 @@ public class TitleOptimizationEngineTests
         shortScore.Should().BeLessThan(optimalScore);
     }
 
+    /// <summary>
+    /// Tests that a title with a power word receives a boost.
+    /// </summary>
     [Fact]
     public void ScoreTitle_TitleWithPowerWord_ReceivesBoost()
     {
@@ -71,6 +89,9 @@ public class TitleOptimizationEngineTests
         withPower.Should().BeGreaterThan(plain);
     }
 
+    /// <summary>
+    /// Tests that a title with a question receives a boost.
+    /// </summary>
     [Fact]
     public void ScoreTitle_TitleWithQuestion_ReceivesBoost()
     {
@@ -80,6 +101,9 @@ public class TitleOptimizationEngineTests
         question.Should().BeGreaterThan(statement);
     }
 
+    /// <summary>
+    /// Tests that a title with a number receives a boost.
+    /// </summary>
     [Fact]
     public void ScoreTitle_TitleWithNumber_ReceivesBoost()
     {
@@ -89,6 +113,10 @@ public class TitleOptimizationEngineTests
         withNum.Should().BeGreaterThan(withoutNum);
     }
 
+    /// <summary>
+    /// Tests that the return value is clamped to the range [0, 1].
+    /// </summary>
+    /// <param name="boundary">The boundary value to test.</param>
     [Theory]
     [InlineData(0.0)]
     [InlineData(1.0)]
@@ -102,6 +130,9 @@ public class TitleOptimizationEngineTests
 
     // ── ExtractKeywords ───────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Tests that the ExtractKeywords method extracts non-trivial words.
+    /// </summary>
     [Fact]
     public void ExtractKeywords_ExtractsNonTrivialWords()
     {
@@ -113,6 +144,9 @@ public class TitleOptimizationEngineTests
         keywords.Should().Contain("programming");
     }
 
+    /// <summary>
+    /// Tests that the ExtractKeywords method filters stop words.
+    /// </summary>
     [Fact]
     public void ExtractKeywords_FiltersStopWords()
     {
@@ -123,6 +157,9 @@ public class TitleOptimizationEngineTests
         keywords.Should().NotContain("from");
     }
 
+    /// <summary>
+    /// Tests that the ExtractKeywords method returns at most 10 keywords.
+    /// </summary>
     [Fact]
     public void ExtractKeywords_ReturnsAtMostTenKeywords()
     {
@@ -133,6 +170,9 @@ public class TitleOptimizationEngineTests
         keywords.Length.Should().BeLessThanOrEqualTo(10);
     }
 
+    /// <summary>
+    /// Tests that the ExtractKeywords method returns an empty array for empty inputs.
+    /// </summary>
     [Fact]
     public void ExtractKeywords_EmptyInputs_ReturnsEmptyArray()
     {
@@ -141,6 +181,9 @@ public class TitleOptimizationEngineTests
         keywords.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Tests that the ExtractKeywords method returns lowercase words.
+    /// </summary>
     [Fact]
     public void ExtractKeywords_ReturnsLowercaseWords()
     {
@@ -151,6 +194,9 @@ public class TitleOptimizationEngineTests
 
     // ── OptimizeAsync ─────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Tests that the OptimizeAsync method returns suggestions with a valid input.
+    /// </summary>
     [Fact]
     public async Task OptimizeAsync_WithValidInput_ReturnsSuggestions()
     {
@@ -165,6 +211,9 @@ public class TitleOptimizationEngineTests
         result.Suggestions.Should().NotBeEmpty();
     }
 
+    /// <summary>
+    /// Tests that the OptimizeAsync method returns suggestions with positive confidence scores.
+    /// </summary>
     [Fact]
     public async Task OptimizeAsync_SuggestionsHavePositiveConfidenceScore()
     {
@@ -177,6 +226,9 @@ public class TitleOptimizationEngineTests
         result.Suggestions.Should().AllSatisfy(s => s.ConfidenceScore.Should().BeInRange(0, 1));
     }
 
+    /// <summary>
+    /// Tests that the OptimizeAsync method returns the best suggestion with the highest confidence score.
+    /// </summary>
     [Fact]
     public async Task OptimizeAsync_BestSuggestionIsHighestConfidence()
     {
@@ -188,6 +240,9 @@ public class TitleOptimizationEngineTests
                 result.Suggestions.Min(s => s.ConfidenceScore));
     }
 
+    /// <summary>
+    /// Tests that the OptimizeAsync method includes the "shorts" tag in the recommended hashtags.
+    /// </summary>
     [Fact]
     public async Task OptimizeAsync_RecommendedHashtagsIncludeShortsTag()
     {
@@ -196,6 +251,9 @@ public class TitleOptimizationEngineTests
         result.RecommendedHashtags.Should().Contain(h => h.Contains("shorts", StringComparison.OrdinalIgnoreCase));
     }
 
+    /// <summary>
+    /// Tests that the OptimizeAsync method throws an ArgumentException for a null or whitespace title.
+    /// </summary>
     [Fact]
     public async Task OptimizeAsync_NullOrWhitespaceTitle_ThrowsArgumentException()
     {
@@ -204,6 +262,9 @@ public class TitleOptimizationEngineTests
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that the OptimizeAsync method returns an optimal posting hour within the valid range.
+    /// </summary>
     [Fact]
     public async Task OptimizeAsync_OptimalPostingHourIsWithinValidRange()
     {
@@ -214,6 +275,9 @@ public class TitleOptimizationEngineTests
 
     // ── RecommendPostingTimesAsync ────────────────────────────────────────────
 
+    /// <summary>
+    /// Tests that the RecommendPostingTimesAsync method returns the requested number of posting times.
+    /// </summary>
     [Fact]
     public async Task RecommendPostingTimesAsync_ReturnsRequestedCount()
     {
@@ -222,6 +286,9 @@ public class TitleOptimizationEngineTests
         slots.Should().HaveCount(3);
     }
 
+    /// <summary>
+    /// Tests that the RecommendPostingTimesAsync method returns posting times that are in the future.
+    /// </summary>
     [Fact]
     public async Task RecommendPostingTimesAsync_AllSlotsAreInTheFuture()
     {
@@ -231,6 +298,9 @@ public class TitleOptimizationEngineTests
         slots.Should().AllSatisfy(s => s.Should().BeAfter(before));
     }
 
+    /// <summary>
+    /// Tests that the RecommendPostingTimesAsync method throws an ArgumentOutOfRangeException for a count of 0.
+    /// </summary>
     [Fact]
     public async Task RecommendPostingTimesAsync_ZeroCount_ThrowsArgumentOutOfRangeException()
     {
@@ -241,6 +311,9 @@ public class TitleOptimizationEngineTests
 
     // ── TitleOptimizationResult helpers ───────────────────────────────────────
 
+    /// <summary>
+    /// Tests that the NextOptimalSlot method returns the next optimal slot when the hour has already passed.
+    /// </summary>
     [Fact]
     public void NextOptimalSlot_WhenHourAlreadyPassed_ReturnsNextDay()
     {
@@ -258,6 +331,9 @@ public class TitleOptimizationEngineTests
         next.Should().BeAfter(DateTime.UtcNow);
     }
 
+    /// <summary>
+    /// Tests that the HasHighConfidenceSuggestion method returns true when the score is above 0.7.
+    /// </summary>
     [Fact]
     public void HasHighConfidenceSuggestion_WhenScoreAbove07_ReturnsTrue()
     {
