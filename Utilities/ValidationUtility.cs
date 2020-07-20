@@ -3,9 +3,15 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace YouTubeShortsAutomator.Utilities;
+
+/// <summary>
+/// Represents a validation result with success status and optional error message.
+/// </summary>
+public record ValidationResult(bool IsValid, string? Error);
 
 /// <summary>
 /// Provides validation utilities for common data types and formats
@@ -13,6 +19,75 @@ namespace YouTubeShortsAutomator.Utilities;
 /// </summary>
 public static class ValidationUtility
 {
+    /// <summary>
+    /// Represents a validation utility instance that can be serialized.
+    /// </summary>
+    public record ValidationUtilityInstance
+    {
+        /// <summary>Default constructor for serialization.</summary>
+        public ValidationUtilityInstance() { }
+
+        /// <summary>
+        /// Gets or sets the email to validate.
+        /// </summary>
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL to validate.
+        /// </summary>
+        public string? Url { get; set; }
+
+        /// <summary>
+        /// Gets or sets the YouTube channel ID to validate.
+        /// </summary>
+        public string? YouTubeChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the YouTube video ID to validate.
+        /// </summary>
+        public string? YouTubeVideoId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video title to validate.
+        /// </summary>
+        public string? VideoTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video description to validate.
+        /// </summary>
+        public string? VideoDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video tags to validate.
+        /// </summary>
+        public string[]? VideoTags { get; set; }
+
+        /// <summary>
+        /// Gets or sets the file path to validate.
+        /// </summary>
+        public string? FilePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum file size in bytes.
+        /// </summary>
+        public long MaxFileSizeBytes { get; set; } = 10_737_418_240;
+
+        /// <summary>
+        /// Gets or sets the timespan string to validate.
+        /// </summary>
+        public string? TimeSpan { get; set; }
+
+        /// <summary>
+        /// Gets or sets the JSON string to validate.
+        /// </summary>
+        public string? JsonString { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scheduled time string to validate.
+        /// </summary>
+        public string? ScheduledTime { get; set; }
+    }
+
     private static readonly Regex EmailRegex = new(
         @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
