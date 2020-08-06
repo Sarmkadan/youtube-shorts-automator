@@ -10,8 +10,14 @@ using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Tests for the AnalyticsData class.
+/// </summary>
 public class AnalyticsDataTests
 {
+    /// <summary>
+    /// Verifies that the RecalculateEngagementMetrics method correctly calculates the engagement rate.
+    /// </summary>
     [Fact]
     public void RecalculateEngagementMetrics_WithKnownInteractionCounts_ComputesExpectedRate()
     {
@@ -31,6 +37,9 @@ public class AnalyticsDataTests
         analytics.EngagementRate.Should().Be(8.0);
     }
 
+    /// <summary>
+    /// Verifies that the GetPerformanceLevel method returns the correct performance level when the engagement rate is above 10.
+    /// </summary>
     [Fact]
     public void GetPerformanceLevel_WhenEngagementRateIsAboveTen_ReturnsExcellent()
     {
@@ -44,6 +53,9 @@ public class AnalyticsDataTests
         level.Should().Be("Excellent");
     }
 
+    /// <summary>
+    /// Verifies that the UpdateRetentionData method clamps the retention percentage at 100 when it exceeds 100.
+    /// </summary>
     [Fact]
     public void UpdateRetentionData_WhenRetentionExceedsHundred_ClampsAtMaximum()
     {
@@ -58,6 +70,9 @@ public class AnalyticsDataTests
         analytics.ImpressionCount.Should().Be(5000);
     }
 
+    /// <summary>
+    /// Verifies that the GetAllAsync method returns the expected list of video shorts when called on a mocked repository.
+    /// </summary>
     [Fact]
     public async Task GetAllAsync_WhenCalledOnMockedRepository_ReturnsMockedVideoShorts()
     {
