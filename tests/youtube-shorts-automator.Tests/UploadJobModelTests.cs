@@ -9,8 +9,16 @@ using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Contains unit tests for the <see cref="UploadJob"/> model.
+/// </summary>
 public class UploadJobModelTests
 {
+    /// <summary>
+    /// Verifies that <see cref="UploadJob.CanRetry"/> returns <c>true</c>
+    /// when the job status is <see cref="UploadStatus.Failed"/> and the current
+    /// <see cref="UploadJob.AttemptCount"/> is less than <see cref="UploadJob.MaxRetries"/>.
+    /// </summary>
     [Fact]
     public void CanRetry_WhenFailedAndUnderRetryLimit_ReturnsTrue()
     {
@@ -29,6 +37,11 @@ public class UploadJobModelTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="UploadJob.CanRetry"/> returns <c>false</c>
+    /// when the <see cref="UploadJob.AttemptCount"/> equals <see cref="UploadJob.MaxRetries"/>
+    /// for a job whose status is <see cref="UploadStatus.Failed"/>.
+    /// </summary>
     [Fact]
     public void CanRetry_WhenAttemptCountMatchesMaxRetries_ReturnsFalse()
     {
@@ -47,6 +60,12 @@ public class UploadJobModelTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Ensures that <see cref="UploadJob.UpdateProgress"/> correctly calculates the
+    /// <see cref="UploadJob.UploadProgressPercentage"/> when half of the total bytes
+    /// have been transferred, and that the <see cref="UploadJob.UploadedBytes"/> property
+    /// is set to the supplied uploaded byte count.
+    /// </summary>
     [Fact]
     public void UpdateProgress_WithHalfTransferredBytes_CalculatesCorrectPercentage()
     {
@@ -63,6 +82,12 @@ public class UploadJobModelTests
         job.UploadedBytes.Should().Be(uploadedBytes);
     }
 
+    /// <summary>
+    /// Confirms that <see cref="UploadJob.MarkAsCompleted"/> sets the job status to
+    /// <see cref="UploadStatus.Completed"/>, records the supplied YouTube video identifier,
+    /// sets the progress percentage to 100, and populates <see cref="UploadJob.UploadedAt"/>
+    /// with a timestamp that is on or after the method call.
+    /// </summary>
     [Fact]
     public void MarkAsCompleted_AssignsVideoIdAndSetsProgressToFull()
     {
@@ -82,6 +107,11 @@ public class UploadJobModelTests
         job.UploadedAt.Should().BeOnOrAfter(before);
     }
 
+    /// <summary>
+    /// Validates that when <see cref="UploadJob.UploadedBytes"/> is pre‑set,
+    /// calling <see cref="UploadJob.UpdateProgress"/> with the same uploaded byte count
+    /// preserves the value and correctly computes the progress percentage.
+    /// </summary>
     [Fact]
     public void UploadedBytes_WhenSet_PreservesValueForResume()
     {
