@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Data;
 
 namespace YouTubeShortAutomator.Data;
@@ -13,46 +11,45 @@ namespace YouTubeShortAutomator.Data;
 public static class UploadJobRepositoryExtensionsValidation
 {
     /// <summary>
-    /// Validates the specified <paramref name="value"/>.
+    /// Validates the specified <paramref name="repository"/>.
     /// </summary>
-    /// <param name="value">The value to validate.</param>
+    /// <param name="repository">The repository to validate.</param>
     /// <returns>A list of human-readable problems.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
-    public static IReadOnlyList<string> Validate(this UploadJobRepositoryExtensions value)
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null.</exception>
+    public static IReadOnlyList<string> Validate(this UploadJobRepository repository)
     {
-        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(repository);
 
         var problems = new List<string>();
 
-        // No specific validation rules for UploadJobRepositoryExtensions,
-        // as it's a static class with extension methods.
+        // Add validation rules here
 
         return problems;
     }
 
     /// <summary>
-    /// Checks if the specified <paramref name="value"/> is valid.
+    /// Checks if the specified <paramref name="repository"/> is valid.
     /// </summary>
-    /// <param name="value">The value to check.</param>
+    /// <param name="repository">The repository to check.</param>
     /// <returns>True if valid; otherwise false.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
-    public static bool IsValid(this UploadJobRepositoryExtensions value)
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null.</exception>
+    public static bool IsValid(this UploadJobRepository repository)
     {
-        return !Validate(value).Any();
+        return !Validate(repository).Any();
     }
 
     /// <summary>
-    /// Ensures the specified <paramref name="value"/> is valid.
+    /// Ensures the specified <paramref name="repository"/> is valid.
     /// </summary>
-    /// <param name="value">The value to ensure.</param>
-    /// <exception cref="ArgumentException">The <paramref name="value"/> is invalid.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
-    public static void EnsureValid(this UploadJobRepositoryExtensions value)
+    /// <param name="repository">The repository to ensure.</param>
+    /// <exception cref="ArgumentException">The <paramref name="repository"/> is invalid.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null.</exception>
+    public static void EnsureValid(this UploadJobRepository repository)
     {
-        var problems = Validate(value);
+        var problems = Validate(repository);
         if (problems.Any())
         {
-            throw new ArgumentException($"Invalid value: {string.Join(Environment.NewLine, problems)}", nameof(value));
+            throw new ArgumentException($"Invalid repository: {string.Join(Environment.NewLine, problems)}", nameof(repository));
         }
     }
 }
