@@ -14,24 +14,56 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
+/// <summary>
+/// Unit tests for <see cref="ContentCalendarService"/> functionality.
+/// Tests cover CRUD operations, validation, scheduling, and optimization features.
+/// </summary>
 public class ContentCalendarServiceTests
 {
     private readonly Mock<ContentCalendarRepository> _mockCalendarRepo;
+
+    /// <summary>
+    /// Mock for scheduling service used to test content calendar scheduling operations.
+    /// </summary>
     private readonly Mock<SchedulingService> _mockScheduling;
+
+    /// <summary>
+    /// Mock for analytics service used to test content performance tracking.
+    /// </summary>
     private readonly Mock<AnalyticsService> _mockAnalytics;
+
+    /// <summary>
+    /// Mock for video repository used to test video-related operations.
+    /// </summary>
     private readonly Mock<VideoShortRepository> _mockVideoRepo;
+
+    /// <summary>
+    /// Mock for title optimization engine used to test title optimization features.
+    /// </summary>
     private readonly Mock<ITitleOptimizationEngine> _mockOptimizer;
+
+    /// <summary>
+    /// Content calendar configuration options for testing.
+    /// </summary>
     private readonly ContentCalendarOptions _options;
+
+    /// <summary>
+    /// Instance of ContentCalendarService under test with mocked dependencies.
+    /// </summary>
     private readonly ContentCalendarService _service;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ContentCalendarServiceTests"/> class.
+    /// Sets up mock dependencies for testing ContentCalendarService functionality.
+    /// </summary>
     public ContentCalendarServiceTests()
     {
         _mockCalendarRepo = new Mock<ContentCalendarRepository>();
-        _mockScheduling   = new Mock<SchedulingService>();
-        _mockAnalytics    = new Mock<AnalyticsService>();
-        _mockVideoRepo    = new Mock<VideoShortRepository>();
-        _mockOptimizer    = new Mock<ITitleOptimizationEngine>();
-        _options          = new ContentCalendarOptions { AutoOptimizeOnCreate = false };
+        _mockScheduling = new Mock<SchedulingService>();
+        _mockAnalytics = new Mock<AnalyticsService>();
+        _mockVideoRepo = new Mock<VideoShortRepository>();
+        _mockOptimizer = new Mock<ITitleOptimizationEngine>();
+        _options = new ContentCalendarOptions { AutoOptimizeOnCreate = false };
 
         _service = new ContentCalendarService(
             _mockCalendarRepo.Object,
@@ -43,12 +75,16 @@ public class ContentCalendarServiceTests
             Mock.Of<ILogger<ContentCalendarService>>());
     }
 
+    /// <summary>
+    /// Builds a valid ContentCalendarEntry for testing purposes.
+    /// </summary>
+    /// <returns>A valid ContentCalendarEntry with sample data.</returns>
     private static ContentCalendarEntry BuildValidEntry() => new()
     {
-        Title            = "Tutorial: Python in 10 minutes",
-        Description      = "Quick intro to Python",
-        Tags             = ["python", "tutorial"],
-        Category         = ContentCategory.Tutorial,
+        Title = "Tutorial: Python in 10 minutes",
+        Description = "Quick intro to Python",
+        Tags = ["python", "tutorial"],
+        Category = ContentCategory.Tutorial,
         ScheduledPublishAt = DateTime.UtcNow.AddDays(1),
         YouTubeChannelId = 1
     };
@@ -56,6 +92,9 @@ public class ContentCalendarServiceTests
     // ── CreateEntryAsync ──────────────────────────────────────────────────────
 
     [Fact]
+    /// <summary>
+    /// Tests that CreateEntryAsync successfully creates and persists a valid content calendar entry.
+    /// </summary>
     public async Task CreateEntryAsync_WithValidEntry_ReturnsPersistedEntry()
     {
         var entry = BuildValidEntry();
@@ -73,6 +112,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that CreateEntryAsync throws ArgumentNullException when null entry is provided.
+    /// </summary>
     public async Task CreateEntryAsync_NullEntry_ThrowsArgumentNullException()
     {
         Func<Task> act = () => _service.CreateEntryAsync(null!);
@@ -81,6 +123,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that CreateEntryAsync throws ValidationException when entry has empty title.
+    /// </summary>
     public async Task CreateEntryAsync_EmptyTitle_ThrowsValidationException()
     {
         var entry = BuildValidEntry();
@@ -92,6 +137,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that CreateEntryAsync throws ValidationException when title exceeds maximum length.
+    /// </summary>
     public async Task CreateEntryAsync_TitleTooLong_ThrowsValidationException()
     {
         var entry = BuildValidEntry();
@@ -103,6 +151,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that CreateEntryAsync throws ValidationException when YouTubeChannelId is invalid.
+    /// </summary>
     public async Task CreateEntryAsync_InvalidChannelId_ThrowsValidationException()
     {
         var entry = BuildValidEntry();
@@ -114,6 +165,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that CreateEntryAsync throws ValidationException when entry has too many tags.
+    /// </summary>
     public async Task CreateEntryAsync_TooManyTags_ThrowsValidationException()
     {
         var entry = BuildValidEntry();
@@ -125,6 +179,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that CreateEntryAsync sets CreatedAt and UpdatedAt timestamps on the entry.
+    /// </summary>
     public async Task CreateEntryAsync_SetsCreatedAtAndUpdatedAt()
     {
         var entry = BuildValidEntry();
@@ -145,6 +202,9 @@ public class ContentCalendarServiceTests
     // ── GetEntryAsync ─────────────────────────────────────────────────────────
 
     [Fact]
+    /// <summary>
+    /// Tests that GetEntryAsync returns an existing entry by ID.
+    /// </summary>
     public async Task GetEntryAsync_ExistingEntry_ReturnsIt()
     {
         var stored = new ContentCalendarEntry { Id = 5, Title = "My Video", YouTubeChannelId = 1 };
@@ -159,6 +219,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that GetEntryAsync returns null when entry does not exist.
+    /// </summary>
     public async Task GetEntryAsync_NonExistingEntry_ReturnsNull()
     {
         _mockCalendarRepo
@@ -173,10 +236,13 @@ public class ContentCalendarServiceTests
     // ── GetEntriesInRangeAsync ────────────────────────────────────────────────
 
     [Fact]
+    /// <summary>
+    /// Tests that GetEntriesInRangeAsync throws ArgumentException when start date is after end date.
+    /// </summary>
     public async Task GetEntriesInRangeAsync_StartAfterEnd_ThrowsArgumentException()
     {
         var from = DateTime.UtcNow.AddDays(2);
-        var to   = DateTime.UtcNow;
+        var to = DateTime.UtcNow;
 
         Func<Task> act = () => _service.GetEntriesInRangeAsync(from, to);
 
@@ -184,10 +250,13 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that GetEntriesInRangeAsync delegates to repository with valid date range.
+    /// </summary>
     public async Task GetEntriesInRangeAsync_ValidRange_DelegatesToRepository()
     {
         var from = DateTime.UtcNow;
-        var to   = DateTime.UtcNow.AddDays(7);
+        var to = DateTime.UtcNow.AddDays(7);
         _mockCalendarRepo
             .Setup(r => r.GetByDateRangeAsync(from, to, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ContentCalendarEntry>());
@@ -201,6 +270,9 @@ public class ContentCalendarServiceTests
     // ── GetUpcomingEntriesAsync ───────────────────────────────────────────────
 
     [Fact]
+    /// <summary>
+    /// Tests that GetUpcomingEntriesAsync throws ArgumentOutOfRangeException when days parameter is zero.
+    /// </summary>
     public async Task GetUpcomingEntriesAsync_ZeroDays_ThrowsArgumentOutOfRangeException()
     {
         Func<Task> act = () => _service.GetUpcomingEntriesAsync(0);
@@ -209,6 +281,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that GetUpcomingEntriesAsync returns upcoming entries for the specified number of days.
+    /// </summary>
     public async Task GetUpcomingEntriesAsync_PositiveDays_ReturnsEntries()
     {
         var entries = new List<ContentCalendarEntry>
@@ -229,6 +304,9 @@ public class ContentCalendarServiceTests
     // ── DeleteEntryAsync ──────────────────────────────────────────────────────
 
     [Fact]
+    /// <summary>
+    /// Tests that DeleteEntryAsync returns true when entry exists and is successfully deleted.
+    /// </summary>
     public async Task DeleteEntryAsync_ExistingEntry_ReturnsTrue()
     {
         _mockCalendarRepo
@@ -241,6 +319,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that DeleteEntryAsync returns false when entry does not exist.
+    /// </summary>
     public async Task DeleteEntryAsync_NonExistingEntry_ReturnsFalse()
     {
         _mockCalendarRepo
@@ -255,6 +336,9 @@ public class ContentCalendarServiceTests
     // ── GetRecommendedSlotsAsync ──────────────────────────────────────────────
 
     [Fact]
+    /// <summary>
+    /// Tests that GetRecommendedSlotsAsync delegates to the title optimization engine.
+    /// </summary>
     public async Task GetRecommendedSlotsAsync_DelegatesToOptimizationEngine()
     {
         var expected = new[] { DateTime.UtcNow.AddDays(1) };
@@ -272,14 +356,17 @@ public class ContentCalendarServiceTests
     // ── ApplyOptimizationAsync ────────────────────────────────────────────────
 
     [Fact]
+    /// <summary>
+    /// Tests that ApplyOptimizationAsync throws InvalidOperationException when no optimization is stored.
+    /// </summary>
     public async Task ApplyOptimizationAsync_WhenNoOptimizationStored_ThrowsInvalidOperationException()
     {
         _mockCalendarRepo
             .Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ContentCalendarEntry
             {
-                Id               = 1,
-                Title            = "Draft",
+                Id = 1,
+                Title = "Draft",
                 YouTubeChannelId = 1,
                 LastOptimization = null
             });
@@ -291,13 +378,15 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that ApplyOptimizationAsync throws ArgumentOutOfRangeException when suggestion index is out of range.
+    /// </summary>
     public async Task ApplyOptimizationAsync_OutOfRangeIndex_ThrowsArgumentOutOfRangeException()
     {
         var optimization = new TitleOptimizationResult(
             OriginalTitle: "Title",
             OriginalDescription: string.Empty,
-            Suggestions:
-            [
+            Suggestions: [
                 new OptimizationSuggestion("Better title", string.Empty, [], 0.9, "test")
             ],
             OptimalPostingHour: 17,
@@ -308,8 +397,8 @@ public class ContentCalendarServiceTests
             .Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ContentCalendarEntry
             {
-                Id               = 1,
-                Title            = "Draft",
+                Id = 1,
+                Title = "Draft",
                 YouTubeChannelId = 1,
                 LastOptimization = optimization
             });
@@ -322,6 +411,9 @@ public class ContentCalendarServiceTests
     // ── UpdateEntryAsync ──────────────────────────────────────────────────────
 
     [Fact]
+    /// <summary>
+    /// Tests that UpdateEntryAsync throws ArgumentNullException when null entry is provided.
+    /// </summary>
     public async Task UpdateEntryAsync_NullEntry_ThrowsArgumentNullException()
     {
         Func<Task> act = () => _service.UpdateEntryAsync(null!);
@@ -330,6 +422,9 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that UpdateEntryAsync throws ValidationException when entry does not exist.
+    /// </summary>
     public async Task UpdateEntryAsync_NonExistingEntry_ThrowsValidationException()
     {
         _mockCalendarRepo
@@ -347,15 +442,18 @@ public class ContentCalendarServiceTests
     // ── ScheduleEntryAsync ────────────────────────────────────────────────────
 
     [Fact]
+    /// <summary>
+    /// Tests that ScheduleEntryAsync throws InvalidOperationException when entry is already published.
+    /// </summary>
     public async Task ScheduleEntryAsync_EntryAlreadyPublished_ThrowsInvalidOperationException()
     {
         _mockCalendarRepo
             .Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ContentCalendarEntry
             {
-                Id               = 1,
-                Title            = "Published",
-                Status           = CalendarEntryStatus.Published,
+                Id = 1,
+                Title = "Published",
+                Status = CalendarEntryStatus.Published,
                 YouTubeChannelId = 1
             });
 
@@ -365,16 +463,19 @@ public class ContentCalendarServiceTests
     }
 
     [Fact]
+    /// <summary>
+    /// Tests that ScheduleEntryAsync throws InvalidOperationException when entry has no video linked.
+    /// </summary>
     public async Task ScheduleEntryAsync_NoVideoLinked_ThrowsInvalidOperationException()
     {
         _mockCalendarRepo
             .Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ContentCalendarEntry
             {
-                Id               = 1,
-                Title            = "Draft",
-                Status           = CalendarEntryStatus.Approved,
-                VideoShortId     = null,
+                Id = 1,
+                Title = "Draft",
+                Status = CalendarEntryStatus.Approved,
+                VideoShortId = null,
                 YouTubeChannelId = 1
             });
 
