@@ -1,0 +1,59 @@
+# Binaries
+bin/
+obj/
+*.dll
+*.exe
+*.so
+*.dylib
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+*.sln.iml
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Local configuration
+appsettings.local.json
+appsettings.Development.json
+
+# Logs and databases
+logs/
+*.log
+*.sqlite
+*.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+
+# Output
+output/
+results/
+videos/
+processed/
+
+# OS
+.DS_Store
+Thumbs.db
