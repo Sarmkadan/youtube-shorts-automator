@@ -6,6 +6,9 @@
 using Serilog;
 using YouTubeShortsAutomator.Infrastructure.Extensions;
 using YouTubeShortsAutomator.Infrastructure.Repositories;
+using YouTubeShortsAutomator.Extensions;
+using YouTubeShortsAutomator.Middleware;
+using YouTubeShortsAutomator.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +34,17 @@ try
     // Add infrastructure services
     builder.Services.AddInfrastructureServices(builder.Configuration);
 
+    // Add Phase 2 application services
+    builder.Services.AddApplicationServices();
+    builder.Services.AddBackgroundServices();
+    builder.Services.AddSingleton<IMetricsCollector, MetricsCollector>();
+
+    // Configure rate limiting
+    builder.Services.AddRateLimitingOptions(
+        requestsPerWindow: builder.Configuration.GetValue<int>("RateLimit:RequestsPerWindow", 100),
+        windowSizeSeconds: builder.Configuration.GetValue<int>("RateLimit:WindowSizeSeconds", 60)
+    );
+
     var app = builder.Build();
 
     // Configure the HTTP request pipeline
@@ -39,6 +53,9 @@ try
         app.UseSwagger();
         app.UseSwaggerUI();
     }
+
+    // Apply custom middleware
+    app.UseApplicationMiddleware();
 
     app.UseHttpsRedirection();
     app.UseAuthorization();
@@ -52,7 +69,7 @@ try
         Log.Information("Database initialized successfully");
     }
 
-    Log.Information("Application started successfully");
+    Log.Information("Application started successfully with all Phase 2 infrastructure");
     await app.RunAsync();
 }
 catch (Exception ex)
