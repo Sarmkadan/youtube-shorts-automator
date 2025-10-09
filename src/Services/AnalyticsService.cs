@@ -61,6 +61,15 @@ public class AnalyticsService
     public async Task<AnalyticsData?> SyncAnalyticsFromYouTubeAsync(int videoShortId, string youtubeVideoId,
         YouTubeChannel channel, CancellationToken cancellationToken = default)
     {
+        // Fix: Add validation for youtubeVideoId and channel to prevent null reference exceptions.
+        if (string.IsNullOrWhiteSpace(youtubeVideoId))
+        {
+            throw new ArgumentNullException(nameof(youtubeVideoId), "YouTube video ID cannot be null or empty.");
+        }
+        if (channel == null)
+        {
+            throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
+        }
         // Syncs analytics data from YouTube API
         try
         {
@@ -110,6 +119,11 @@ public class AnalyticsService
     public async Task<IEnumerable<AnalyticsData>> GetTopPerformingVideosAsync(int limit = 10,
         CancellationToken cancellationToken = default)
     {
+        // Fix: Validate that the limit is a positive integer to avoid unexpected behavior.
+        if (limit <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(limit), limit, "The limit for top performing videos must be a positive integer.");
+        }
         // Retrieves the top performing videos by engagement rate
         try
         {
@@ -127,6 +141,11 @@ public class AnalyticsService
     public async Task<AnalyticsReport> GeneratePeriodReportAsync(DateTime startDate, DateTime endDate,
         CancellationToken cancellationToken = default)
     {
+        // Fix: Validate date range to ensure startDate is not after endDate.
+        if (startDate > endDate)
+        {
+            throw new ArgumentException("Start date cannot be after end date.", nameof(startDate));
+        }
         // Generates an analytics report for a date range
         try
         {
