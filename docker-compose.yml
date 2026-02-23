@@ -1,0 +1,91 @@
+# =============================================================================
+# Author: Vladyslav Zaiets | https://sarmkadan.com
+# CTO & Software Architect
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # Main application service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: youtube-shorts-automator
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:5000
+      ConnectionString: "Server=db;Database=YouTubeShortsAutomator;User Id=sa;Password=${SA_PASSWORD:-YourSecurePassword123!};"
+      YouTubeApiKey: ${YOUTUBE_API_KEY}
+      YouTubeClientId: ${YOUTUBE_CLIENT_ID}
+      YouTubeClientSecret: ${YOUTUBE_CLIENT_SECRET}
+      MaxConcurrentUploads: 3
+      MaxConcurrentProcessing: 2
+      AnalyticsSyncIntervalHours: 6
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./logs:/app/logs
+      - ./processing:/app/processing
+      - ./output:/app/output
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # SQL Server database
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: youtube-shorts-automator-db
+    restart: unless-stopped
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD:-YourSecurePassword123!}
+      ACCEPT_EULA: Y
+    ports:
+      - "1433:1433"
+    volumes:
+      - db-data:/var/opt/mssql/data
+      - db-log:/var/opt/mssql/log
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${SA_PASSWORD:-YourSecurePassword123!}", "-Q", "SELECT 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: youtube-shorts-automator-cache
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache-data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: redis-server --appendonly yes
+
+volumes:
+  db-data:
+  db-log:
+  cache-data:
+
+networks:
+  app-network:
+    driver: bridge
