@@ -46,6 +46,14 @@ public static class DependencyInjection
             sp.GetRequiredService<ILogger<AnalyticsService>>()
         ));
 
+        services.AddScoped(sp => new ThumbnailAbTestRepository(sp.GetRequiredService<DatabaseContext>()));
+
+        services.AddScoped((sp) => new ThumbnailAbTestService(
+            sp.GetRequiredService<ThumbnailAbTestRepository>(),
+            sp.GetRequiredService<VideoShortRepository>(),
+            sp.GetRequiredService<ILogger<ThumbnailAbTestService>>()
+        ));
+
         services.AddScoped((sp) => new JobOrchestrationService(
             sp.GetRequiredService<VideoProcessingService>(),
             sp.GetRequiredService<YouTubeUploadService>(),
