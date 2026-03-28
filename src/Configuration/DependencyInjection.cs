@@ -10,6 +10,10 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Configuration;
 
+/// <summary>
+/// Extension methods that register all application-layer services, repositories,
+/// and subsystem components into the dependency injection container.
+/// </summary>
 public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, AppSettings appSettings)
@@ -67,6 +71,44 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>
+    /// Registers all content calendar services: the repository, the title optimisation engine
+    /// and the calendar orchestration service. Optionally binds configuration from
+    /// <paramref name="configure"/>.
+    /// </summary>
+    /// <param name="services">The service collection to extend.</param>
+    /// <param name="configure">Optional delegate to override <see cref="ContentCalendarOptions"/> defaults.</param>
+    public static IServiceCollection AddContentCalendar(
+        this IServiceCollection services,
+        Action<ContentCalendarOptions>? configure = null)
+    {
+        var options = new ContentCalendarOptions();
+        configure?.Invoke(options);
+        services.AddSingleton(options);
+
+        services.AddScoped(sp =>
+            new ContentCalendarRepository(sp.GetRequiredService<DatabaseContext>()));
+
+        services.AddScoped<ITitleOptimizationEngine>(sp =>
+            new TitleOptimizationEngine(
+                sp.GetRequiredService<AnalyticsService>(),
+                sp.GetRequiredService<ContentCalendarOptions>(),
+                sp.GetRequiredService<ILogger<TitleOptimizationEngine>>()));
+
+        services.AddScoped<IContentCalendarService>(sp =>
+            new ContentCalendarService(
+                sp.GetRequiredService<ContentCalendarRepository>(),
+                sp.GetRequiredService<SchedulingService>(),
+                sp.GetRequiredService<AnalyticsService>(),
+                sp.GetRequiredService<VideoShortRepository>(),
+                sp.GetRequiredService<ITitleOptimizationEngine>(),
+                sp.GetRequiredService<ContentCalendarOptions>(),
+                sp.GetRequiredService<ILogger<ContentCalendarService>>()));
+
+        return services;
+    }
+
+    /// <summary>Configures the application logging pipeline.</summary>
     public static IServiceCollection AddApplicationLogging(this IServiceCollection services, AppSettings appSettings)
     {
         // Configures logging
