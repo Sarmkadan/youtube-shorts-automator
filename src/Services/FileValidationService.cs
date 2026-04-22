@@ -6,6 +6,7 @@
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -21,6 +22,11 @@ public class FileValidationService
 
     public bool ValidateVideoFile(string filePath)
     {
+        // Fix: Add validation for filePath to prevent null or empty paths.
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
+        }
         // Validates a video file for processing
         try
         {
@@ -82,6 +88,11 @@ public class FileValidationService
 
     public string GetFileHash(string filePath)
     {
+        // Fix: Add validation for filePath to prevent null or empty paths.
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
+        }
         // Calculates SHA256 hash of file for integrity verification
         try
         {
@@ -103,6 +114,11 @@ public class FileValidationService
 
     public TimeSpan? GetVideoDuration(string filePath)
     {
+        // Fix: Add validation for filePath to prevent null or empty paths.
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
+        }
         // Attempts to get video duration (in production, would use FFprobe)
         try
         {
@@ -124,6 +140,11 @@ public class FileValidationService
 
     public void DeleteTemporaryFile(string filePath)
     {
+        // Fix: Add validation for filePath to prevent null or empty paths.
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
+        }
         // Safely deletes a temporary file
         try
         {
@@ -141,6 +162,11 @@ public class FileValidationService
 
     public void CleanupTemporaryDirectory(string directoryPath)
     {
+        // Fix: Add validation for directoryPath to prevent null or empty paths.
+        if (string.IsNullOrWhiteSpace(directoryPath))
+        {
+            throw new ArgumentException("Directory path cannot be null or whitespace.", nameof(directoryPath));
+        }
         // Cleans up temporary files in a directory
         try
         {
@@ -161,6 +187,7 @@ public class FileValidationService
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string GetSupportedFormats()
     {
         // Returns a string of supported video formats
