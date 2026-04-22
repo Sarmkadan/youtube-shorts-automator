@@ -9,17 +9,36 @@ using System.Text.RegularExpressions;
 namespace YouTubeShortsAutomator.Utilities;
 
 /// <summary>
-/// String manipulation and formatting utilities
-/// Provides methods for truncation, slugification, and text transformation
+/// String manipulation and formatting utilities.
+/// Provides methods for truncation, slugification, and text transformation.
 /// </summary>
-public static class StringUtility
+public static partial class StringUtility
 {
+    // Source-generated regex — compiled to IL at build time; zero startup cost,
+    // no JIT-compiled automaton, ~40 % faster than RegexOptions.Compiled.
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex WhitespaceRegex();
+
+    [GeneratedRegex(@"[^a-z0-9\-]")]
+    private static partial Regex SlugInvalidCharsRegex();
+
+    [GeneratedRegex(@"-+")]
+    private static partial Regex MultipleHyphensRegex();
+
+    [GeneratedRegex(@"[^a-zA-Z0-9\s\-]")]
+    private static partial Regex SpecialCharsRegex();
+
+    [GeneratedRegex(@"([a-z0-9])([A-Z])")]
+    private static partial Regex SnakeCaseRegex();
+
     public static string Truncate(string text, int maxLength, string suffix = "...")
     {
         if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
             return text;
 
-        return text.Substring(0, maxLength - suffix.Length) + suffix;
+        // string.Concat(span, span) builds the result in a single allocation —
+        // no intermediate Substring string is created.
+        return string.Concat(text.AsSpan(0, maxLength - suffix.Length), suffix);
     }
 
     public static string TruncateWords(string text, int wordCount, string suffix = "...")
@@ -39,23 +58,15 @@ public static class StringUtility
         if (string.IsNullOrWhiteSpace(text))
             return string.Empty;
 
-        // Convert to lowercase
         var slug = text.ToLowerInvariant();
 
-        // Remove accents
         var bytes = Encoding.GetEncoding("Cyrillic").GetBytes(slug);
         slug = Encoding.ASCII.GetString(bytes);
 
-        // Replace spaces with hyphens
-        slug = Regex.Replace(slug, @"\s+", "-");
+        slug = WhitespaceRegex().Replace(slug, "-");
+        slug = SlugInvalidCharsRegex().Replace(slug, "");
+        slug = MultipleHyphensRegex().Replace(slug, "-");
 
-        // Remove invalid characters
-        slug = Regex.Replace(slug, @"[^a-z0-9\-]", "");
-
-        // Remove multiple consecutive hyphens
-        slug = Regex.Replace(slug, "-+", "-");
-
-        // Trim hyphens from start and end
         return slug.Trim('-');
     }
 
@@ -68,13 +79,21 @@ public static class StringUtility
         if (words.Length == 0)
             return text;
 
-        var result = words[0].ToLowerInvariant();
+        // StringBuilder avoids O(n²) string concatenation in the loop —
+        // each += in the original created a new heap string per iteration.
+        var sb = new StringBuilder(text.Length);
+        sb.Append(words[0].ToLowerInvariant());
         for (int i = 1; i < words.Length; i++)
         {
-            result += char.ToUpperInvariant(words[i][0]) + words[i].Substring(1).ToLowerInvariant();
+            var word = words[i];
+            if (word.Length == 0)
+                continue;
+            sb.Append(char.ToUpperInvariant(word[0]));
+            if (word.Length > 1)
+                sb.Append(word[1..].ToLowerInvariant());
         }
 
-        return result;
+        return sb.ToString();
     }
 
     public static string ToPascalCase(string text)
@@ -83,7 +102,16 @@ public static class StringUtility
             return text;
 
         var camelCase = ToCamelCase(text);
-        return char.ToUpperInvariant(camelCase[0]) + camelCase.Substring(1);
+        if (camelCase.Length == 0)
+            return camelCase;
+
+        // string.Create writes directly into the result buffer —
+        // no intermediate Substring allocation for the tail of the string.
+        return string.Create(camelCase.Length, camelCase, static (span, s) =>
+        {
+            span[0] = char.ToUpperInvariant(s[0]);
+            s.AsSpan(1).CopyTo(span[1..]);
+        });
     }
 
     public static string ToSnakeCase(string text)
@@ -91,7 +119,7 @@ public static class StringUtility
         if (string.IsNullOrEmpty(text))
             return text;
 
-        var snake = Regex.Replace(text, "([a-z0-9])([A-Z])", "$1_$2");
+        var snake = SnakeCaseRegex().Replace(text, "$1_$2");
         return snake.ToLowerInvariant();
     }
 
@@ -115,7 +143,7 @@ public static class StringUtility
         if (string.IsNullOrEmpty(text))
             return text;
 
-        return Regex.Replace(text, @"\s+", "");
+        return WhitespaceRegex().Replace(text, "");
     }
 
     public static string NormalizeWhitespace(string text)
@@ -123,7 +151,7 @@ public static class StringUtility
         if (string.IsNullOrEmpty(text))
             return text;
 
-        return Regex.Replace(text.Trim(), @"\s+", " ");
+        return WhitespaceRegex().Replace(text.Trim(), " ");
     }
 
     public static string RemoveSpecialCharacters(string text)
@@ -131,7 +159,7 @@ public static class StringUtility
         if (string.IsNullOrEmpty(text))
             return text;
 
-        return Regex.Replace(text, @"[^a-zA-Z0-9\s-]", "");
+        return SpecialCharsRegex().Replace(text, "");
     }
 
     public static int CountOccurrences(string text, string searchText)
@@ -147,13 +175,14 @@ public static class StringUtility
         if (string.IsNullOrEmpty(text) || length <= 0)
             return Array.Empty<string>();
 
-        var chunks = new List<string>();
-        for (int i = 0; i < text.Length; i += length)
-        {
-            chunks.Add(text.Substring(i, Math.Min(length, text.Length - i)));
-        }
+        // Pre-calculate count so we allocate the final array once and skip
+        // the List<string> intermediate and its ToArray() copy.
+        var count = (text.Length + length - 1) / length;
+        var chunks = new string[count];
+        for (int i = 0, idx = 0; i < text.Length; i += length, idx++)
+            chunks[idx] = text.Substring(i, Math.Min(length, text.Length - i));
 
-        return chunks.ToArray();
+        return chunks;
     }
 
     public static string ReverseString(string text)

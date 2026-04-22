@@ -8,17 +8,19 @@ using Microsoft.Extensions.Caching.Memory;
 namespace YouTubeShortsAutomator.Caching;
 
 /// <summary>
-/// In-memory caching service with TTL support
-/// Provides key-value caching with automatic expiration
+/// In-memory caching service with TTL support.
+/// Provides key-value caching with automatic expiration.
 /// </summary>
 public interface ICacheService
 {
     T? Get<T>(string key);
-    Task<T?> GetAsync<T>(string key);
+    // ValueTask avoids a Task object heap allocation on the sync-completion path
+    // (IMemoryCache operations are always synchronous).
+    ValueTask<T?> GetAsync<T>(string key);
     void Set<T>(string key, T value, TimeSpan? expiration = null);
-    Task SetAsync<T>(string key, T value, TimeSpan? expiration = null);
+    ValueTask SetAsync<T>(string key, T value, TimeSpan? expiration = null);
     void Remove(string key);
-    Task RemoveAsync(string key);
+    ValueTask RemoveAsync(string key);
     void RemoveByPattern(string pattern);
     bool Exists(string key);
 }
@@ -55,10 +57,8 @@ public class CacheService : ICacheService
         }
     }
 
-    public Task<T?> GetAsync<T>(string key)
-    {
-        return Task.FromResult(Get<T>(key));
-    }
+    public ValueTask<T?> GetAsync<T>(string key) =>
+        ValueTask.FromResult(Get<T>(key));
 
     public void Set<T>(string key, T value, TimeSpan? expiration = null)
     {
@@ -92,10 +92,10 @@ public class CacheService : ICacheService
         }
     }
 
-    public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null)
+    public ValueTask SetAsync<T>(string key, T value, TimeSpan? expiration = null)
     {
         Set(key, value, expiration);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     public void Remove(string key)
@@ -115,10 +115,10 @@ public class CacheService : ICacheService
         }
     }
 
-    public Task RemoveAsync(string key)
+    public ValueTask RemoveAsync(string key)
     {
         Remove(key);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     public void RemoveByPattern(string pattern)
