@@ -715,7 +715,7 @@ await uploadService.UploadVideoAsync(uploadJob, targetChannel: channel);
 
 **GET** `/api/version`
 - Get application version
-- Response: `{ version: "1.2.0", buildDate: datetime }`
+- Response: `{ version: "2.0.2", buildDate: datetime }`
 
 **GET** `/api/metrics`
 - Get system metrics
