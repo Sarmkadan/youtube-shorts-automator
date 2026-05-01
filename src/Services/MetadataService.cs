@@ -10,6 +10,10 @@ using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Services;
 
+/// <summary>
+/// Validates and sanitizes YouTube Shorts video metadata (titles, descriptions, tags)
+/// according to YouTube platform rules and length constraints.
+/// </summary>
 public class MetadataService
 {
     private readonly ILogger<MetadataService> _logger;
@@ -19,6 +23,12 @@ public class MetadataService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Validates a YouTube video title against platform rules: must be non-empty,
+    /// at least 5 characters, and within <see cref="Constants.Constants.MAX_TITLE_LENGTH"/>.
+    /// </summary>
+    /// <param name="title">The title text to validate.</param>
+    /// <returns><c>true</c> if the title meets all YouTube requirements; otherwise <c>false</c>.</returns>
     public bool ValidateTitle(string title)
     {
         // Validates YouTube video title according to platform rules
@@ -43,6 +53,12 @@ public class MetadataService
         return true;
     }
 
+    /// <summary>
+    /// Validates a YouTube video description by checking it does not exceed
+    /// <see cref="Constants.Constants.MAX_DESCRIPTION_LENGTH"/>.
+    /// </summary>
+    /// <param name="description">The description text to validate.</param>
+    /// <returns><c>true</c> if within the allowed length; otherwise <c>false</c>.</returns>
     public bool ValidateDescription(string description)
     {
         // Validates YouTube video description
@@ -55,6 +71,13 @@ public class MetadataService
         return true;
     }
 
+    /// <summary>
+    /// Validates an array of YouTube video tags. Checks total tag count does not exceed
+    /// <see cref="Constants.Constants.MAX_TAGS_COUNT"/> and each individual tag is within
+    /// <see cref="Constants.Constants.MAX_TAG_LENGTH"/>.
+    /// </summary>
+    /// <param name="tags">The tag array to validate.</param>
+    /// <returns><c>true</c> if all tags pass validation; otherwise <c>false</c>.</returns>
     public bool ValidateTags(string[] tags)
     {
         // Validates YouTube video tags
@@ -76,6 +99,12 @@ public class MetadataService
         return true;
     }
 
+    /// <summary>
+    /// Removes characters disallowed in YouTube titles (<c>&lt; &gt; : " / \ | ? *</c>)
+    /// and truncates the result to <see cref="Constants.Constants.MAX_TITLE_LENGTH"/>.
+    /// </summary>
+    /// <param name="title">The raw title to sanitize.</param>
+    /// <returns>A sanitized title safe for YouTube upload.</returns>
     public string SanitizeTitle(string title)
     {
         // Removes special characters and sanitizes title
@@ -83,6 +112,12 @@ public class MetadataService
         return sanitized.Substring(0, Math.Min(sanitized.Length, Constants.Constants.MAX_TITLE_LENGTH));
     }
 
+    /// <summary>
+    /// Truncates a description to <see cref="Constants.Constants.MAX_DESCRIPTION_LENGTH"/>
+    /// if it exceeds the limit.
+    /// </summary>
+    /// <param name="description">The raw description text.</param>
+    /// <returns>The description, truncated if necessary.</returns>
     public string SanitizeDescription(string description)
     {
         // Truncates description to maximum allowed length
@@ -94,6 +129,12 @@ public class MetadataService
         return description;
     }
 
+    /// <summary>
+    /// Filters, deduplicates, and truncates tags to conform to YouTube limits.
+    /// Removes empty/whitespace tags, enforces per-tag length, and caps total count.
+    /// </summary>
+    /// <param name="tags">The raw tag array to sanitize.</param>
+    /// <returns>A sanitized array of unique tags within platform limits.</returns>
     public string[] SanitizeTags(string[] tags)
     {
         // Filters and sanitizes tags
@@ -107,6 +148,15 @@ public class MetadataService
         return sanitized;
     }
 
+    /// <summary>
+    /// Validates all metadata fields on a <see cref="VideoShort"/> and returns a dictionary
+    /// of field-level validation errors. An empty dictionary indicates all metadata is valid.
+    /// </summary>
+    /// <param name="video">The video entity whose metadata to validate.</param>
+    /// <returns>
+    /// A dictionary keyed by field name ("title", "description", "tags") with error messages
+    /// as values. Empty when validation passes.
+    /// </returns>
     public Dictionary<string, string> ValidateMetadata(VideoShort video)
     {
         // Validates all video metadata and returns validation errors
