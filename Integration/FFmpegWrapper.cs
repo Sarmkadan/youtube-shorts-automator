@@ -39,6 +39,7 @@ public class FFmpegWrapper : IFFmpegWrapper
     private readonly string _ffprobePath;
     private readonly ILogger<FFmpegWrapper> _logger;
     private readonly IConfiguration _configuration;
+    private readonly int _timeoutSeconds;
 
     public FFmpegWrapper(
         ILogger<FFmpegWrapper> logger,
@@ -48,6 +49,7 @@ public class FFmpegWrapper : IFFmpegWrapper
         _configuration = configuration;
         _ffmpegPath = configuration.GetValue<string>("Processing:FFmpegPath") ?? "ffmpeg";
         _ffprobePath = configuration.GetValue<string>("Processing:FFprobePath") ?? "ffprobe";
+        _timeoutSeconds = configuration.GetValue<int>("Processing:FFmpegTimeoutSeconds", 300);
     }
 
     public async Task<bool> ConvertVideoAsync(string inputPath, string outputPath, string profile)
@@ -135,31 +137,66 @@ public class FFmpegWrapper : IFFmpegWrapper
         return $"-i \"{inputPath}\" {opts} \"{outputPath}\"";
     }
 
-    private async Task<bool> ExecuteFFmpegAsync(string executable, string arguments)
+    private async Task<bool> ExecuteFFmpegAsync(string executable, string arguments, CancellationToken cancellationToken = default)
     {
+        // -nostdin prevents FFmpeg from blocking on stdin when a stream (e.g. audio) is absent.
         var processInfo = new ProcessStartInfo
         {
             FileName = executable,
-            Arguments = arguments,
+            Arguments = "-nostdin " + arguments,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            RedirectStandardInput = true,
             CreateNoWindow = true
         };
 
         try
         {
-            using (var process = Process.Start(processInfo))
+            using var process = Process.Start(processInfo);
+            if (process == null)
             {
-                if (process == null)
-                {
-                    _logger.LogError("Failed to start FFmpeg process");
-                    return false;
-                }
-
-                await process.WaitForExitAsync();
-                return process.ExitCode == 0;
+                _logger.LogError("Failed to start FFmpeg process");
+                return false;
             }
+
+            // Immediately close stdin to avoid any blocking read on the FFmpeg side.
+            process.StandardInput.Close();
+
+            // Drain stdout/stderr asynchronously to prevent buffer-full deadlocks.
+            var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+            var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
+
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(_timeoutSeconds));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+
+            try
+            {
+                await process.WaitForExitAsync(linkedCts.Token);
+            }
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { /* best-effort */ }
+                _logger.LogError(
+                    "FFmpeg process timed out after {Timeout}s and was terminated. Arguments: {Args}",
+                    _timeoutSeconds, arguments);
+                throw new TimeoutException(
+                    $"FFmpeg timed out after {_timeoutSeconds} seconds. " +
+                    "The input video may be missing an audio or video stream.");
+            }
+
+            var stderr = await stderrTask;
+            if (process.ExitCode != 0)
+            {
+                _logger.LogWarning("FFmpeg exited with code {ExitCode}. Stderr: {Stderr}",
+                    process.ExitCode, stderr);
+            }
+
+            return process.ExitCode == 0;
+        }
+        catch (TimeoutException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
