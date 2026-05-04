@@ -38,6 +38,8 @@ public class IntegrationExample
     /// </summary>
     public class Worker : BackgroundService
     {
+        private readonly IVideoProcessingService _processingService;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Worker"/> class.
         /// </summary>
