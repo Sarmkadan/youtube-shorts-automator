@@ -75,6 +75,13 @@ public class YouTubeUploadService
 
             return uploadResult;
         }
+        catch (OAuthTokenExpiredException)
+        {
+            // Bubble up without wrapping — callers must halt scheduling for this user
+            // and prompt re-authorization.
+            uploadResult.RecordFailure("OAuth refresh token has expired; re-authorization required.");
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, $"YouTube upload failed for video {videoId}");

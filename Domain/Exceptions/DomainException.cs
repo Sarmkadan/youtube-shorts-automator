@@ -82,6 +82,24 @@ public class CredentialException : DomainException
 }
 
 /// <summary>
+/// Thrown when an OAuth refresh token has expired and re-authorization is required.
+/// Unlike transient refresh failures this is terminal: the scheduler must not retry.
+/// </summary>
+public class OAuthTokenExpiredException : CredentialException
+{
+    public Guid CredentialId { get; }
+
+    public OAuthTokenExpiredException(Guid credentialId)
+        : base(
+            "The OAuth refresh token has expired. Re-authorization is required before uploads can resume. " +
+            $"Credential ID: {credentialId}")
+    {
+        CredentialId = credentialId;
+        ErrorCode = "OAUTH_REFRESH_TOKEN_EXPIRED";
+    }
+}
+
+/// <summary>
 /// Thrown when API call fails
 /// </summary>
 public class ApiException : DomainException
