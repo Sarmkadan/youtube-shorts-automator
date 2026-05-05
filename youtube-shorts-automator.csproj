@@ -25,7 +25,6 @@
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.68.0.3490" />
     <PackageReference Include="Google.Apis.Auth.AspNetCore3" Version="1.68.0.3490" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.7" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Quartz" Version="3.8.0" />
   </ItemGroup>
 
