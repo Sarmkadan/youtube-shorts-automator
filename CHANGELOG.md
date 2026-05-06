@@ -10,7 +10,7 @@ All notable changes to YouTube Shorts Automator are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2026-05-04
+## [1.2.0] - 2026-02-14
 
 ### Added
 - **Analytics Dashboard**: Real-time performance metrics and engagement tracking
@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added request signing for webhook deliveries
 - Implemented API key rotation support
 
-## [1.1.0] - 2026-04-10
+## [1.1.0] - 2025-11-27
 
 ### Added
 - **Multi-Channel Support**: Manage multiple YouTube channels from single platform
@@ -76,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FFmpeg Detection**: Better cross-platform FFmpeg path resolution
 - **API Error Handling**: Consistent error response formatting
 
-## [1.0.0] - 2026-03-15
+## [1.0.0] - 2025-09-18
 
 ### Added
 - **Core Features**:
@@ -114,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - N/A (Initial release)
 
-## [0.5.0] - 2026-02-20
+## [0.5.0] - 2025-06-12
 
 ### Added
 - **Alpha Release**:
@@ -129,7 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Not recommended for production use
 - Testing and feedback appreciated
 
-## [0.1.0] - 2026-01-15
+## [0.1.0] - 2025-03-04
 
 ### Added
 - Project initialization
@@ -148,11 +148,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Release Date | Status | Notes |
 |---------|-------------|--------|-------|
-| 1.2.0   | 2026-05-04  | Latest | Production ready with analytics dashboard |
-| 1.1.0   | 2026-04-10  | Stable | Multi-channel support |
-| 1.0.0   | 2026-03-15  | Stable | Initial stable release |
-| 0.5.0   | 2026-02-20  | Alpha  | Pre-release testing |
-| 0.1.0   | 2026-01-15  | Init   | Project initialized |
+| 1.2.0   | 2026-02-14  | Latest | Production ready with analytics dashboard |
+| 1.1.0   | 2025-11-27  | Stable | Multi-channel support |
+| 1.0.0   | 2025-09-18  | Stable | Initial stable release |
+| 0.5.0   | 2025-06-12  | Alpha  | Pre-release testing |
+| 0.1.0   | 2025-03-04  | Init   | Project initialized |
 
 ## Upgrade Guide
 

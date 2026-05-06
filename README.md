@@ -16,6 +16,7 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - [System Requirements](#system-requirements)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Testing](#testing)
 - [Configuration Guide](#configuration-guide)
 - [Usage Examples](#usage-examples)
 - [API Reference](#api-reference)
@@ -344,6 +345,24 @@ GET /api/jobs/1/status
 ### 4. View Analytics Dashboard
 
 Open browser: `http://localhost:5000/dashboard`
+
+## Testing
+
+```bash
+# Run all tests
+dotnet test
+
+# Run a specific test by name
+dotnet test --filter="TestName"
+
+# Run with code coverage
+dotnet test /p:CollectCoverage=true /p:CoverageFormat=opencover
+
+# Run in verbose mode
+dotnet test --logger "console;verbosity=detailed"
+```
+
+The test suite covers domain model validation, repository logic, and service-layer behavior using xUnit, Moq, and FluentAssertions.
 
 ## Configuration Guide
 
@@ -737,19 +756,6 @@ dotnet ef migrations remove
 
 # Script migrations
 dotnet ef migrations script
-```
-
-### Testing
-
-```bash
-# Run all tests
-dotnet test
-
-# Run specific test
-dotnet test --filter="TestName"
-
-# Generate coverage report
-dotnet test /p:CollectCoverage=true /p:CoverageFormat=opencover
 ```
 
 ### Publishing
