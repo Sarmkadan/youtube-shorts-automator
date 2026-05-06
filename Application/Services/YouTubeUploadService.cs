@@ -6,6 +6,7 @@
 using YouTubeShortsAutomator.Domain.Constants;
 using YouTubeShortsAutomator.Domain.Exceptions;
 using YouTubeShortsAutomator.Domain.Models;
+using YouTubeShortsAutomator.Integration;
 
 namespace YouTubeShortsAutomator.Application.Services;
 
@@ -17,15 +18,21 @@ public class YouTubeUploadService
     private readonly ILogger<YouTubeUploadService> _logger;
     private readonly IVideoRepository _videoRepository;
     private readonly IApiCredentialService _credentialService;
+    private readonly IWebhookPublisher _webhookPublisher;
+    private readonly IConfiguration _configuration;
 
     public YouTubeUploadService(
         ILogger<YouTubeUploadService> logger,
         IVideoRepository videoRepository,
-        IApiCredentialService credentialService)
+        IApiCredentialService credentialService,
+        IWebhookPublisher webhookPublisher,
+        IConfiguration configuration)
     {
         _logger = logger;
         _videoRepository = videoRepository;
         _credentialService = credentialService;
+        _webhookPublisher = webhookPublisher;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -73,6 +80,15 @@ public class YouTubeUploadService
 
             _logger.LogInformation($"Video {videoId} uploaded successfully. YouTube ID: {youtubeVideoId}");
 
+            await PublishUploadWebhooksAsync("upload.success", new UploadWebhookPayload
+            {
+                VideoId = videoId,
+                Title = video.Title,
+                YouTubeVideoId = youtubeVideoId,
+                YouTubeUrl = youtubeUrl,
+                UploadedAtUtc = uploadResult.UploadedAt
+            });
+
             return uploadResult;
         }
         catch (OAuthTokenExpiredException)
@@ -80,12 +96,26 @@ public class YouTubeUploadService
             // Bubble up without wrapping — callers must halt scheduling for this user
             // and prompt re-authorization.
             uploadResult.RecordFailure("OAuth refresh token has expired; re-authorization required.");
+            await PublishUploadWebhooksAsync("upload.failure", new UploadFailureWebhookPayload
+            {
+                VideoId = videoId,
+                Title = video.Title,
+                ErrorMessage = "OAuth refresh token has expired; re-authorization required.",
+                FailedAtUtc = DateTime.UtcNow
+            });
             throw;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, $"YouTube upload failed for video {videoId}");
             uploadResult.RecordFailure(ex.Message);
+            await PublishUploadWebhooksAsync("upload.failure", new UploadFailureWebhookPayload
+            {
+                VideoId = videoId,
+                Title = video.Title,
+                ErrorMessage = ex.Message,
+                FailedAtUtc = DateTime.UtcNow
+            });
             throw new UploadException($"Upload failed: {ex.Message}");
         }
     }
@@ -276,4 +306,47 @@ public class YouTubeUploadService
             throw;
         }
     }
+
+    /// <summary>
+    /// Dispatches an event to all configured webhook endpoints that subscribe to the given event type.
+    /// Failures are logged but never propagate — webhooks are best-effort.
+    /// </summary>
+    private async Task PublishUploadWebhooksAsync<T>(string eventType, T payload)
+    {
+        var urls = _configuration.GetSection($"Webhook:Endpoints:{eventType}").Get<string[]>()
+            ?? _configuration.GetSection("Webhook:Endpoints:all").Get<string[]>()
+            ?? Array.Empty<string>();
+
+        if (urls.Length == 0)
+            return;
+
+        foreach (var url in urls)
+        {
+            try
+            {
+                await _webhookPublisher.PublishEventAsync(eventType, payload, url);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to deliver {EventType} webhook to {Url}", eventType, url);
+            }
+        }
+    }
+}
+
+public class UploadWebhookPayload
+{
+    public Guid VideoId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string YouTubeVideoId { get; set; } = string.Empty;
+    public string YouTubeUrl { get; set; } = string.Empty;
+    public DateTime UploadedAtUtc { get; set; }
+}
+
+public class UploadFailureWebhookPayload
+{
+    public Guid VideoId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string ErrorMessage { get; set; } = string.Empty;
+    public DateTime FailedAtUtc { get; set; }
 }
