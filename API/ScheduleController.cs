@@ -197,7 +197,172 @@ public class ScheduleController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-}
+
+    /// <summary>
+    /// Import multiple scheduled uploads from a CSV file.
+    /// Expected columns (header row required):
+    ///   FilePath, Title, Description, Tags, ScheduledPublishTimeUtc, ThumbnailPath
+    /// Tags should be pipe-separated (e.g. "tag1|tag2|tag3").
+    /// Rows with validation errors are reported individually; valid rows are committed.
+    /// </summary>
+    [HttpPost("import")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(CsvImportResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ImportSchedulesFromCsvAsync(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "A non-empty CSV file is required." });
+
+        if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Only CSV files are accepted." });
+
+        var rowErrors = new List<CsvRowError>();
+        var created = new List<ScheduleResponse>();
+        int lineNumber = 0;
+
+        try
+        {
+            using var reader = new StreamReader(file.OpenReadStream());
+            string? headerLine = await reader.ReadLineAsync();
+            if (headerLine == null)
+                return BadRequest(new { message = "CSV file is empty." });
+
+            lineNumber = 1;
+            var headers = ParseCsvLine(headerLine);
+            var required = new[] { "FilePath", "Title", "ScheduledPublishTimeUtc" };
+            var missing = required.Where(h => !headers.ContainsKey(h)).ToList();
+            if (missing.Count > 0)
+                return BadRequest(new { message = $"Missing required CSV columns: {string.Join(", ", missing)}" });
+
+            string? line;
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                lineNumber++;
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var cols = ParseCsvLine(line, headers.Count);
+                var rowErrors2 = new List<string>();
+
+                var row = new CsvScheduleRow
+                {
+                    FilePath = GetColumn(cols, headers, "FilePath"),
+                    Title = GetColumn(cols, headers, "Title"),
+                    Description = GetColumn(cols, headers, "Description"),
+                    Tags = GetColumn(cols, headers, "Tags"),
+                    ThumbnailPath = GetColumn(cols, headers, "ThumbnailPath"),
+                    RawScheduledTime = GetColumn(cols, headers, "ScheduledPublishTimeUtc")
+                };
+
+                if (string.IsNullOrWhiteSpace(row.FilePath))
+                    rowErrors2.Add("FilePath is required.");
+                if (string.IsNullOrWhiteSpace(row.Title))
+                    rowErrors2.Add("Title is required.");
+                if (string.IsNullOrWhiteSpace(row.RawScheduledTime))
+                    rowErrors2.Add("ScheduledPublishTimeUtc is required.");
+                else if (!DateTime.TryParse(row.RawScheduledTime, null,
+                    System.Globalization.DateTimeStyles.AdjustToUniversal, out var parsedTime))
+                    rowErrors2.Add($"ScheduledPublishTimeUtc '{row.RawScheduledTime}' is not a valid date/time.");
+                else if (parsedTime <= DateTime.UtcNow)
+                    rowErrors2.Add("ScheduledPublishTimeUtc must be in the future.");
+                else
+                    row.ScheduledPublishTimeUtc = parsedTime;
+
+                if (rowErrors2.Count > 0)
+                {
+                    rowErrors.Add(new CsvRowError { LineNumber = lineNumber, Errors = rowErrors2 });
+                    continue;
+                }
+
+                var scheduleId = Guid.NewGuid();
+                var schedule = new ScheduledUpload
+                {
+                    ScheduleId = scheduleId,
+                    VideoId = Guid.Empty, // resolved later when the file is ingested
+                    ScheduledUploadTimeUtc = row.ScheduledPublishTimeUtc,
+                    Status = "Scheduled",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    TimeZone = "UTC"
+                };
+
+                _cacheService.Set($"schedule:{scheduleId}", schedule, TimeSpan.FromDays(30));
+                created.Add(new ScheduleResponse { ScheduleId = scheduleId, Status = "Scheduled" });
+
+                _logger.LogInformation(
+                    "CSV import: schedule created. ScheduleId: {ScheduleId}, Title: {Title}, UploadTime: {UploadTime}",
+                    scheduleId, row.Title, row.ScheduledPublishTimeUtc);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing CSV import at line {LineNumber}", lineNumber);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = $"Processing failed at line {lineNumber}: {ex.Message}" });
+        }
+
+        return Ok(new CsvImportResult
+        {
+            SchedulesCreated = created.Count,
+            RowsWithErrors = rowErrors.Count,
+            CreatedSchedules = created,
+            Errors = rowErrors
+        });
+    }
+
+    private static Dictionary<string, int> ParseCsvLine(string line)
+    {
+        var parts = SplitCsvLine(line);
+        var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        for (int i = 0; i < parts.Count; i++)
+            map[parts[i].Trim()] = i;
+        return map;
+    }
+
+    private static List<string> ParseCsvLine(string line, int expectedCount)
+        => SplitCsvLine(line);
+
+    private static List<string> SplitCsvLine(string line)
+    {
+        var result = new List<string>();
+        var current = new System.Text.StringBuilder();
+        bool inQuotes = false;
+
+        for (int i = 0; i < line.Length; i++)
+        {
+            char c = line[i];
+            if (c == '"')
+            {
+                if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                {
+                    current.Append('"');
+                    i++;
+                }
+                else
+                {
+                    inQuotes = !inQuotes;
+                }
+            }
+            else if (c == ',' && !inQuotes)
+            {
+                result.Add(current.ToString());
+                current.Clear();
+            }
+            else
+            {
+                current.Append(c);
+            }
+        }
+
+        result.Add(current.ToString());
+        return result;
+    }
+
+    private static string GetColumn(List<string> cols, Dictionary<string, int> headers, string name)
+    {
+        if (!headers.TryGetValue(name, out var idx) || idx >= cols.Count)
+            return string.Empty;
+        return cols[idx].Trim();
+    }
 
 #region Schedule Models
 
@@ -259,6 +424,31 @@ public class ScheduleListResponse
     public int TotalCount { get; set; }
     public int PageNumber { get; set; }
     public int PageSize { get; set; }
+}
+
+public class CsvScheduleRow
+{
+    public string FilePath { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Tags { get; set; } = string.Empty;
+    public string ThumbnailPath { get; set; } = string.Empty;
+    public string RawScheduledTime { get; set; } = string.Empty;
+    public DateTime ScheduledPublishTimeUtc { get; set; }
+}
+
+public class CsvRowError
+{
+    public int LineNumber { get; set; }
+    public List<string> Errors { get; set; } = new();
+}
+
+public class CsvImportResult
+{
+    public int SchedulesCreated { get; set; }
+    public int RowsWithErrors { get; set; }
+    public List<ScheduleResponse> CreatedSchedules { get; set; } = new();
+    public List<CsvRowError> Errors { get; set; } = new();
 }
 
 #endregion
