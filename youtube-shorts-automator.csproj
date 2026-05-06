@@ -6,14 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>YouTubeShortAutomator</RootNamespace>
     <AssemblyName>YouTubeShortAutomator</AssemblyName>
+    <PackageId>Zaiets.youtube.shorts.automator</PackageId>
     <Version>1.0.0</Version>
     <Authors>Vladyslav Zaiets</Authors>
-    <Description>Automated YouTube Shorts upload pipeline with FFmpeg processing, Google API integration, scheduling, and analytics</Description>
+    <Description>Automated YouTube Shorts upload pipeline in .NET - FFmpeg processing, Google API, scheduling, analytics dashboard</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/sarmkadan/youtube-shorts-automator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sarmkadan/youtube-shorts-automator</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>youtube;shorts;automation;ffmpeg;api;scheduling</PackageTags>
+    <PackageTags>youtube;shorts;automation;ffmpeg;google-api;scheduling;analytics;dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +29,10 @@
     <PackageReference Include="Google.Apis.Auth.AspNetCore3" Version="1.68.0.3490" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.7" />
     <PackageReference Include="Quartz" Version="3.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
