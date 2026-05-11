@@ -14,12 +14,17 @@ namespace YouTubeShortAutomator.Services;
 public class YouTubeUploadService
 {
     private readonly UploadJobRepository _uploadRepository;
+    private readonly UploadHistoryRepository _historyRepository;
     private readonly ILogger<YouTubeUploadService> _logger;
 
-    public YouTubeUploadService(UploadJobRepository uploadRepository, ILogger<YouTubeUploadService> logger)
+    public YouTubeUploadService(
+        UploadJobRepository uploadRepository,
+        UploadHistoryRepository historyRepository,
+        ILogger<YouTubeUploadService> logger)
     {
-        _uploadRepository = uploadRepository ?? throw new ArgumentNullException(nameof(uploadRepository));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _uploadRepository  = uploadRepository  ?? throw new ArgumentNullException(nameof(uploadRepository));
+        _historyRepository = historyRepository ?? throw new ArgumentNullException(nameof(historyRepository));
+        _logger            = logger            ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<UploadJob> CreateUploadJobAsync(int videoShortId, DateTime scheduledTime,
@@ -72,6 +77,22 @@ public class YouTubeUploadService
                 channel.Id, "token_expired", 401);
         }
 
+        // Skip files that have already been uploaded successfully
+        var fileName = Path.GetFileName(filePath);
+        if (await _historyRepository.HasSuccessfulUploadAsync(fileName, cancellationToken))
+        {
+            _logger.LogInformation($"Skipping already-uploaded file: {fileName}");
+            await _historyRepository.AddAsync(new UploadHistoryEntry
+            {
+                VideoFileName = fileName,
+                UploadedAt    = DateTime.UtcNow,
+                Status        = UploadHistoryStatus.Skipped
+            }, cancellationToken);
+
+            uploadJob.MarkAsFailed("Skipped: file was already uploaded successfully");
+            return uploadJob;
+        }
+
         uploadJob.MarkAsQueued();
 
         try
@@ -80,7 +101,7 @@ public class YouTubeUploadService
             
             var fileInfo = new FileInfo(filePath);
             long totalBytes = fileInfo.Length;
-            // Hotfix: Resume upload from last saved position instead of starting from 0
+            // Resume upload from last saved position instead of starting from 0
             long uploadedBytes = uploadJob.UploadedBytes;
 
             // Simulate upload with progress tracking
@@ -115,9 +136,16 @@ public class YouTubeUploadService
 
             // Generate mock video ID (in production, this comes from YouTube API)
             var videoId = GenerateYouTubeVideoId();
-            var videoUrl = $"https://youtube.com/shorts/{videoId}";
             
             uploadJob.MarkAsCompleted(videoId);
+
+            await _historyRepository.AddAsync(new UploadHistoryEntry
+            {
+                VideoFileName  = fileName,
+                YouTubeVideoId = videoId,
+                UploadedAt     = DateTime.UtcNow,
+                Status         = UploadHistoryStatus.Success
+            }, cancellationToken);
             
             _logger.LogInformation($"Successfully uploaded video {uploadJob.VideoShortId} as {videoId}");
             
@@ -128,6 +156,14 @@ public class YouTubeUploadService
             uploadJob.IncrementAttempt();
             bool isRetryable = uploadJob.CanRetry();
             uploadJob.MarkAsFailed($"Upload failed: {ex.Message}");
+
+            await _historyRepository.AddAsync(new UploadHistoryEntry
+            {
+                VideoFileName = fileName,
+                UploadedAt    = DateTime.UtcNow,
+                Status        = UploadHistoryStatus.Failed,
+                ErrorMessage  = ex.Message
+            }, cancellationToken);
             
             _logger.LogError($"Error uploading video {uploadJob.VideoShortId}: {ex.Message}");
             
