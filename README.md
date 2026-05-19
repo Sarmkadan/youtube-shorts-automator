@@ -1,8 +1,8 @@
-[![Build](https://github.com/sarmkadan/youtube-shorts-automator/actions/workflows/build.yml/badge.svg)](https://github.com/sarmkadan/youtube-shorts-automator/actions/workflows/build.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
-
 # YouTube Shorts Automator
+
+![CI](https://github.com/sarmkadan/youtube-shorts-automator/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/github/license/sarmkadan/youtube-shorts-automator)
+![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)
 
 > **Automated YouTube Shorts upload pipeline built with .NET 10**  
 > FFmpeg processing • Google APIs integration • Smart scheduling • Real-time analytics dashboard
