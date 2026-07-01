@@ -46,15 +46,15 @@ RUN mkdir -p /app/logs /app/processing /app/output && \
 
 # Set environment variables
 ENV ASPNETCORE_ENVIRONMENT=Production
-ENV ASPNETCORE_URLS=http://+:5000
+ENV ASPNETCORE_URLS=http://+:8080
 ENV PATH="/app:$PATH"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:5000/health/ready || exit 1
+    CMD curl -f http://localhost:8080/health/ready || exit 1
 
 # Expose ports
-EXPOSE 5000 5001
+EXPOSE 8080
 
 # Switch to non-root user
 USER appuser
