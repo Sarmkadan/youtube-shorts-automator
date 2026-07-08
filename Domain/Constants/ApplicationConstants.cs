@@ -20,8 +20,8 @@ public static class ApplicationConstants
         public const int MinDurationSeconds = 1;
         public const int MaxDurationSeconds = 3600; // 60 minutes
         public const int MaxShortsDurationSeconds = 180; // 3 minutes for shorts
-        public const string[] AllowedFormats = { "mp4", "mov", "avi", "mkv", "flv", "webm" };
-        public const string[] AllowedVideoCodecs = { "h264", "h265", "vp9", "av1" };
+        public static readonly string[] AllowedFormats = { "mp4", "mov", "avi", "mkv", "flv", "webm" };
+        public static readonly string[] AllowedVideoCodecs = { "h264", "h265", "vp9", "av1" };
     }
 
     public static class User
@@ -54,7 +54,7 @@ public static class ApplicationConstants
         public const int ChunkSizeBytes = 262_144_000; // 250MB chunks
         public const string YouTubeCategory = "24"; // Entertainment
         public const bool DefaultPrivacy = false; // Public
-        public const string[] ProhibitedWords = { "restricted", "prohibited" };
+        public static readonly string[] ProhibitedWords = { "restricted", "prohibited" };
     }
 
     public static class Analytics

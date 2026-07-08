@@ -175,7 +175,7 @@ public class UploadJobRepository : IRepository<UploadJob>
     {
         // Returns total count of upload jobs
         var query = "SELECT COUNT(1) FROM UploadJobs";
-        return await _context.ExecuteScalarAsync<int>(query) ?? 0;
+        return (int?)await _context.ExecuteScalarAsync<int>(query) ?? 0;
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

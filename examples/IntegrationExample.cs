@@ -6,6 +6,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using YouTubeShortsAutomator.Application.Services;
+using YouTubeShortsAutomator.Extensions;
 using YouTubeShortsAutomator.Infrastructure.Extensions;
 
 // Integration example: Wiring up into ASP.NET Core DI

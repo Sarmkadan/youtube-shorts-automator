@@ -92,8 +92,8 @@ public class VideoProcessingService
         }
         catch (Exception ex)
         {
-            throw new VideoProcessingException($"Failed to create processing task: {ex.Message}", 
-                videoShort.ProcessingProfileId, ex);
+            throw new VideoProcessingException($"Failed to create processing task: {ex.Message}",
+                videoShort.ProcessingProfileId, null, ex);
         }
     }
 

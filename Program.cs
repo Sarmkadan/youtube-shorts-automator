@@ -35,7 +35,7 @@ try
     builder.Services.AddInfrastructureServices(builder.Configuration);
 
     // Add Phase 2 application services
-    builder.Services.AddApplicationServices();
+    YouTubeShortsAutomator.Extensions.ServiceCollectionExtensions.AddApplicationServices(builder.Services);
     builder.Services.AddBackgroundServices();
     builder.Services.AddSingleton<IMetricsCollector, MetricsCollector>();
 

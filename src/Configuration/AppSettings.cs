@@ -8,6 +8,7 @@ namespace YouTubeShortAutomator.Configuration;
 public class AppSettings
 {
     public string ConnectionString { get; set; } = string.Empty;
+    public string DatabasePath { get; set; } = string.Empty;
     public string LogDirectory { get; set; } = "logs";
     public string ProcessingDirectory { get; set; } = "processing";
     public string OutputDirectory { get; set; } = "output";

@@ -60,7 +60,7 @@ public static class DateTimeUtility
         try
         {
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            return TimeZoneInfo.ConvertToUtc(dateTime, timeZone);
+            return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZone);
         }
         catch
         {

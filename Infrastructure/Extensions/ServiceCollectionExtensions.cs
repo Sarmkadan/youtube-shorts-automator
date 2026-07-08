@@ -5,6 +5,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using YouTubeShortsAutomator.Application.Repositories;
 using YouTubeShortsAutomator.Application.Services;
 using YouTubeShortsAutomator.Infrastructure.Repositories;
@@ -74,19 +75,13 @@ public static class ServiceCollectionExtensions
             client.BaseAddress = new Uri("https://www.googleapis.com/youtube/v3/");
             client.DefaultRequestHeaders.Add("Accept", "application/json");
         })
-        .ConfigureHttpClientDefaults(builder =>
-        {
-            builder.AddStandardResilienceHandler();
-        });
+        .AddStandardResilienceHandler();
 
         services.AddHttpClient("GoogleOAuth", client =>
         {
             client.BaseAddress = new Uri("https://oauth2.googleapis.com/");
         })
-        .ConfigureHttpClientDefaults(builder =>
-        {
-            builder.AddStandardResilienceHandler();
-        });
+        .AddStandardResilienceHandler();
 
         return services;
     }

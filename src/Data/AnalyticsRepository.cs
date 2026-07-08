@@ -167,7 +167,7 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
     {
         // Returns total count of analytics records
         var query = "SELECT COUNT(1) FROM AnalyticsData";
-        return await _context.ExecuteScalarAsync<int>(query) ?? 0;
+        return (int?)await _context.ExecuteScalarAsync<int>(query) ?? 0;
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

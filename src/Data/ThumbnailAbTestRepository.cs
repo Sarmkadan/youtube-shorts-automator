@@ -153,7 +153,7 @@ public class ThumbnailAbTestRepository : IRepository<ThumbnailVariant>
     public async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         var query = "SELECT COUNT(1) FROM ThumbnailVariants";
-        return await _context.ExecuteScalarAsync<int>(query) ?? 0;
+        return (int?)await _context.ExecuteScalarAsync<int>(query) ?? 0;
     }
 
     /// <inheritdoc/>
