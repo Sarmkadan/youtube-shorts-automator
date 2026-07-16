@@ -548,6 +548,79 @@ videoToFail.ErrorMessage.Should().Be(errorMessage);
 videoToFail.ProcessedAt.Should().BeNull();
 ```
 
+## FileValidationServiceTests
+
+The `FileValidationServiceTests` class contains unit tests for the `FileValidationService` that validate video file formats, sizes, and integrity. It tests file existence checks, format validation against supported extensions, file size limits, hash generation for change detection, and video duration extraction using FFmpeg.
+
+This test suite ensures that only valid video files are processed by the YouTube Shorts automation pipeline and provides utilities for detecting file changes through content hashing.
+
+**Public Members:**
+- `ValidateVideoFile_WithValidMp4File_ReturnsTrue` - Validates that a proper MP4 file passes all checks
+- `ValidateVideoFile_WithNullPath_ThrowsArgumentException` - Verifies null path handling
+- `ValidateVideoFile_WithEmptyPath_ThrowsArgumentException` - Verifies empty path handling
+- `ValidateVideoFile_WithNonExistentFile_ReturnsFalse` - Validates behavior with missing files
+- `ValidateVideoFile_WithFileTooLarge_ReturnsFalse` - Validates file size limits
+- `ValidateVideoFile_WithFileTooSmall_ReturnsFalse` - Validates minimum file size requirements
+- `ValidateVideoFile_WithUnsupportedFormat_ReturnsFalse` - Validates format restrictions
+- `ValidateVideoFile_WithEmptyFile_ReturnsFalse` - Validates handling of empty files
+- `ValidateVideoFile_WithSupportedFormats_ReturnsTrue` - Validates multiple supported formats
+- `GetFileHash_WithValidFile_ReturnsConsistentHash` - Tests hash generation consistency
+- `GetFileHash_WithNullPath_ThrowsArgumentException` - Verifies null path handling for hashing
+- `GetFileHash_WithEmptyPath_ThrowsArgumentException` - Verifies empty path handling for hashing
+- `GetFileHash_WithNonExistentFile_ThrowsInvalidOperationException` - Validates error handling for missing files
+- `GetFileHash_WithDifferentFiles_ReturnsDifferentHashes` - Verifies hash uniqueness
+- `GetVideoDuration_WithExistentFile_ReturnsTimeSpan` - Tests duration extraction
+- `GetVideoDuration_WithNullPath_ThrowsArgumentException` - Verifies null path handling for duration
+- `GetVideoDuration_WithEmptyPath_ThrowsArgumentException` - Verifies empty path handling for duration
+- `GetVideoDuration_WithNonExistentFile_ReturnsNull` - Validates behavior with missing files
+- `DeleteTemporaryFile_WithExistingFile_DeletesFile` - Tests file cleanup functionality
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using Microsoft.Extensions.Logging;
+using Xunit;
+
+// Initialize test service with mock logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<FileValidationServiceTests>();
+var fileValidationServiceTests = new FileValidationServiceTests(logger);
+
+// Example 1: Validate a valid MP4 file
+bool isValidMp4 = fileValidationServiceTests.ValidateVideoFile_WithValidMp4File_ReturnsTrue();
+Assert.True(isValidMp4);
+
+// Example 2: Validate an unsupported format (MKV)
+bool isValidMkv = fileValidationServiceTests.ValidateVideoFile_WithUnsupportedFormat_ReturnsFalse();
+Assert.False(isValidMkv);
+
+// Example 3: Validate file size limits
+bool isValidSize = fileValidationServiceTests.ValidateVideoFile_WithFileTooLarge_ReturnsFalse();
+Assert.False(isValidSize);
+
+// Example 4: Generate file hash for change detection
+string fileHash = fileValidationServiceTests.GetFileHash_WithValidFile_ReturnsConsistentHash();
+Assert.NotNull(fileHash);
+Assert.Equal(64, fileHash.Length); // SHA256 hash length
+
+// Example 5: Get video duration from file
+TimeSpan? duration = fileValidationServiceTests.GetVideoDuration_WithExistentFile_ReturnsTimeSpan();
+Assert.NotNull(duration);
+Assert.True(duration.Value.TotalSeconds > 0);
+
+// Example 6: Test null path validation
+Assert.Throws<ArgumentException>(() => fileValidationServiceTests.GetFileHash_WithNullPath_ThrowsArgumentException());
+
+// Example 7: Test empty file handling
+bool isValidEmptyFile = fileValidationServiceTests.ValidateVideoFile_WithEmptyFile_ReturnsFalse();
+Assert.False(isValidEmptyFile);
+
+// Example 8: Test temporary file cleanup
+bool deleted = fileValidationServiceTests.DeleteTemporaryFile_WithExistingFile_DeletesFile();
+Assert.True(deleted);
+```
+
 ## UploadJobRepository
 
 The `UploadJobRepository` class provides data access operations for managing upload job entities in the YouTube Shorts automation system. It implements the `IRepository<UploadJob>` interface and offers specialized methods for querying upload jobs by status, retrieving jobs scheduled for upload, and finding retryable failed jobs. The repository handles all database operations for upload jobs including creation, retrieval, updating, and deletion, with support for tracking upload progress, retry attempts, and error messages.
