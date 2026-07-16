@@ -1993,6 +1993,28 @@ var uploadStartedEvent = new VideoUploadStartedEvent
 Console.WriteLine($"Upload started for: {uploadStartedEvent.Title} (ID: {uploadStartedEvent.VideoId})");
 ```
 
+## VideoUploadStartedEventHandler
+
+The `VideoUploadStartedEventHandler` processes `VideoUploadStartedEvent` domain events triggered when a video upload begins. This handler logs the event and facilitates business logic such as database updates or external notifications to signal the start of the upload pipeline.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Events;
+using Microsoft.Extensions.Logging;
+
+// Assuming dependencies are injected
+var handler = new VideoUploadStartedEventHandler(logger);
+
+// Handle the upload started event
+await handler.HandleAsync(new VideoUploadStartedEvent {
+    VideoId = Guid.NewGuid(),
+    FileName = "sample.mp4",
+    FileSizeBytes = 10485760,
+    Title = "My New Short"
+});
+```
+
 ## CLI Reference
 
 ### Build & Run
