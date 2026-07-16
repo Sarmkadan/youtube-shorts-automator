@@ -2160,6 +2160,81 @@ var uploadException = new UploadException(
 throw uploadException;
 ```
 
+## ValidationException
+
+The `ValidationException` is a specialized exception type thrown when validation of input data fails. It provides detailed information about which field failed validation, the invalid value, and a collection of all validation errors, enabling comprehensive error handling and user feedback.
+
+**Public Members:**
+- `string? FieldName` - The name of the field that failed validation
+- `string? FieldValue` - The value that failed validation
+- `Dictionary<string, string> Errors` - Collection of all validation errors with error messages
+- `ValidationException(string message)` - Constructor that accepts an error message
+- `ValidationException(string message, string fieldName, string fieldValue)` - Constructor that includes field context
+- `ValidationException(string message, Dictionary<string, string> errors)` - Constructor that accepts multiple errors
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Exceptions;
+
+// Example 1: Basic validation exception with single field
+try
+{
+  var videoRequest = new SubmitVideoRequest
+  {
+    Title = "", // Empty title is invalid
+    Description = "A test video"
+  };
+  
+  if (string.IsNullOrWhiteSpace(videoRequest.Title))
+  {
+    throw new ValidationException(
+      message: "Title cannot be empty",
+      fieldName: nameof(videoRequest.Title),
+      fieldValue: videoRequest.Title
+    );
+  }
+}
+catch (ValidationException ex)
+{
+  Console.WriteLine($"Validation failed: {ex.Message}");
+  Console.WriteLine($"Field: {ex.FieldName}");
+  Console.WriteLine($"Value: '{ex.FieldValue}'");
+}
+
+// Example 2: Validation exception with multiple errors
+var errors = new Dictionary<string, string>
+{
+  { "Title", "Title is required and cannot be empty" },
+  { "Description", "Description must be between 10 and 500 characters" },
+  { "Tags", "At least one tag is required" }
+};
+
+throw new ValidationException("Multiple validation errors occurred", errors);
+
+// Example 3: Creating validation exception with field context
+var invalidEmail = "invalid-email";
+throw new ValidationException(
+  message: "Email format is invalid",
+  fieldName: "Email",
+  fieldValue: invalidEmail
+);
+
+// Example 4: Handling validation in API controller
+try
+{
+  await _videoService.CreateVideoAsync(videoRequest);
+}
+catch (ValidationException ex)
+{
+  // Return validation errors to client
+  return BadRequest(new {
+    message = ex.Message,
+    errors = ex.Errors
+  });
+}
+```
+
 ## YouTubeApiException
 
 The `YouTubeApiException` is a specialized exception type thrown when errors are returned from the YouTube API. It provides detailed error information including the channel ID, API error code, HTTP status code, and helper methods to check for common error conditions like token expiration or quota exceeded errors.
