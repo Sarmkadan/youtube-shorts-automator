@@ -1503,6 +1503,73 @@ var processedVideo = await processingService.TranscodeVideoAsync(
 );
 ```
 
+## SchedulingServiceExtensions
+
+The `SchedulingServiceExtensions` class provides extension methods for the `SchedulingService` that enable batch operations and convenience methods for managing upload jobs. These extension methods simplify common scheduling tasks such as bulk scheduling, rescheduling, cancellation, and checking for overdue jobs.
+
+**Public Members:**
+- `ScheduleUploadsAsync` - Schedules multiple upload jobs at once with validation
+- `GetUpcomingJobsAsync` - Gets upcoming jobs filtered by video short IDs
+- `GetOverdueJobsAsync` - Gets overdue jobs filtered by video short IDs
+- `RescheduleUploadsAsync` - Reschedules multiple upload jobs at once
+- `CancelUploadsAsync` - Cancels multiple upload jobs at once
+- `HasOverdueJobsAsync` - Checks if any jobs are overdue
+- `GetUpcomingJobsCountAsync` - Gets the count of upcoming jobs
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+// Initialize services
+var schedulingService = serviceProvider.GetRequiredService<SchedulingService>();
+
+// Example 1: Schedule multiple uploads at once
+var uploadJobs = await schedulingService.ScheduleUploadsAsync(new[]
+{
+  (VideoShortId: 1, ScheduledTime: DateTime.UtcNow.AddHours(2)),
+  (VideoShortId: 2, ScheduledTime: DateTime.UtcNow.AddHours(4)),
+  (VideoShortId: 3, ScheduledTime: DateTime.UtcNow.AddHours(6))
+});
+
+foreach (var job in uploadJobs)
+{
+  Console.WriteLine($"Scheduled job {job.Id}: {job.Title} at {job.ScheduledUploadTime:u}");
+}
+
+// Example 2: Get upcoming jobs for specific video shorts
+var upcomingJobs = await schedulingService.GetUpcomingJobsAsync(
+  hoursAhead: 24,
+  videoShortIds: new[] { 1, 2, 3 }
+);
+Console.WriteLine($"Found {upcomingJobs.Count()} upcoming jobs");
+
+// Example 3: Check if any jobs are overdue
+bool hasOverdue = await schedulingService.HasOverdueJobsAsync();
+Console.WriteLine($"Has overdue jobs: {hasOverdue}");
+
+// Example 4: Get count of upcoming jobs
+int upcomingCount = await schedulingService.GetUpcomingJobsCountAsync(hoursAhead: 48);
+Console.WriteLine($"Upcoming jobs in next 48 hours: {upcomingCount}");
+
+// Example 5: Reschedule multiple uploads
+var rescheduleResults = await schedulingService.RescheduleUploadsAsync(new[]
+{
+  (UploadJobId: 1, NewScheduledTime: DateTime.UtcNow.AddHours(8)),
+  (UploadJobId: 2, NewScheduledTime: DateTime.UtcNow.AddHours(10))
+});
+Console.WriteLine($"Successfully rescheduled {rescheduleResults.Count(r => r)} jobs");
+
+// Example 6: Cancel multiple uploads
+var cancelResults = await schedulingService.CancelUploadsAsync(new[] { 3, 4, 5 });
+Console.WriteLine($"Successfully cancelled {cancelResults.Count(r => r)} jobs");
+
+// Example 7: Get overdue jobs for specific video shorts
+var overdueJobs = await schedulingService.GetOverdueJobsAsync(new[] { 1, 2 });
+Console.WriteLine($"Found {overdueJobs.Count()} overdue jobs");
+```
+
 ## Testing
 
 ```bash
