@@ -524,6 +524,41 @@ if (scheduledUpload != null)
 }
 ```
 
+### OptimizationSuggestion
+
+The `OptimizationSuggestion` record represents an immutable, ranked recommendation produced by the title and description optimization engine. Each suggestion contains a complete alternative metadata set (title, description, tags) along with metadata about the engine's confidence in the suggestion and the rationale behind the optimization strategy.
+
+**Public Members:**
+- `SuggestedTitle` - Recommended title text
+- `SuggestedDescription` - Recommended description including hashtags and keywords
+- `SuggestedTags` - Array of tags recommended for maximum discoverability
+- `ConfidenceScore` - Value between 0 and 1 representing the engine's confidence in this suggestion
+- `Rationale` - Human-readable explanation of the optimization strategy applied
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Domain.Models;
+
+// Create an optimization suggestion from the engine's output
+var suggestion = new OptimizationSuggestion(
+    suggestedTitle: "10 Essential Python Tips Every Developer Should Know",
+    suggestedDescription: "Master Python with these 10 essential tips! Learn best practices, tricks, and techniques to boost your coding skills. #python #coding #tutorial #programming #developer #shorts",
+    suggestedTags: new[] { "python", "coding", "tutorial", "programming", "developer", "tips", "best practices", "coding skills", "shorts" },
+    confidenceScore: 0.87,
+    rationale: "Added power words 'Essential', 'Master' and question format increased engagement. Hashtags aligned with trending topics in Python development."
+)
+
+Console.WriteLine($"Optimization applied: {suggestion.SuggestedTitle}");
+Console.WriteLine($"Confidence: {suggestion.ConfidenceScore:P}");
+Console.WriteLine($"Rationale: {suggestion.Rationale}");
+Console.WriteLine($"Tags: {string.Join(\, suggestion.SuggestedTags)}");
+```
+
+
+
 ### ApiCredentialRepository
 
 The `ApiCredentialRepository` class provides data access methods for managing API credentials used to authenticate with external services like YouTube API. It implements the `IApiCredentialRepository` interface and offers various methods for retrieving credentials by user ID, status, type, and expiration date.
