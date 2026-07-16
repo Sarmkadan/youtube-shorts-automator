@@ -2235,6 +2235,67 @@ catch (ValidationException ex)
 }
 ```
 
+## VideoProcessingException
+
+The `VideoProcessingException` is a specialized exception type thrown when errors occur during video processing operations. It provides additional context about the failure, including the video ID, processing task ID, and error code, enabling better error handling and recovery strategies.
+
+**Public Members:**
+- `int? VideoId` - The ID of the video that caused the exception
+- `string? ProcessingTaskId` - The ID of the processing task that caused the exception  
+- `string? ErrorCode` - The error code that caused the exception
+- `VideoProcessingException(string message)` - Constructor that accepts an error message
+- `VideoProcessingException(string message, Exception innerException)` - Constructor with inner exception
+- `VideoProcessingException(string message, int videoId, string? errorCode = null)` - Constructor with video context
+- `VideoProcessingException(string message, int videoId, string? taskId, Exception? innerException)` - Constructor with full context
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Exceptions;
+
+// Example 1: Basic exception with message only
+try
+{
+    await videoProcessingService.ProcessVideoAsync(videoId: 42);
+}
+catch (VideoProcessingException ex)
+{
+    Console.WriteLine($"Video processing failed: {ex.Message}");
+    Console.WriteLine($"Video ID: {ex.VideoId}");
+    Console.WriteLine($"Error Code: {ex.ErrorCode}");
+}
+
+// Example 2: Exception with video and task context
+try
+{
+    await videoProcessingService.ProcessVideoAsync(videoId: 17);
+}
+catch (VideoProcessingException ex)
+{
+    Console.WriteLine($"Processing task {ex.ProcessingTaskId} failed for video {ex.VideoId}: {ex.Message}");
+    Console.WriteLine($"Error Code: {ex.ErrorCode}");
+    
+    // Log to monitoring system
+    await monitoringService.LogErrorAsync(
+        errorCode: ex.ErrorCode ?? "UNKNOWN",
+        message: ex.Message,
+        videoId: ex.VideoId,
+        taskId: ex.ProcessingTaskId
+    );
+}
+
+// Example 3: Creating a VideoProcessingException with full context
+var processingException = new VideoProcessingException(
+    message: "FFmpeg transcoding failed - invalid codec parameters",
+    videoId: 42,
+    taskId: "transcode-2026-07-16-1430",
+    innerException: new InvalidOperationException("Codec not supported")
+);
+processingException.ErrorCode = "FFMPEG_CODEC_ERROR";
+
+throw processingException;
+```
+
 ## YouTubeApiException
 
 The `YouTubeApiException` is a specialized exception type thrown when errors are returned from the YouTube API. It provides detailed error information including the channel ID, API error code, HTTP status code, and helper methods to check for common error conditions like token expiration or quota exceeded errors.
