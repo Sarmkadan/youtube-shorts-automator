@@ -1492,11 +1492,82 @@ Console.WriteLine($"Final status - Percentage: {finalPercentage}%, Duration: {fi
 - Job cancellation and rescheduling
 - Time-zone aware scheduling
 
-**AnalyticsService**: Tracks performance metrics
-- Real-time analytics synchronization
-- Report generation
-- Performance trending analysis
-- Custom metric aggregation
+**AnalyticsService**
+
+The `AnalyticsService` provides comprehensive analytics capabilities for tracking video performance metrics, synchronizing data from YouTube API, and generating detailed performance reports. It serves as the central hub for all analytics operations including video analytics creation, YouTube API synchronization, top performer identification, and channel growth calculations.
+
+**Key Features:**
+- Creates and manages analytics records for YouTube Shorts videos
+- Synchronizes real-time analytics data from YouTube API
+- Generates comprehensive period-based analytics reports
+- Identifies top performing videos by engagement metrics
+- Provides performance analysis and recommendations
+- Calculates overall channel growth metrics
+
+**Public Members:**
+- `CreateAnalyticsRecordAsync()` - Creates a new analytics record for a video short
+- `SyncAnalyticsFromYouTubeAsync()` - Synchronizes analytics data from YouTube API
+- `GetVideoAnalyticsAsync()` - Retrieves analytics for a specific video
+- `GetTopPerformingVideosAsync()` - Retrieves top performing videos by engagement rate
+- `GeneratePeriodReportAsync()` - Generates an analytics report for a date range
+- `AnalyzePerformanceMetrics()` - Analyzes performance metrics and provides insights
+- `CalculateChannelGrowthAsync()` - Calculates overall channel growth
+- `AnalyticsReport` - Aggregated metrics report class with period start/end dates and totals
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+// Initialize service (typically via dependency injection)
+var analyticsService = serviceProvider.GetRequiredService<AnalyticsService>();
+
+// Example 1: Create analytics record for a new video short
+var newAnalytics = await analyticsService.CreateAnalyticsRecordAsync(videoShortId: 42);
+Console.WriteLine($"Created analytics record for video {videoShortId}: {newAnalytics.ViewCount} views");
+
+// Example 2: Sync analytics from YouTube API
+var syncedAnalytics = await analyticsService.SyncAnalyticsFromYouTubeAsync(
+    videoShortId: 42,
+    youtubeVideoId: "dQw4w9WgXcQ",
+    channel: youtubeChannel
+);
+Console.WriteLine($"Synced analytics: {syncedAnalytics?.ViewCount} views, {syncedAnalytics?.EngagementRate:F2}% engagement");
+
+// Example 3: Get video analytics
+var videoAnalytics = await analyticsService.GetVideoAnalyticsAsync(videoShortId: 42);
+Console.WriteLine($"Video {videoShortId} has {videoAnalytics?.ViewCount:N0} views and {videoAnalytics?.EngagementRate:F2}% engagement");
+
+// Example 4: Get top performing videos
+var topVideos = await analyticsService.GetTopPerformingVideosAsync(limit: 10);
+Console.WriteLine($"Top {topVideos.Count()} videos by engagement:");
+foreach (var video in topVideos)
+{
+    Console.WriteLine($"- Video {video.VideoShortId}: {video.ViewCount:N0} views, {video.EngagementRate:F2}% engagement");
+}
+
+// Example 5: Generate period report
+var report = await analyticsService.GeneratePeriodReportAsync(
+    startDate: DateTime.UtcNow.AddDays(-30),
+    endDate: DateTime.UtcNow
+);
+Console.WriteLine($"Report for {report.PeriodStart:d} to {report.PeriodEnd:d}:");
+Console.WriteLine($"- Total videos: {report.TotalVideos}");
+Console.WriteLine($"- Total views: {report.TotalViews:N0}");
+Console.WriteLine($"- Total likes: {report.TotalLikes:N0}");
+Console.WriteLine($"- Avg engagement rate: {report.AverageEngagementRate:F2}%");
+Console.WriteLine($"- Subscribers gained: {report.TotalSubscribersGained}");
+Console.WriteLine($"- Generated at: {report.GeneratedAt:u}");
+
+// Example 6: Analyze performance metrics
+var analysis = analyticsService.AnalyzePerformanceMetrics(videoAnalytics);
+Console.WriteLine(analysis);
+
+// Example 7: Calculate channel growth
+var growth = await analyticsService.CalculateChannelGrowthAsync(channelId: 1);
+Console.WriteLine($"Channel growth: {growth} net subscribers");
+```
 
 **JobOrchestrationService**: Coordinates complete workflows
 - Multi-step pipeline orchestration
