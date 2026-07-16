@@ -1451,7 +1451,51 @@ foreach (var slot in slots)
     Console.WriteLine($"Recommended slot: {slot:u} UTC");
 ```
 
+## AnalyticsController
+
+The `AnalyticsController` provides REST endpoints for accessing video performance data, engagement metrics, and trend analysis. It facilitates retrieving detailed insights for individual videos, generating comprehensive summaries, exporting performance data, and visualizing engagement trends over time.
+
+**Usage Example:**
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.API;
+
+// Assume controller is initialized via dependency injection
+// logger, responseFormatter, cacheService are injected
+var controller = new AnalyticsController(logger, responseFormatter, cacheService);
+
+// Example 1: Get analytics for a specific video
+var videoId = Guid.NewGuid();
+var videoResult = await controller.GetVideoAnalyticsAsync(videoId);
+if (videoResult is OkObjectResult videoOk)
+{
+    var analytics = videoOk.Value as VideoAnalyticsResponse;
+    Console.WriteLine($"Video: {analytics.Title}, Views: {analytics.ViewCount}");
+}
+
+// Example 2: Get analytics summary
+var summaryResult = await controller.GetAnalyticsSummaryAsync(days: 30);
+if (summaryResult is OkObjectResult summaryOk)
+{
+    var summary = summaryOk.Value as AnalyticsSummaryResponse;
+    Console.WriteLine($"Total Views: {summary.TotalViews}, Total Engagement: {summary.TotalEngagement}");
+}
+
+// Example 3: Export analytics data
+var exportResult = await controller.ExportAnalyticsAsync(format: "csv");
+
+// Example 4: Get engagement trends
+var trendsResult = await controller.GetEngagementTrendsAsync(days: 7);
+if (trendsResult is OkObjectResult trendsOk)
+{
+    var trends = trendsOk.Value as EngagementTrendResponse;
+    Console.WriteLine($"Found {trends.TrendPoints.Length} trend data points");
+}
+```
+
 ## AnalyticsControllerExtensions
+
 
 Extension methods that provide additional analytics utilities for the `AnalyticsController`. These methods extend the built-in analytics functionality with helper methods for calculating engagement metrics, formatting percentages, and creating summary responses.
 
