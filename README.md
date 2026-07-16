@@ -400,6 +400,68 @@ var hasValidCredentials = await apiCredentialRepository.GetActiveCredentialAsync
 Console.WriteLine($"User has valid credentials: {hasValidCredentials}");
 ```
 
+### AnalyticsRepository
+
+The `AnalyticsRepository` class provides data access methods for querying analytics metrics from the database. It implements the `IAnalyticsRepository` interface and offers specialized methods for retrieving video performance metrics by video ID, time period, and pagination.
+
+**Key Features:**
+- Query analytics metrics by video ID with eager loading of related entities (demographics, video)
+- Filter metrics by time period (daily, weekly, monthly)
+- Retrieve recent metrics within a time window
+- Get top performing videos by view count
+- Search for latest metric for specific videos
+- Paginated queries with total count for UI pagination
+- Aggregate view counts across multiple videos
+
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Infrastructure.Repositories;
+using YouTubeShortsAutomator.Domain.Models;
+
+// Initialize repository (typically via dependency injection)
+var analyticsRepository = new AnalyticsRepository(dbContext, logger);
+
+// Example 1: Get metrics for a specific video
+var videoMetrics = await analyticsRepository.GetByVideoIdAsync(videoId);
+Console.WriteLine($"Found {videoMetrics.Count} metrics for video {videoId}");
+
+// Example 2: Get metrics by period (daily, weekly, monthly)
+var dailyMetrics = await analyticsRepository.GetByPeriodAsync(MetricsPeriod.Daily);
+Console.WriteLine($"Found {dailyMetrics.Count} daily metrics");
+
+// Example 3: Get recent metrics (last 7 days)
+var recentMetrics = await analyticsRepository.GetRecentMetricsAsync(videoId, daysBack: 7);
+Console.WriteLine($"Found {recentMetrics.Count} recent metrics");
+
+// Example 4: Get top performing videos
+var topVideos = await analyticsRepository.GetTopMetricsAsync(limit: 10);
+Console.WriteLine($"Top {topVideos.Count} performing videos");
+
+// Example 5: Get latest metric for a video
+var latestMetric = await analyticsRepository.GetLatestMetricForVideoAsync(videoId);
+if (latestMetric != null)
+{
+    Console.WriteLine($"Latest metric: {latestMetric.ViewCount} views collected on {latestMetric.CollectedAt:u}");
+}
+
+// Example 6: Get paginated metrics (page 1, 10 items per page)
+var (paginatedMetrics, totalCount) = await analyticsRepository.GetPaginatedAsync(pageNumber: 1, pageSize: 10);
+Console.WriteLine($"Found {paginatedMetrics.Count} metrics out of {totalCount} total");
+
+// Example 7: Get view counts for multiple videos
+var videoIds = new List<Guid> { videoId1, videoId2, videoId3 };
+var viewCounts = await analyticsRepository.GetVideoViewCountsAsync(videoIds);
+foreach (var (id, views) in viewCounts)
+{
+    Console.WriteLine($"Video {id}: {views} views");
+}
+```
+
 #### VideoShort
 ```csharp
 public class VideoShort
