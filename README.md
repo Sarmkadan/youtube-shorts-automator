@@ -1969,8 +1969,31 @@ var groupMany = CollectionUtilityBenchmarksExtensions.GroupByToDictionaryManyGro
 // Example 3: Distinct operations
 var distinctEmpty = CollectionUtilityBenchmarksExtensions.DistinctByEmptyCollection();
 var distinctUnique = CollectionUtilityBenchmarksExtensions.DistinctByAllUnique();
-```
 var distinctSame = CollectionUtilityBenchmarksExtensions.DistinctByAllSame();
+```
+
+## ValidationUtilityBenchmarks
+
+`ValidationUtilityBenchmarks` provides performance benchmarking for the validation utilities within the application. It specifically measures the execution speed of regex-based validation for email addresses, URLs, and YouTube channel/video identifiers, ensuring they meet performance requirements under load.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Benchmarks;
+
+// Initialize the benchmark class
+var benchmarks = new ValidationUtilityBenchmarks();
+
+// Execute individual validation benchmark tests
+var emailValid = benchmarks.ValidateEmail_Valid();
+var emailInvalid = benchmarks.ValidateEmail_Invalid();
+
+var urlValid = benchmarks.ValidateUrl_Valid();
+var channelIdValid = benchmarks.ValidateYouTubeChannelId_Valid();
+var videoIdValid = benchmarks.ValidateYouTubeVideoId_Valid();
+
+Console.WriteLine($"Email Validation (Valid): {emailValid.IsValid}, Error: {emailValid.Error}");
+Console.WriteLine($"YouTube Video ID Validation: {videoIdValid.IsValid}");
 ```
 
 ## VideoUploadStartedEvent
