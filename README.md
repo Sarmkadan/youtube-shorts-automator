@@ -1996,6 +1996,32 @@ Console.WriteLine($"Email Validation (Valid): {emailValid.IsValid}, Error: {emai
 Console.WriteLine($"YouTube Video ID Validation: {videoIdValid.IsValid}");
 ```
 
+## StringUtilityBenchmarks
+
+`StringUtilityBenchmarks` provides performance benchmarking for critical string manipulation routines used throughout the processing pipeline, such as truncation, slug generation, and case conversion. These benchmarks ensure that high-frequency string operations perform efficiently under typical and edge-case loads.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Benchmarks;
+
+// Initialize the benchmark class
+var benchmarks = new StringUtilityBenchmarks();
+
+// Execute benchmark methods
+var truncatedTitle = benchmarks.Truncate();
+var camelCased = benchmarks.ToCamelCase();
+var pascalCased = benchmarks.ToPascalCase();
+var slug = benchmarks.ToSlug();
+var splitArray = benchmarks.SplitByLength();
+var noWhitespace = benchmarks.RemoveWhitespace();
+var normalizedWhitespace = benchmarks.NormalizeWhitespace();
+
+Console.WriteLine($"Truncated: {truncatedTitle}");
+Console.WriteLine($"Slugified: {slug}");
+Console.WriteLine($"Split into {splitArray.Length} parts");
+```
+
 ## VideoUploadStartedEvent
 
 This event is published when a video upload process begins. It contains essential details about the video, including its identifier, file name, size, and title.
