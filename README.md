@@ -983,6 +983,107 @@ public class VideoShort
 }
 ```
 
+## UploadJobRepositoryExtensions
+
+The `UploadJobRepositoryExtensions` class provides a collection of extension methods for the `UploadJobRepository` that simplify common repository operations and provide convenient batch operations. These extension methods offer fluent APIs for querying upload jobs by various criteria, counting jobs by status, and performing batch updates and deletions.
+
+**Key Features:**
+- Query upload jobs by VideoShortId, status, and scheduling state
+- Count jobs by status and scheduling categories
+- Batch operations for updating and deleting multiple jobs
+- Convenience methods for finding oldest/newest jobs and checking existence
+- Methods for managing retryable failed jobs and scheduled uploads
+
+**Public Members:**
+- `GetByVideoShortIdAsync()` - Gets the first upload job by VideoShortId
+- `GetByStatusAsync()` - Gets all upload jobs with the specified status
+- `GetScheduledForUploadAsync()` - Gets all upload jobs scheduled for upload that haven't started yet
+- `GetRetryableFailedJobsAsync()` - Gets all upload jobs that can be retried (failed with remaining attempts)
+- `CountByStatusAsync()` - Gets the count of upload jobs with the specified status
+- `CountScheduledForUploadAsync()` - Gets the count of upload jobs scheduled for upload
+- `CountRetryableFailedJobsAsync()` - Gets the count of retryable failed upload jobs
+- `BatchUpdateAsync()` - Batch update multiple upload jobs at once
+- `BatchDeleteAsync()` - Batch delete multiple upload jobs by their IDs
+- `GetOldestScheduledJobAsync()` - Gets the oldest scheduled upload job
+- `GetNewestJobAsync()` - Gets the newest upload job by CreatedAt date
+- `AnyByStatusAsync()` - Checks if any upload jobs exist with the specified status
+- `GetQueuedOrPendingJobsAsync()` - Gets all upload jobs with status Queued or Pending
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Data;
+using YouTubeShortAutomator.Domain.Models;
+
+// Initialize repository (typically via dependency injection)
+var uploadJobRepository = new UploadJobRepository(dbContext);
+
+// Example 1: Get upload job by VideoShortId
+var jobByShort = await uploadJobRepository.GetByVideoShortIdAsync(videoShortId: 42);
+if (jobByShort != null)
+{
+    Console.WriteLine($"Found job for video short 42: Status={jobByShort.Status}");
+}
+
+// Example 2: Get all upload jobs with Failed status
+var failedJobs = await uploadJobRepository.GetByStatusAsync(UploadStatus.Failed);
+Console.WriteLine($"Found {failedJobs.Count()} failed upload jobs");
+
+// Example 3: Get all jobs scheduled for upload
+var scheduledJobs = await uploadJobRepository.GetScheduledForUploadAsync();
+Console.WriteLine($"Found {scheduledJobs.Count()} jobs scheduled for upload");
+
+// Example 4: Get retryable failed jobs (jobs with remaining attempts)
+var retryableJobs = await uploadJobRepository.GetRetryableFailedJobsAsync();
+Console.WriteLine($"Found {retryableJobs.Count()} jobs eligible for retry");
+
+// Example 5: Count jobs by status
+int queuedCount = await uploadJobRepository.CountByStatusAsync(UploadStatus.Queued);
+Console.WriteLine($"Queued jobs: {queuedCount}");
+
+int retryableCount = await uploadJobRepository.CountRetryableFailedJobsAsync();
+Console.WriteLine($"Retryable failed jobs: {retryableCount}");
+
+// Example 6: Batch update multiple jobs
+var jobsToUpdate = await uploadJobRepository.GetByStatusAsync(UploadStatus.Queued);
+foreach (var job in jobsToUpdate)
+{
+    job.Status = UploadStatus.Uploading;
+    job.UploadedAt = DateTime.UtcNow;
+}
+await uploadJobRepository.BatchUpdateAsync(jobsToUpdate);
+Console.WriteLine("Batch update completed");
+
+// Example 7: Batch delete old jobs
+var oldJobIds = new[] { 1, 2, 3 };
+int deletedCount = await uploadJobRepository.BatchDeleteAsync(oldJobIds);
+Console.WriteLine($"Deleted {deletedCount} jobs");
+
+// Example 8: Get oldest scheduled job
+var oldestJob = await uploadJobRepository.GetOldestScheduledJobAsync();
+if (oldestJob != null)
+{
+    Console.WriteLine($"Oldest scheduled job: {oldestJob.Title} at {oldestJob.ScheduledAt:u}");
+}
+
+// Example 9: Get newest job by creation date
+var newestJob = await uploadJobRepository.GetNewestJobAsync();
+if (newestJob != null)
+{
+    Console.WriteLine($"Newest job: ID={newestJob.Id} created at {newestJob.CreatedAt:u}");
+}
+
+// Example 10: Check if any jobs exist with a specific status
+bool hasQueuedJobs = await uploadJobRepository.AnyByStatusAsync(UploadStatus.Queued);
+Console.WriteLine($"Has queued jobs: {hasQueuedJobs}");
+
+// Example 11: Get all queued and pending jobs
+var queuedOrPending = await uploadJobRepository.GetQueuedOrPendingJobsAsync();
+Console.WriteLine($"Found {queuedOrPending.Count()} queued or pending jobs");
+```
+
 ## UploadJob
 
 The `UploadJob` class represents a scheduled upload job for YouTube Shorts videos. It tracks the entire upload lifecycle from creation through scheduling, processing, and completion, including retry logic, progress monitoring, and error handling for reliable video upload automation.
