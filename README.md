@@ -350,6 +350,89 @@ await repository.SaveChangesAsync();
 
 ### Core Domain Models
 
+#### UploadResult
+
+The `UploadResult` class represents the outcome of a video upload operation. It tracks the success or failure status of uploads, including video identifiers, URLs, performance metrics (bytes transferred, duration, speed), error details, and timestamps. This model is used to persist upload results for auditing, analytics, and retry logic.
+
+
+
+
+
+
+
+
+
+**Public Members:**
+- `Id` - Primary key identifier
+- `UploadJobId` - Identifier of the associated upload job
+- `VideoId` - YouTube video ID assigned after successful upload (empty string if failed)
+- `VideoUrl` - URL of the uploaded video (empty string if failed)
+- `IsSuccessful` - Boolean indicating whether the upload succeeded
+- `ErrorDetails` - Error message if the upload failed (null otherwise)
+- `UploadedBytes` - Number of bytes successfully uploaded
+- `TotalBytes` - Total bytes in the source file
+- `UploadDuration` - Duration of the upload operation
+- `AverageUploadSpeed` - Average upload speed in MB/s
+- `CompletedAt` - UTC timestamp when upload completed
+- `UploadJob` - Navigation property to the associated upload job
+- `MarkAsSuccessful()` - Method to mark upload as successful with metrics
+- `MarkAsFailed()` - Method to mark upload as failed with error details
+- `GetUploadSpeedFormatted()` - Returns formatted upload speed string
+- `GetDurationFormatted()` - Returns formatted duration string
+
+
+
+
+
+
+
+**Usage Example:**
+
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+
+// Example 1: Create and mark a successful upload result
+var successfulUpload = new UploadResult();
+successfulUpload.MarkAsSuccessful(
+    videoId: "dQw4w9WgXcQ",
+    videoUrl: "https://youtube.com/watch?v=dQw4w9WgXcQ",
+    uploadedBytes: 5242880,  // 5 MB
+    totalBytes: 5242880,
+    duration: TimeSpan.FromSeconds(45)
+);
+
+Console.WriteLine($"Upload successful: {successfulUpload.VideoUrl}");
+Console.WriteLine($"Duration: {successfulUpload.GetDurationFormatted()}");
+Console.WriteLine($"Speed: {successfulUpload.GetUploadSpeedFormatted()}");
+Console.WriteLine($"Completed at: {successfulUpload.CompletedAt:u}");
+
+// Example 2: Create and mark a failed upload result
+var failedUpload = new UploadResult();
+failedUpload.MarkAsFailed("YouTube API quota exceeded - daily limit reached");
+
+Console.WriteLine($"Upload failed: {failedUpload.ErrorDetails}");
+Console.WriteLine($"Success status: {failedUpload.IsSuccessful}");
+Console.WriteLine($"Completed at: {failedUpload.CompletedAt:u}");
+
+// Example 3: Calculate upload metrics from a completed upload
+var uploadResult = new UploadResult
+{
+    UploadedBytes = 10485760,  // 10 MB
+    TotalBytes = 10485760,
+    UploadDuration = TimeSpan.FromSeconds(90),
+    CompletedAt = DateTime.UtcNow
+};
+
+if (uploadResult.IsSuccessful)
+{
+    Console.WriteLine($"Video ID: {uploadResult.VideoId}");
+    Console.WriteLine($"Video URL: {uploadResult.VideoUrl}");
+    Console.WriteLine($"Transfer rate: {uploadResult.GetUploadSpeedFormatted()}");
+}
+```
+
+
 #### VideoRepository
 
 The `VideoRepository` class provides data access methods for querying video entities from the database. It implements the `IVideoRepository` interface and offers various methods for retrieving videos by different criteria including user ID, status, YouTube ID, and pagination.
