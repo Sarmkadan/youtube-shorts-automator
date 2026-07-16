@@ -131,6 +131,60 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 
 ### Core Domain Models
 
+#### VideoRepository
+
+The `VideoRepository` class provides data access methods for querying video entities from the database. It implements the `IVideoRepository` interface and offers various methods for retrieving videos by different criteria including user ID, status, YouTube ID, and pagination.
+
+**Key Features:**
+- Query videos by user ID with eager loading of related entities
+- Filter videos by status (pending, processing, completed, etc.)
+- Retrieve recent videos within a time window
+- Search videos by YouTube video ID
+- Paginated queries for both general and user-specific video lists
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Infrastructure.Repositories;
+using YouTubeShortsAutomator.Domain.Models;
+
+// Initialize repository (typically via dependency injection)
+var videoRepository = new VideoRepository(dbContext, logger);
+
+// Example 1: Get videos by user ID
+var userVideos = await videoRepository.GetByUserIdAsync(userId);
+Console.WriteLine($"Found {userVideos.Count} videos for user {userId}");
+
+// Example 2: Get pending videos for processing
+var pendingVideos = await videoRepository.GetPendingVideosAsync();
+Console.WriteLine($"Found {pendingVideos.Count} videos pending processing");
+
+// Example 3: Get videos by status
+var completedVideos = await videoRepository.GetByStatusAsync(VideoStatus.Completed);
+Console.WriteLine($"Found {completedVideos.Count} completed videos");
+
+// Example 4: Get recent videos (last 7 days)
+var recentVideos = await videoRepository.GetRecentVideosAsync(userId, daysBack: 7);
+Console.WriteLine($"Found {recentVideos.Count} videos in the last 7 days");
+
+// Example 5: Get videos by YouTube ID
+var youtubeVideos = await videoRepository.GetByYouTubeIdAsync("dQw4w9WgXcQ");
+Console.WriteLine($"Found {youtubeVideos.Count} videos with YouTube ID dQw4w9WgXcQ");
+
+// Example 6: Get paginated videos (page 1, 10 items per page)
+var (paginatedVideos, totalCount) = await videoRepository.GetPaginatedAsync(pageNumber: 1, pageSize: 10);
+Console.WriteLine($"Found {paginatedVideos.Count} videos out of {totalCount} total");
+
+// Example 7: Get paginated videos for a specific user
+var (userPaginatedVideos, userTotalCount) = await videoRepository.GetUserVideosPaginatedAsync(
+    userId: userId,
+    pageNumber: 1,
+    pageSize: 10
+);
+Console.WriteLine($"User {userId} has {userTotalCount} total videos, showing page 1");
+```
+
 #### VideoShort
 ```csharp
 public class VideoShort
