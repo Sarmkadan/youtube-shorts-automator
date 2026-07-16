@@ -144,6 +144,42 @@ if (submitResult is OkObjectResult submitOk)
 }
 ```
 
+## ScheduleController
+
+The `ScheduleController` provides REST endpoints for managing scheduled YouTube uploads. It allows users to create, read, update, list, and delete upload schedules, as well as bulk-import schedules from CSV files to streamline content publishing.
+
+**Usage Example:**
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.API;
+
+// Assume controller is initialized via dependency injection
+var controller = new ScheduleController(logger, cacheService);
+
+// Example 1: Create a new schedule
+var createRequest = new CreateScheduleRequest { VideoId = Guid.NewGuid(), ScheduledUploadTimeUtc = DateTime.UtcNow.AddDays(1) };
+var createResult = await controller.CreateScheduleAsync(createRequest);
+
+// Example 2: List schedules
+var listResult = await controller.ListSchedulesAsync(pageNumber: 1, pageSize: 10);
+
+// Example 3: Get schedule details
+var scheduleId = Guid.NewGuid(); // Example ID
+var getResult = await controller.GetScheduleAsync(scheduleId);
+
+// Example 4: Update a schedule
+var updateRequest = new UpdateScheduleRequest { ScheduledUploadTimeUtc = DateTime.UtcNow.AddDays(2) };
+var updateResult = await controller.UpdateScheduleAsync(scheduleId, updateRequest);
+
+// Example 5: Delete a schedule
+var deleteResult = await controller.DeleteScheduleAsync(scheduleId);
+
+// Example 6: Import schedules from CSV
+// (In a real scenario, IFormFile would be provided via request context)
+var importResult = await controller.ImportSchedulesFromCsvAsync(file);
+```
+
 
 ## Repository
 
