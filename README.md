@@ -91,7 +91,96 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - **Rate Limiting**: Configurable API rate limiting and throttling
 - **Caching Layer**: Redis-based caching for performance optimization
 
-## Architecture
+## Repository
+
+The `Repository<TEntity>` base class provides a generic data access layer implementation for common CRUD operations against your database context. It serves as the foundation for all repository implementations in the application and offers standard methods for entity persistence, retrieval, updating, and deletion.
+
+**Key Features:**
+- Generic implementation supporting any entity type
+- Async/await pattern for all database operations
+- Basic CRUD operations: Create, Read, Update, Delete
+- Existence checking and counting operations
+- Transaction support via `SaveChangesAsync`
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Infrastructure.Repositories;
+using YouTubeShortsAutomator.Domain.Models;
+
+// Initialize repository (typically via dependency injection)
+var repository = new Repository<VideoShort>(dbContext);
+
+// Example 1: Add a new entity
+var newVideo = new VideoShort
+{
+    FileName = "short_001.mp4",
+    FilePath = "/videos/short_001.mp4",
+    Status = ProcessingStatus.Pending,
+    DurationSeconds = 60,
+    FileSizeBytes = 10485760,
+    Quality = VideoQuality.HD1080,
+    CreatedAt = DateTime.UtcNow
+};
+await repository.AddAsync(newVideo);
+await repository.SaveChangesAsync();
+
+// Example 2: Get entity by ID
+var video = await repository.GetByIdAsync(newVideo.Id);
+Console.WriteLine($"Found video: {video?.FileName}");
+
+// Example 3: Get all entities
+var allVideos = await repository.GetAllAsync();
+Console.WriteLine($"Total videos: {allVideos.Count}");
+
+// Example 4: Update an entity
+if (video != null)
+{
+    video.Status = ProcessingStatus.Processing;
+    await repository.UpdateAsync(video);
+    await repository.SaveChangesAsync();
+}
+
+// Example 5: Check if entity exists
+var exists = await repository.ExistsAsync(v => v.Id == video.Id);
+Console.WriteLine($"Video exists: {exists}");
+
+// Example 6: Count entities matching criteria
+var pendingCount = await repository.CountAsync(v => v.Status == ProcessingStatus.Pending);
+Console.WriteLine($"Pending videos: {pendingCount}");
+
+// Example 7: Delete an entity
+if (video != null)
+{
+    await repository.DeleteAsync(video);
+    await repository.SaveChangesAsync();
+}
+
+// Example 8: Add multiple entities at once
+var batch = new List<VideoShort>
+{
+    new VideoShort { /* ... */ },
+    new VideoShort { /* ... */ },
+    new VideoShort { /* ... */ }
+};
+await repository.AddRangeAsync(batch);
+await repository.SaveChangesAsync();
+
+// Example 9: Update multiple entities
+var videosToUpdate = await repository.GetAllAsync(v => v.Status == ProcessingStatus.Completed);
+foreach (var v in videosToUpdate)
+{
+    v.ProcessedAt = DateTime.UtcNow;
+}
+await repository.UpdateRangeAsync(videosToUpdate);
+await repository.SaveChangesAsync();
+
+// Example 10: Delete multiple entities
+var oldVideos = await repository.GetAllAsync(v => v.CreatedAt < DateTime.UtcNow.AddDays(-30));
+await repository.DeleteRangeAsync(oldVideos);
+await repository.SaveChangesAsync();
+```
 
 ### High-Level Overview
 
