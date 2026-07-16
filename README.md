@@ -1737,6 +1737,64 @@ GET /api/jobs/1/status
 
 Open browser: `http://localhost:5000/dashboard`
 
+## ThumbnailVariant
+
+The `ThumbnailVariant` class represents a candidate thumbnail image generated for a YouTube Short video. It tracks thumbnail performance metrics including impressions, clicks, view rates, and helps identify the most effective thumbnail through A/B testing. Each variant is associated with a specific video short and can be marked as active, winner, or used for analytics tracking.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Domain.Models;
+
+// Create a new thumbnail variant for A/B testing
+var variant1 = new ThumbnailVariant
+{
+    VideoShortId = 42,
+    Label = "Variant A - Bright Background",
+    ThumbnailPath = "/thumbnails/short_42_variant_a.jpg",
+    IsActive = true,
+    IsWinner = false,
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+
+// Record analytics data for this variant
+variant1.RecordImpression();
+variant1.RecordClick();
+
+// Update variant with performance data
+variant1.UpdateFromAnalytics(
+    impressionCount: 1500,
+    clickCount: 125,
+    viewRate: 8.3
+);
+
+// Check if variant has sufficient data for decision making
+if (variant1.HasSufficientData(minImpressions: 1000, minClicks: 50))
+{
+    Console.WriteLine($"Variant {variant1.Label} has enough data for analysis");
+    
+    // Declare winner if this variant performs best
+    if (variant1.ViewRate > 7.5)
+    {
+        variant1.DeclareWinner();
+        Console.WriteLine($"Variant {variant1.Label} declared winner with {variant1.ViewRate:F1}% view rate");
+    }
+}
+
+// Create additional variants for A/B testing
+var variant2 = new ThumbnailVariant
+{
+    VideoShortId = 42,
+    Label = "Variant B - Dark Background",
+    ThumbnailPath = "/thumbnails/short_42_variant_b.jpg",
+    IsActive = true,
+    IsWinner = false,
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+```
+
 ## ProcessingProfile
 
 The `ProcessingProfile` class defines video encoding and processing parameters used throughout the YouTube Shorts Automator pipeline. It controls resolution, bitrate, codec selection, watermarking, color grading, and other transcoding options to optimize videos for YouTube Shorts uploads.
