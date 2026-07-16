@@ -1590,6 +1590,61 @@ var processedVideo = await processingService.TranscodeVideoAsync(
 );
 ```
 
+## AnalyticsData
+
+The `AnalyticsData` class represents performance metrics and engagement statistics for YouTube Shorts videos. It tracks key metrics like views, likes, comments, shares, audience retention, and subscriber changes, providing methods to update data from YouTube API responses and calculate engagement rates.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+
+// Create analytics data for a video short
+var analytics = new AnalyticsData
+{
+    VideoShortId = 42,
+    ViewCount = 15000,
+    LikeCount = 1200,
+    CommentCount = 85,
+    ShareCount = 245,
+    AverageViewDuration = 28.5,
+    EngagementRate = 9.2,
+    ClickThroughRate = 4.5,
+    SubscribersGained = 150,
+    SubscribersLost = 25,
+    AudienceRetentionPercentage = 78.3,
+    TrafficSources = 5,
+    ImpressionCount = 45000,
+    UpdatedAt = DateTime.UtcNow
+};
+
+// Update analytics from YouTube API
+analytics.UpdateFromAPI(
+    views: 16250,
+    likes: 1340,
+    comments: 92,
+    shares: 278,
+    avgDuration: 31.2
+);
+
+// Update retention and impression data
+analytics.UpdateRetentionData(
+    retentionPercentage: 82.1,
+    impressions: 48500
+);
+
+// Update subscriber metrics
+analytics.UpdateSubscriberMetrics(
+    gained: 175,
+    lost: 30
+);
+
+// Calculate engagement metrics
+Console.WriteLine($"Engagement Rate: {analytics.EngagementRate:F2}%");
+Console.WriteLine($"Performance Level: {analytics.GetPerformanceLevel()}");
+Console.WriteLine($"Net Subscribers: {analytics.GetNetSubscriberChange()}");
+```
+
 ## SchedulingServiceExtensions
 
 The `SchedulingServiceExtensions` class provides extension methods for the `SchedulingService` that enable batch operations and convenience methods for managing upload jobs. These extension methods simplify common scheduling tasks such as bulk scheduling, rescheduling, cancellation, and checking for overdue jobs.
