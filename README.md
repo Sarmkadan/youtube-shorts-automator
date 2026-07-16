@@ -138,6 +138,92 @@ foreach (var time in postingTimes)
 }
 ```
 
+## ThumbnailAbTestService
+
+The `ThumbnailAbTestService` class manages A/B thumbnail split tests for YouTube Shorts uploads. It creates, tracks, and evaluates competing thumbnail variants to determine which performs best based on view rates and click-through metrics. The service integrates with analytics systems to automatically conclude tests once sufficient data is collected and declare a winning variant.
+
+**Public Members:**
+- `CreateTestAsync()` - Creates a new A/B test with two thumbnail variants for a video
+- `RecordViewEventAsync()` - Records impression and click events for tracking performance
+- `SyncAnalyticsAsync()` - Synchronizes analytics data from external providers
+- `EvaluateAndConcludeAsync()` - Evaluates test results and declares a winner when sufficient data is available
+- `GetTestResultAsync()` - Retrieves the current test result summary
+
+**Properties:**
+- `VideoShortId` - The video identifier this test belongs to
+- `Variants` - All thumbnail variants for this test
+- `WinnerLabel` - The label of the winning variant (null if undecided)
+- `IsComplete` - Whether the test has been concluded
+- `GeneratedAt` - When the test result was generated
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize service (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+var serviceProvider = services.BuildServiceProvider();
+var abTestService = serviceProvider.GetRequiredService<ThumbnailAbTestService>();
+
+// Example 1: Create a new A/B thumbnail test
+var (variantA, variantB) = await abTestService.CreateTestAsync(
+    videoShortId: 42,
+    thumbnailPathA: "/thumbnails/variant_a.jpg",
+    thumbnailPathB: "/thumbnails/variant_b.jpg"
+);
+
+Console.WriteLine($"Created A/B test for video 42:");
+Console.WriteLine($"- Variant A (ID: {variantA.Id}): {variantA.ThumbnailPath}");
+Console.WriteLine($"- Variant B (ID: {variantB.Id}): {variantB.ThumbnailPath}");
+
+// Example 2: Record view events (impressions and clicks)
+// These would typically be called from your analytics tracking system
+await abTestService.RecordViewEventAsync(variantId: variantA.Id, clicked: true);
+await abTestService.RecordViewEventAsync(variantId: variantB.Id, clicked: false);
+await abTestService.RecordViewEventAsync(variantId: variantA.Id, clicked: false);
+
+// Example 3: Sync analytics from external provider
+var analyticsData = new Dictionary<string, (long Impressions, long Clicks)>
+{
+    ["A"] = (Impressions: 1500, Clicks: 120),
+    ["B"] = (Impressions: 1450, Clicks: 95)
+};
+
+await abTestService.SyncAnalyticsAsync(videoShortId: 42, analyticsData: analyticsData);
+
+// Example 4: Evaluate and conclude the test when sufficient data is available
+var winner = await abTestService.EvaluateAndConcludeAsync(videoShortId: 42);
+
+if (winner != null)
+{
+    Console.WriteLine($"🎉 Test concluded! Winner: Variant {winner.Label}");
+    Console.WriteLine($"View rate: {winner.ViewRate:F2}% over {winner.ImpressionCount:N0} impressions");
+}
+else
+{
+    Console.WriteLine("⏳ Test still in progress - waiting for more data...");
+}
+
+// Example 5: Get the current test result summary
+var testResult = await abTestService.GetTestResultAsync(videoShortId: 42);
+Console.WriteLine(testResult.GetSummary());
+
+// Example 6: Access the winning variant details
+if (testResult.IsComplete && testResult.WinnerLabel != null)
+{
+    var winningVariant = testResult.Variants.First(v => v.Label == testResult.WinnerLabel);
+    Console.WriteLine($"🏆 Winning variant {winningVariant.Label}:");
+    Console.WriteLine($"  - Impressions: {winningVariant.ImpressionCount:N0}");
+    Console.WriteLine($"  - Clicks: {winningVariant.ClickCount:N0}");
+    Console.WriteLine($"  - View Rate: {winningVariant.ViewRate:F2}%");
+    Console.WriteLine($"  - Click-Through Rate: {winningVariant.ClickThroughRate:F2}%");
+}
+```
+
 ### Scheduling Calendar
 - **Full Entry Lifecycle**: Draft → Optimised → Approved → Scheduled → Published state machine with `Approve`, `Cancel`, `Archive` and `ApplyOptimization` transitions
 - **REST API**: `ContentCalendarController` exposes ten endpoints: create, read, update, delete, upcoming window, date-range query, optimise, apply-suggestion, schedule and recommended-slot retrieval
