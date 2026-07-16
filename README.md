@@ -683,6 +683,120 @@ Console.WriteLine($"Found {scheduledJobs.Count()} jobs scheduled for upload");
 
 
 
+## MetadataService
+
+The `MetadataService` class validates and sanitizes YouTube Shorts video metadata (titles, descriptions, tags) according to YouTube platform rules and length constraints. It ensures that all uploaded content complies with YouTube's requirements before processing and upload, preventing API errors and rejected uploads due to invalid metadata.
+
+**Key Features:**
+- Validates titles (minimum 5 characters, maximum length, no special characters)
+- Validates descriptions (maximum length enforcement)
+- Validates tags (count limit, individual tag length, deduplication)
+- Sanitizes metadata by removing disallowed characters and truncating to platform limits
+- Provides comprehensive validation with detailed error messages for debugging
+- Integrates with logging for audit trail and troubleshooting
+
+**Public Members:**
+- `ValidateTitle()` - Validates title meets YouTube requirements (non-empty, 5+ chars, within max length)
+- `ValidateDescription()` - Validates description is within maximum length limit
+- `ValidateTags()` - Validates tags array meets count and individual tag length requirements
+- `SanitizeTitle()` - Removes disallowed characters and truncates title to maximum length
+- `SanitizeDescription()` - Truncates description to maximum length if needed
+- `SanitizeTags()` - Filters, deduplicates, and truncates tags to YouTube limits
+- `ValidateMetadata()` - Validates all metadata fields on a VideoShort and returns field-level errors
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize service (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+var serviceProvider = services.BuildServiceProvider();
+var metadataService = serviceProvider.GetRequiredService<MetadataService>();
+
+// Example 1: Validate video metadata before upload
+var videoShort = new VideoShort
+{
+    Title = "Learn C# in 30 Days | Master Programming Skills 🚀",
+    Description = "A comprehensive guide to mastering C# programming language fundamentals and advanced concepts. Perfect for beginners and experienced developers looking to level up their skills!",
+    Tags = new[] { "csharp", "programming", "tutorial", "dotnet", "development", "coding", "tips", "software engineering", "learn programming", "csharp tutorial" }
+};
+
+// Validate all metadata fields
+dynamic validationErrors = metadataService.ValidateMetadata(videoShort);
+if (validationErrors.Count == 0)
+{
+    Console.WriteLine("✓ All metadata is valid for YouTube upload");
+}
+else
+{
+    Console.WriteLine("✗ Metadata validation failed:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($"  - {error.Key}: {error.Value}");
+    }
+}
+
+// Example 2: Validate individual metadata components
+bool isTitleValid = metadataService.ValidateTitle(videoShort.Title);
+bool isDescriptionValid = metadataService.ValidateDescription(videoShort.Description);
+bool areTagsValid = metadataService.ValidateTags(videoShort.Tags);
+
+Console.WriteLine($"Title valid: {isTitleValid}");
+Console.WriteLine($"Description valid: {isDescriptionValid}");
+Console.WriteLine($"Tags valid: {areTagsValid}");
+
+// Example 3: Sanitize metadata before processing
+string sanitizedTitle = metadataService.SanitizeTitle(videoShort.Title);
+string sanitizedDescription = metadataService.SanitizeDescription(videoShort.Description);
+string[] sanitizedTags = metadataService.SanitizeTags(videoShort.Tags);
+
+Console.WriteLine($"Sanitized title: {sanitizedTitle}");
+Console.WriteLine($"Sanitized description length: {sanitizedDescription.Length}");
+Console.WriteLine($"Sanitized tags count: {sanitizedTags.Length}");
+
+// Example 4: Handle edge cases - title with special characters
+var problematicVideo = new VideoShort
+{
+    Title = "Learn C# <Advanced> | "Best Practices" / Tips & Tricks 🎯",
+    Description = "A video about C# programming best practices and advanced techniques",
+    Tags = new[] { "c#", "advanced", "best practices", "programming tips", "dotnet core", "software development" }
+};
+
+string cleanTitle = metadataService.SanitizeTitle(problematicVideo.Title);
+Console.WriteLine($"Original title: {problematicVideo.Title}");
+Console.WriteLine($"Sanitized title: {cleanTitle}");
+
+// Example 5: Handle long description
+var longVideo = new VideoShort
+{
+    Title = "Quick C# Tip",
+    Description = new string('A', 6000), // 6000 characters - exceeds limit
+    Tags = new[] { "csharp", "tip", "quick tip" }
+};
+
+string cleanDescription = metadataService.SanitizeDescription(longVideo.Description);
+Console.WriteLine($"Original description length: {longVideo.Description.Length}");
+Console.WriteLine($"Sanitized description length: {cleanDescription.Length}");
+
+// Example 6: Handle excessive tags
+var tagSpamVideo = new VideoShort
+{
+    Title = "C# Tutorial",
+    Description = "Learn C# programming",
+    Tags = Enumerable.Range(1, 100).Select(i => $"tag{i}").ToArray() // 100 tags - exceeds limit
+};
+
+string[] cleanTags = metadataService.SanitizeTags(tagSpamVideo.Tags);
+Console.WriteLine($"Original tags count: {tagSpamVideo.Tags.Length}");
+Console.WriteLine($"Sanitized tags count: {cleanTags.Length}");
+```
+
 ## FileValidationService
 
 The `FileValidationService` class provides comprehensive file validation and management capabilities for video files in the YouTube Shorts automation pipeline. It handles file validation, integrity verification through hashing, duration extraction, and cleanup of temporary files and directories, ensuring that only valid and safe files are processed throughout the video lifecycle.
