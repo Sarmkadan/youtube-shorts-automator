@@ -181,6 +181,42 @@ var importResult = await controller.ImportSchedulesFromCsvAsync(file);
 ```
 
 
+## JobStatusController
+
+The `JobStatusController` provides REST endpoints to monitor the state and results of asynchronous background jobs. It allows users to retrieve the status, results, statistics, and recent activity of specific processing jobs, as well as cancel jobs that are no longer needed.
+
+**Usage Example:**
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.API;
+
+// Assume controller is initialized via dependency injection
+var controller = new JobStatusController(logger, cacheService);
+
+// Example 1: Get status of a specific job
+var jobId = Guid.NewGuid();
+var statusResult = await controller.GetJobStatusAsync(jobId);
+if (statusResult is OkObjectResult okResult)
+{
+    var status = okResult.Value as JobStatusResponse;
+    Console.WriteLine($"Job {status.JobId} status: {status.Status}, Progress: {status.Progress}%");
+}
+
+// Example 2: Get results of a completed job
+var resultsResult = await controller.GetJobResultsAsync(jobId);
+
+// Example 3: Cancel a running job
+await controller.CancelJobAsync(jobId);
+
+// Example 4: List recent jobs
+var recentJobs = await controller.GetRecentJobsAsync(limit: 10);
+
+// Example 5: Get job performance stats
+var stats = await controller.GetJobStatsAsync(jobId);
+Console.WriteLine($"Successful: {stats.SuccessfulCount}, Failed: {stats.FailedCount}");
+```
+
 ## Repository
 
 The `Repository<TEntity>` base class provides a generic data access layer implementation for common CRUD operations against your database context. It serves as the foundation for all repository implementations in the application and offers standard methods for entity persistence, retrieval, updating, and deletion.
