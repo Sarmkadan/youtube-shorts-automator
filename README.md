@@ -1352,6 +1352,48 @@ To run a single benchmark class interactively:
 dotnet run -c Release -- --filter '*CacheService*'
 ```
 
+## ServiceCollectionExtensions
+
+The `ServiceCollectionExtensions` class provides extension methods for configuring dependency injection in the YouTube Shorts Automator application. It offers a comprehensive set of methods to register infrastructure services, repositories, application services, HTTP clients, logging, and caching with your ASP.NET Core application's service collection.
+
+### Usage Example
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using YouTubeShortsAutomator.Infrastructure.Extensions;
+
+// Configure services in your Program.cs or Startup.cs
+var services = new ServiceCollection();
+
+// Add all infrastructure services with configuration
+services.AddInfrastructureServices(
+    configuration: builder.Configuration
+);
+
+// Or add individual services as needed
+services.AddInfrastructure(
+    configuration: builder.Configuration
+);
+
+services.AddRepositories();
+services.AddApplicationServices();
+services.AddHttpClients(
+    configuration: builder.Configuration
+);
+services.AddCaching(
+    configuration: builder.Configuration
+);
+services.AddLogging();
+
+// Build the service provider
+var serviceProvider = services.BuildServiceProvider();
+
+// Resolve services
+var videoProcessingService = serviceProvider.GetRequiredService<VideoProcessingService>();
+var uploadService = serviceProvider.GetRequiredService<YouTubeUploadService>();
+var schedulingService = serviceProvider.GetRequiredService<SchedulingService>();
+```
+
 ## Related Projects
 
 - [ffmpeg-dotnet-wrapper](https://github.com/sarmkadan/ffmpeg-dotnet-wrapper) - Strongly-typed FFmpeg wrapper for .NET - transcode, trim, merge, watermark with fluent API
