@@ -1664,6 +1664,67 @@ if (performance is OkObjectResult perfOkResult)
 - Get system metrics
 - Response: `{ processingQueue: int, failedJobs: int, uptime: int }`
 
+## WebhookController
+
+The `WebhookController` provides API endpoints for managing webhook registrations, enabling the system to receive real-time notifications about events such as upload completions or failures. It supports CRUD operations, allowing users to register, list, retrieve, update, and delete webhook configurations.
+
+**Usage Example:**
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.API;
+using YouTubeShortsAutomator.Caching;
+
+// Initialize controller (typically via dependency injection)
+var webhookController = new WebhookController(logger, cacheService);
+
+// Example 1: Register a new webhook
+var registerRequest = new RegisterWebhookRequest
+{
+    Url = "https://your-domain.com/webhooks/youtube",
+    Events = new[] { "upload.completed", "upload.failed" }
+};
+var registerResult = await webhookController.RegisterWebhookAsync(registerRequest);
+if (registerResult is CreatedAtActionResult createdResult)
+{
+    var response = createdResult.Value as WebhookRegistrationResponse;
+    Console.WriteLine($"Registered webhook {response.WebhookId} with status: {response.Status}");
+}
+
+// Example 2: List all webhooks
+var listResult = await webhookController.ListWebhooksAsync();
+if (listResult is OkObjectResult listOk)
+{
+    var listResponse = listOk.Value as WebhookListResponse;
+    Console.WriteLine($"Total webhooks: {listResponse.TotalCount}");
+    foreach (var wh in listResponse.Webhooks)
+    {
+        Console.WriteLine($"Webhook {wh.WebhookId}: {wh.Url} (Active: {wh.IsActive})");
+    }
+}
+
+// Example 3: Get webhook details
+var getResult = await webhookController.GetWebhookAsync(webhookId);
+if (getResult is OkObjectResult getOk)
+{
+    var details = getOk.Value as WebhookDetails;
+    Console.WriteLine($"Webhook URL: {details.Url}, Created: {details.CreatedAtUtc}");
+}
+
+// Example 4: Update webhook configuration
+var updateRequest = new UpdateWebhookRequest
+{
+    Url = "https://your-domain.com/new-endpoint",
+    IsActive = false
+};
+var updateResult = await webhookController.UpdateWebhookAsync(webhookId, updateRequest);
+Console.WriteLine($"Update result: {updateResult}");
+
+// Example 5: Delete a webhook
+var deleteResult = await webhookController.DeleteWebhookAsync(webhookId);
+Console.WriteLine($"Delete result: {deleteResult}");
+```
+
 ## CLI Reference
 
 ### Build & Run
