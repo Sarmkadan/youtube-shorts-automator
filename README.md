@@ -878,21 +878,108 @@ public class VideoShort
 }
 ```
 
-#### UploadJob
+## UploadJob
+
+The `UploadJob` class represents a scheduled upload job for YouTube Shorts videos. It tracks the entire upload lifecycle from creation through scheduling, processing, and completion, including retry logic, progress monitoring, and error handling for reliable video upload automation.
+
+**Key Features:**
+- Manages upload lifecycle with status tracking (Queued, Uploading, Completed, Failed)
+- Implements retry logic with configurable maximum attempts (default: 3)
+- Monitors upload progress with byte counts and percentage completion
+- Tracks timestamps for scheduling, upload start, and completion
+- Provides validation and state management methods
+- Associates with VideoShort entities for complete video metadata
+
+**Public Members:**
+- `Id` - Primary key identifier
+- `VideoShortId` - Identifier of the associated video short
+- `YouTubeVideoId` - YouTube video ID assigned after successful upload (empty string if not yet uploaded)
+- `Status` - Current upload status (Queued, Uploading, Completed, Failed)
+- `ScheduledAt` - Scheduled date and time for upload
+- `UploadedAt` - Date and time when upload completed (null if not completed)
+- `AttemptCount` - Number of upload attempts made
+- `MaxRetries` - Maximum number of retry attempts allowed (default: 3)
+- `ErrorMessage` - Error details if upload failed (null otherwise)
+- `UploadedBytes` - Total bytes successfully uploaded
+- `UploadProgressPercentage` - Upload progress as percentage (0-100)
+- `EstimatedTimeRemaining` - Estimated time remaining for upload completion
+- `CreatedAt` - When the upload job was created
+- `UpdatedAt` - When the upload job was last updated
+- `VideoShort` - Navigation property to the associated video short
+- `CanRetry()` - Method to check if job can be retried
+- `IncrementAttempt()` - Method to increment attempt count
+- `MarkAsQueued()` - Method to mark job as queued
+- `MarkAsUploading()` - Method to mark job as uploading
+- `MarkAsCompleted()` - Method to mark job as completed with video ID
+- `MarkAsFailed()` - Method to mark job as failed with error message
+- `UpdateProgress()` - Method to update upload progress
+- `IsValid()` - Method to validate upload job metadata
+
+
+
+
+
+**Usage Example:**
+
 ```csharp
-public class UploadJob
+using YouTubeShortAutomator.Domain.Models;
+
+// Create a new upload job for a video short
+var uploadJob = new UploadJob
 {
-    public int Id { get; set; }
-    public int VideoShortId { get; set; }
-    public int YouTubeChannelId { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public List<string> Tags { get; set; }
-    public UploadStatus Status { get; set; }
-    public DateTime ScheduledUploadTime { get; set; }
-    public int RetryCount { get; set; }
-    public string? YouTubeVideoId { get; set; }
-    public DateTime CreatedAt { get; set; }
+    VideoShortId = 42,
+    ScheduledAt = DateTime.UtcNow.AddHours(2),
+    MaxRetries = 5,
+    Status = UploadStatus.Queued
+};
+
+// Mark job as queued (typically done by scheduling service)
+uploadJob.MarkAsQueued();
+
+// Check if job can be retried
+if (uploadJob.CanRetry())
+{
+    Console.WriteLine("Job can be retried");
+}
+
+// Increment attempt count when retrying
+uploadJob.IncrementAttempt();
+
+// Mark job as uploading when upload starts
+uploadJob.MarkAsUploading();
+
+// Update upload progress during upload
+uploadJob.UpdateProgress(uploadedBytes: 5242880, totalBytes: 10485760); // 5MB of 10MB
+Console.WriteLine($"Progress: {uploadJob.UploadProgressPercentage:F1}%");
+
+// Mark job as completed with YouTube video ID
+uploadJob.MarkAsCompleted(videoId: "dQw4w9WgXcQ");
+Console.WriteLine($"Upload completed! YouTube video: https://youtube.com/watch?v={uploadJob.YouTubeVideoId}");
+
+// Check job status
+Console.WriteLine($"Status: {uploadJob.Status}");
+Console.WriteLine($"Attempts: {uploadJob.AttemptCount}/{uploadJob.MaxRetries}");
+Console.WriteLine($"Uploaded: {uploadJob.UploadedBytes} bytes");
+Console.WriteLine($"Created: {uploadJob.CreatedAt:u}");
+Console.WriteLine($"Updated: {uploadJob.UpdatedAt:u}");
+
+// Handle failed upload
+var failedJob = new UploadJob
+{
+    VideoShortId = 43,
+    ScheduledAt = DateTime.UtcNow.AddHours(1),
+    MaxRetries = 3,
+    Status = UploadStatus.Failed,
+    ErrorMessage = "YouTube API quota exceeded"
+};
+
+if (failedJob.Status == UploadStatus.Failed)
+{
+    Console.WriteLine($"Upload failed: {failedJob.ErrorMessage}");
+    if (failedJob.CanRetry())
+    {
+        Console.WriteLine("Will retry upload");
+    }
 }
 ```
 
