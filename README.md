@@ -1444,6 +1444,65 @@ GET /api/jobs/1/status
 
 Open browser: `http://localhost:5000/dashboard`
 
+## ProcessingProfile
+
+The `ProcessingProfile` class defines video encoding and processing parameters used throughout the YouTube Shorts Automator pipeline. It controls resolution, bitrate, codec selection, watermarking, color grading, and other transcoding options to optimize videos for YouTube Shorts uploads.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Domain.Models;
+
+// Create a high-quality processing profile for YouTube Shorts
+var hqProfile = new ProcessingProfile
+{
+    Name = "High Quality Shorts",
+    Description = "Optimized for YouTube Shorts with high quality settings",
+    VideoWidth = 1080,
+    VideoHeight = 1920,
+    VideoBitrate = 4000,
+    AudioBitrate = 192,
+    FrameRate = 30,
+    VideoCodec = "libx264",
+    AudioCodec = "aac",
+    Container = "mp4",
+    ApplyWatermark = true,
+    WatermarkPath = "/assets/watermark.png",
+    ApplyColorGrading = true,
+    ColorGradingProfile = "vibrant",
+    CompressionLevel = 2,
+    IsDefault = false,
+    IsActive = true
+};
+
+// Create a mobile-friendly profile for smaller file sizes
+var mobileProfile = new ProcessingProfile
+{
+    Name = "Mobile Optimized",
+    Description = "Optimized for mobile bandwidth with smaller file sizes",
+    VideoWidth = 720,
+    VideoHeight = 1280,
+    VideoBitrate = 2000,
+    AudioBitrate = 128,
+    FrameRate = 30,
+    VideoCodec = "libx264",
+    AudioCodec = "aac",
+    Container = "mp4",
+    ApplyWatermark = false,
+    ApplyColorGrading = false,
+    CompressionLevel = 5,
+    IsDefault = false,
+    IsActive = true
+};
+
+// Use profile in video processing
+var processedVideo = await processingService.TranscodeVideoAsync(
+    inputPath: "input.mp4",
+    outputPath: "output_short.mp4",
+    profile: hqProfile
+);
+```
+
 ## Testing
 
 ```bash
