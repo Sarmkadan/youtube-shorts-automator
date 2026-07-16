@@ -2279,6 +2279,106 @@ var skippedUpload = new UploadHistoryEntry
 Console.WriteLine($"Upload skipped for {skippedUpload.VideoFileName}: {skippedUpload.ErrorMessage}");
 ```
 
+## UploadHistoryRepository
+
+The `UploadHistoryRepository` class provides data access methods for managing upload history entries in the database. It tracks all upload attempts (successful, failed, and skipped) to prevent duplicate uploads, provide audit trails, and enable historical analysis of upload operations throughout the YouTube Shorts automation pipeline.
+
+**Key Features:**
+- Persists upload history entries with success/failure status and error details
+- Prevents duplicate uploads by checking for existing successful uploads
+- Retrieves recent upload history for monitoring and auditing
+- Queries upload history by video file name for detailed tracking
+- Maintains complete audit trail with timestamps for compliance and debugging
+
+**Public Members:**
+- `EnsureTableExistsAsync()` - Creates the UploadHistory table if it doesn't exist
+- `AddAsync()` - Adds a new upload history entry to the database
+- `HasSuccessfulUploadAsync()` - Checks if a successful upload already exists for a given file name
+- `GetRecentAsync()` - Retrieves the most recent upload history entries
+- `GetByFileNameAsync()` - Retrieves all upload history entries for a specific video file
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Data;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize repository (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+services.AddDbContext<DatabaseContext>();
+var serviceProvider = services.BuildServiceProvider();
+var uploadHistoryRepository = serviceProvider.GetRequiredService<UploadHistoryRepository>();
+
+// Example 1: Ensure table exists (typically done during application startup)
+await uploadHistoryRepository.EnsureTableExistsAsync();
+Console.WriteLine("UploadHistory table ensured");
+
+// Example 2: Add a successful upload entry
+var successfulUpload = new UploadHistoryEntry
+{
+    VideoFileName = "my_short_1080p.mp4",
+    YouTubeVideoId = "dQw4w9WgXcQ",
+    UploadedAt = DateTime.UtcNow,
+    Status = UploadHistoryStatus.Success,
+    ErrorMessage = null
+};
+
+var addedEntry = await uploadHistoryRepository.AddAsync(successfulUpload);
+Console.WriteLine($"Added upload entry {addedEntry.Id}: {addedEntry.Status} for {addedEntry.VideoFileName}");
+
+// Example 3: Check if a successful upload already exists (prevent duplicates)
+bool hasExistingUpload = await uploadHistoryRepository.HasSuccessfulUploadAsync("my_short_1080p.mp4");
+if (hasExistingUpload)
+{
+    Console.WriteLine("Skipping upload - duplicate already exists");
+}
+else
+{
+    Console.WriteLine("Proceeding with upload - no existing successful upload found");
+}
+
+// Example 4: Add a failed upload entry
+var failedUpload = new UploadHistoryEntry
+{
+    VideoFileName = "failing_short.mp4",
+    YouTubeVideoId = null,
+    UploadedAt = DateTime.UtcNow.AddMinutes(-5),
+    Status = UploadHistoryStatus.Failed,
+    ErrorMessage = "YouTube API quota exceeded"
+};
+
+await uploadHistoryRepository.AddAsync(failedUpload);
+Console.WriteLine($"Recorded failed upload: {failedUpload.ErrorMessage}");
+
+// Example 5: Get recent upload history (last 50 entries)
+var recentUploads = await uploadHistoryRepository.GetRecentAsync(limit: 50);
+Console.WriteLine($"Found {recentUploads.Count()} recent upload entries");
+
+foreach (var entry in recentUploads.Take(5))
+{
+    Console.WriteLine($"- Entry {entry.Id}: {entry.VideoFileName} - {entry.Status} at {entry.UploadedAt:u}");
+}
+
+// Example 6: Get upload history for a specific video file
+var fileHistory = await uploadHistoryRepository.GetByFileNameAsync("my_short_1080p.mp4");
+Console.WriteLine($"Found {fileHistory.Count()} entries for my_short_1080p.mp4");
+
+foreach (var entry in fileHistory)
+{
+    Console.WriteLine($"  - Attempt {entry.Id}: {entry.Status} at {entry.UploadedAt:u}");
+    if (entry.Status == UploadHistoryStatus.Failed)
+    {
+        Console.WriteLine($"    Error: {entry.ErrorMessage}");
+    }
+    else if (entry.Status == UploadHistoryStatus.Success && entry.YouTubeVideoId != null)
+    {
+        Console.WriteLine($"    YouTube Video: https://youtube.com/watch?v={entry.YouTubeVideoId}");
+    }
+}
+```
+
 ## ProcessingTaskExtensions
 
 The `ProcessingTaskExtensions` class provides a collection of extension methods for the `ProcessingTask` class that simplify common task operations and calculations. These methods help with determining task progress, checking task states, and managing task priorities in a clean, fluent manner.
