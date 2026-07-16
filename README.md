@@ -274,6 +274,66 @@ var (userPaginatedVideos, userTotalCount) = await videoRepository.GetUserVideosP
 Console.WriteLine($"User {userId} has {userTotalCount} total videos, showing page 1");
 ```
 
+#### ProcessingJobRepository
+
+The `ProcessingJobRepository` class provides data access methods for querying processing job entities from the database. It implements the `IProcessingJobRepository` interface and offers specialized methods for retrieving processing jobs by video ID, status, job type, and pagination.
+
+**Key Features:**
+- Query processing jobs by video ID with eager loading of related entities (steps, errors, video)
+- Filter jobs by status (queued, processing, completed, failed)
+- Retrieve pending jobs for processing pipeline
+- Get failed jobs eligible for retry
+- Search jobs by processing job type
+- Paginated queries with total count for UI pagination
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Infrastructure.Repositories;
+using YouTubeShortsAutomator.Domain.Models;
+
+// Initialize repository (typically via dependency injection)
+var processingJobRepository = new ProcessingJobRepository(dbContext, logger);
+
+// Example 1: Get processing jobs for a video
+var videoJobs = await processingJobRepository.GetByVideoIdAsync(videoId);
+Console.WriteLine($"Found {videoJobs.Count} processing jobs for video {videoId}");
+
+// Example 2: Get pending jobs for processing pipeline
+var pendingJobs = await processingJobRepository.GetPendingJobsAsync();
+Console.WriteLine($"Found {pendingJobs.Count} pending processing jobs");
+
+// Example 3: Get jobs by status
+var processingJobs = await processingJobRepository.GetByStatusAsync(ProcessingJobStatus.Processing);
+Console.WriteLine($"Found {processingJobs.Count} processing jobs");
+
+// Example 4: Get failed jobs for retry
+var failedJobs = await processingJobRepository.GetFailedJobsAsync();
+Console.WriteLine($"Found {failedJobs.Count} failed jobs");
+
+// Example 5: Get jobs eligible for retry (max 3 retries)
+var retryJobs = await processingJobRepository.GetJobsForRetryAsync(maxRetries: 3);
+Console.WriteLine($"Found {retryJobs.Count} jobs eligible for retry");
+
+// Example 6: Get latest job for a video
+var latestJob = await processingJobRepository.GetLatestJobForVideoAsync(videoId);
+if (latestJob != null)
+{
+    Console.WriteLine($"Latest job for video {videoId}: Status={latestJob.Status}, Created={latestJob.CreatedAt}");
+}
+
+// Example 7: Get jobs by type
+var transcodeJobs = await processingJobRepository.GetJobsByTypeAsync(ProcessingJobType.Transcode);
+Console.WriteLine($"Found {transcodeJobs.Count} transcode jobs");
+
+// Example 8: Get paginated jobs (page 1, 10 items per page)
+var (paginatedJobs, totalCount) = await processingJobRepository.GetPaginatedAsync(pageNumber: 1, pageSize: 10);
+Console.WriteLine($"Found {paginatedJobs.Count} jobs out of {totalCount} total");
+```
+
 #### VideoShort
 ```csharp
 public class VideoShort
