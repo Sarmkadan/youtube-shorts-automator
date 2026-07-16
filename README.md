@@ -1972,6 +1972,33 @@ var distinctUnique = CollectionUtilityBenchmarksExtensions.DistinctByAllUnique()
 var distinctSame = CollectionUtilityBenchmarksExtensions.DistinctByAllSame();
 ```
 
+## EncodingUtilityBenchmarks
+
+`EncodingUtilityBenchmarks` measures the performance of core encoding and hashing utilities that are invoked repeatedly throughout the video processing pipeline. These benchmarks cover SHA-256 and MD5 hashing for cache key generation, Base64 encoding/decoding for credential handling, and secure random string generation for upload tokens and correlation IDs.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Benchmarks;
+
+// Initialize the benchmark class
+var benchmarks = new EncodingUtilityBenchmarks();
+
+// Execute individual benchmark tests
+var sha256Hash = benchmarks.Sha256Hash();
+var md5Hash = benchmarks.Md5Hash();
+var base64Encoded = benchmarks.EncodeBase64();
+var base64Decoded = benchmarks.DecodeBase64();
+var randomString = benchmarks.GenerateRandomString();
+var randomHexString = benchmarks.GenerateRandomHexString();
+
+Console.WriteLine($"SHA-256 Hash: {sha256Hash}");
+Console.WriteLine($"MD5 Hash: {md5Hash}");
+Console.WriteLine($"Base64 Encoded: {base64Encoded}");
+Console.WriteLine($"Random String: {randomString}");
+Console.WriteLine($"Random Hex: {randomHexString}");
+```
+
 ## CacheServiceBenchmarks
 
 `CacheServiceBenchmarks` measures the performance of the in-memory cache service (`ICacheService`) which is used extensively throughout the video processing and upload scheduling pipeline. These benchmarks test the most frequent cache operations: get, set, and remove, providing insight into the overhead of the `ValueTask`-based async API and the actual cache lookup cost.
