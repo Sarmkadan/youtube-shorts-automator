@@ -1651,6 +1651,72 @@ var request = new ThumbnailGenerationRequest
 };
 ```
 
+## TextOverlayOptionsExtensions
+
+The `TextOverlayOptionsExtensions` class provides a collection of fluent extension methods for configuring `TextOverlayOptions` with common patterns. These methods simplify the creation and modification of text overlay configurations by allowing method chaining and providing sensible defaults for different use cases like titles, subtitles, and watermarks.
+
+
+
+
+**Public Members:**
+- `WithFontSize` - Sets the font size
+- `WithFontColor` - Sets the font color
+- `WithBox` - Sets whether to show the background box
+- `WithBoxColor` - Sets the background box color
+- `WithBoxPadding` - Sets the box padding
+- `WithPosition` - Sets the text position
+- `WithWrapWidth` - Sets the text wrap width
+- `WithAppearance` - Sets all appearance properties at once
+- `Clone` - Creates a deep copy of the options
+- `CreateDefault` - Creates a new instance with default values
+- `ForTitle` - Creates options configured for a title
+- `ForSubtitle` - Creates options configured for a subtitle
+- `ForWatermark` - Creates options configured for a watermark
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Domain.Models;
+
+// Create a basic text overlay with fluent configuration
+var textOverlay = TextOverlayOptions.CreateDefault()
+    .WithFontSize(52)
+    .WithFontColor("white")
+    .WithBox(true)
+    .WithBoxColor("black@0.6")
+    .WithBoxPadding(12)
+    .WithPosition(TextPosition.BottomCenter)
+    .WithWrapWidth(35);
+
+// Use convenience methods for specific scenarios
+var titleOverlay = TextOverlayOptions.ForTitle("5 Python Tips You NEED to Know");
+
+var subtitleOverlay = TextOverlayOptions.ForSubtitle("Learn essential Python techniques in 60 seconds");
+
+var watermarkOverlay = TextOverlayOptions.ForWatermark("@MyChannel");
+
+// Clone existing configuration for modification
+var baseOverlay = TextOverlayOptions.ForTitle("My Video");
+var modifiedOverlay = baseOverlay.Clone()
+    .WithFontColor("#FFFF00")
+    .WithBoxColor("black@0.8");
+
+// Set all appearance properties at once
+var customOverlay = TextOverlayOptions.CreateDefault()
+    .WithAppearance(
+        fontSize: 48,
+        fontColor: "white",
+        showBox: true,
+        boxColor: "blue@0.5",
+        boxPadding: 10,
+        position: TextPosition.TopRight,
+        wrapWidth: 40
+    );
+```
+
 ### Example: Generating a Thumbnail with Text Overlay
 
 ```csharp
