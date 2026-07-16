@@ -1857,6 +1857,32 @@ var deleteResult = await webhookController.DeleteWebhookAsync(webhookId);
 Console.WriteLine($"Delete result: {deleteResult}");
 ```
 
+## CollectionUtilityBenchmarksExtensions
+
+`CollectionUtilityBenchmarksExtensions` provides a suite of benchmark scenarios for testing and optimizing `CollectionUtility` operations. It includes test cases for chunking, grouping, and distinct operations across various edge-case data sets.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Benchmarks;
+using System.Collections.Generic;
+
+// Example 1: Chunking operations
+var chunkEmpty = CollectionUtilityBenchmarksExtensions.ChunkByEmptyCollection();
+var chunkSingle = CollectionUtilityBenchmarksExtensions.ChunkBySingleItem();
+var chunkUneven = CollectionUtilityBenchmarksExtensions.ChunkByUnevenDivision();
+
+// Example 2: Grouping operations
+var groupEmpty = CollectionUtilityBenchmarksExtensions.GroupByToDictionaryEmptyCollection();
+var groupSingle = CollectionUtilityBenchmarksExtensions.GroupByToDictionarySingleGroup();
+var groupMany = CollectionUtilityBenchmarksExtensions.GroupByToDictionaryManyGroups();
+
+// Example 3: Distinct operations
+var distinctEmpty = CollectionUtilityBenchmarksExtensions.DistinctByEmptyCollection();
+var distinctUnique = CollectionUtilityBenchmarksExtensions.DistinctByAllUnique();
+var distinctSame = CollectionUtilityBenchmarksExtensions.DistinctByAllSame();
+```
+
 ## CLI Reference
 
 ### Build & Run
