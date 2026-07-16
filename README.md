@@ -1084,6 +1084,82 @@ var queuedOrPending = await uploadJobRepository.GetQueuedOrPendingJobsAsync();
 Console.WriteLine($"Found {queuedOrPending.Count()} queued or pending jobs");
 ```
 
+## ChannelService
+
+The `ChannelService` class provides methods for managing YouTube channel status, authentication tokens, and credential validation. It serves as the primary service for channel lifecycle management including token validation, status updates, and credential verification throughout the YouTube integration pipeline.
+
+**Key Features:**
+- Validates channel authentication tokens and refresh status
+- Manages channel active/inactive status
+- Provides human-readable channel status summaries
+- Validates required credentials for YouTube API operations
+- Integrates with YouTubeChannel domain model for complete channel management
+
+**Public Members:**
+- `IsChannelTokenValid(YouTubeChannel channel)` - Checks if the channel's access token is still valid
+- `NeedsTokenRefresh(YouTubeChannel channel)` - Checks if the token should be refreshed proactively
+- `UpdateChannelStatus(YouTubeChannel channel, bool isActive)` - Updates the active status of a channel
+- `GetChannelStatusSummary(YouTubeChannel channel)` - Returns a human-readable summary of channel status
+- `ValidateChannelCredentials(YouTubeChannel channel)` - Validates that all required credentials are present
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+// Initialize service (typically via dependency injection)
+var channelService = serviceProvider.GetRequiredService<ChannelService>();
+
+// Example 1: Check if channel token is valid
+var channel = new YouTubeChannel
+{
+    ChannelId = "UC1234567890",
+    ChannelName = "My Awesome Coding Channel",
+    AccessToken = "ya29.a0AfH6SMB...",
+    RefreshToken = "1//09wgY...",
+    TokenExpiresAt = DateTime.UtcNow.AddHours(1),
+    SubscriberCount = 15000,
+    ViewCount = 2500000,
+    VideoCount = 420,
+    IsVerified = true,
+    IsActive = true,
+    LastSyncAt = DateTime.UtcNow
+};
+
+bool isTokenValid = channelService.IsChannelTokenValid(channel);
+Console.WriteLine($"Token is valid: {isTokenValid}");
+
+// Example 2: Check if token needs refresh (within 10 minutes of expiration)
+bool needsRefresh = channelService.NeedsTokenRefresh(channel);
+if (needsRefresh)
+{
+    Console.WriteLine("Token will expire soon - refresh needed");
+}
+
+// Example 3: Update channel status
+channelService.UpdateChannelStatus(channel, isActive: false);
+Console.WriteLine($"Channel status updated to: {(channel.IsActive ? "Active" : "Inactive")}");
+
+// Example 4: Get channel status summary
+string statusSummary = channelService.GetChannelStatusSummary(channel);
+Console.WriteLine(statusSummary);
+
+// Example 5: Validate channel credentials before API operations
+bool credentialsValid = channelService.ValidateChannelCredentials(channel);
+if (credentialsValid)
+{
+    Console.WriteLine("Channel credentials are valid for YouTube API operations");
+}
+else
+{
+    Console.WriteLine("Channel credentials validation failed - check access and refresh tokens");
+}
+```
+
 ## UploadJob
 
 The `UploadJob` class represents a scheduled upload job for YouTube Shorts videos. It tracks the entire upload lifecycle from creation through scheduling, processing, and completion, including retry logic, progress monitoring, and error handling for reliable video upload automation.
