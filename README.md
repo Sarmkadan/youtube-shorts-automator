@@ -1454,6 +1454,142 @@ Console.WriteLine($"Final status - Percentage: {finalPercentage}%, Duration: {fi
 
 ### Service Layer
 
+## IThumbnailGeneratorService
+
+The `IThumbnailGeneratorService` interface provides programmatic thumbnail creation capabilities from video sources, including frame extraction, text overlay, and batch generation. It's implemented by `ThumbnailGeneratorService` and registered for dependency injection.
+
+**Key Features:**
+- Extract single frames from videos at precise timestamps using FFmpeg
+- Apply text overlays with configurable font, color, position, and background box
+- Generate multiple candidate frames evenly spaced across video duration for A/B testing
+- Support for multiple output formats (JPEG, PNG, WebP) with quality control
+- Aspect ratio presets optimized for YouTube Shorts (9:16), landscape (16:9), and square (1:1)
+
+**Public Members:**
+- `GenerateFromVideoAsync()` - Extracts a single frame from a video at specified timestamp with optional text overlay
+- `GenerateWithTextOverlayAsync()` - Applies text overlay to an existing image file
+- `GenerateBatchAsync()` - Generates multiple thumbnails from evenly spaced timestamps across video duration
+- `GetDimensions()` - Returns pixel dimensions (width, height) for a given aspect ratio
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+// Initialize service (typically via dependency injection)
+var thumbnailService = serviceProvider.GetRequiredService<IThumbnailGeneratorService>();
+
+// Example 1: Generate thumbnail from video at specific timestamp
+var singleResult = await thumbnailService.GenerateFromVideoAsync(
+    videoPath: "/videos/my_short.mp4",
+    request: new ThumbnailGenerationRequest
+    {
+        CaptureTimestamp = TimeSpan.FromSeconds(15.5), // 15.5 seconds into video
+        OutputDirectory = "/thumbnails",
+        AspectRatio = ThumbnailAspectRatio.Vertical, // 9:16 for YouTube Shorts
+        Format = ThumbnailOutputFormat.Jpeg,
+        Quality = 90,
+        OverlayText = "My Awesome Video Title",
+        TextOverlay = new TextOverlayOptions
+        {
+            Position = TextPosition.BottomCenter,
+            FontColor = "white",
+            FontSize = 48,
+            ShowBox = true,
+            BoxColor = "#80000000", // Semi-transparent black
+            BoxPadding = 20
+        }
+    }
+);
+
+if (singleResult.Success)
+{
+    Console.WriteLine($"Generated thumbnail: {singleResult.OutputPath}");
+    Console.WriteLine($"Dimensions: {singleResult.Width}x{singleResult.Height}");
+    Console.WriteLine($"File size: {singleResult.FileSizeBytes} bytes");
+}
+
+// Example 2: Generate multiple candidate thumbnails for A/B testing
+var batchResults = await thumbnailService.GenerateBatchAsync(
+    videoPath: "/videos/my_short.mp4",
+    request: new ThumbnailGenerationRequest
+    {
+        OutputDirectory = "/thumbnails/candidates",
+        AspectRatio = ThumbnailAspectRatio.Vertical,
+        Format = ThumbnailOutputFormat.Jpeg,
+        Quality = 85
+    },
+    frameCount: 5, // Generate 5 thumbnails at evenly spaced intervals
+    videoDuration: TimeSpan.FromSeconds(60) // 60-second video
+);
+
+Console.WriteLine($"Generated {batchResults.Count(r => r.Success)} out of 5 candidate thumbnails");
+
+// Example 3: Get dimensions for specific aspect ratio
+var (width, height) = thumbnailService.GetDimensions(ThumbnailAspectRatio.Vertical);
+Console.WriteLine($"Vertical aspect ratio dimensions: {width}x{height}");
+
+// Example 4: Apply text overlay to existing image
+var overlayResult = await thumbnailService.GenerateWithTextOverlayAsync(
+    imagePath: "/thumbnails/base_image.jpg",
+    text: "Click to Watch!",
+    options: new TextOverlayOptions
+    {
+        Position = TextPosition.Center,
+        FontColor = "yellow",
+        FontSize = 64,
+        ShowBox = true,
+        BoxColor = "#80FF0000" // Semi-transparent red
+    }
+);
+
+if (overlayResult.Success)
+{
+    Console.WriteLine($"Overlay applied: {overlayResult.OutputPath}");
+}
+```
+
+**ThumbnailAspectRatio Options:**
+- `Horizontal` - 16:9 landscape (1280×720)
+- `Vertical` - 9:16 portrait/Shorts (720×1280)
+- `Square` - 1:1 square (720×720)
+
+**ThumbnailOutputFormat Options:**
+- `Jpeg` - JPEG format with quality control
+- `Png` - Lossless PNG format
+- `WebP` - WebP format with quality control
+
+**TextOverlayOptions Properties:**
+- `Position` - TextPosition enum (TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter, BottomRight)
+- `FontColor` - Color string (e.g., "white", "#FFFFFF")
+- `FontSize` - Font size in pixels
+- `ShowBox` - Whether to show background box
+- `BoxColor` - Background box color string
+- `BoxPadding` - Padding around text in pixels
+
+**ThumbnailGenerationResult Properties:**
+- `Success` - Whether generation succeeded
+- `OutputPath` - Path to generated thumbnail
+- `FileSizeBytes` - File size in bytes
+- `Width` - Generated image width
+- `Height` - Generated image height
+- `CaptureTimestamp` - Timestamp used for frame extraction
+- `GeneratedAt` - When thumbnail was generated
+- `ErrorMessage` - Error details if generation failed
+
+**TextPosition Options:**
+- `TopLeft`, `TopCenter`, `TopRight`
+- `MiddleLeft`, `MiddleRight`
+- `BottomLeft`, `BottomCenter`, `BottomRight`
+
+**Usage Notes:**
+- FFmpeg must be installed and available on PATH or configured via `appsettings.json`
+- Text overlay requires a TrueType font accessible on the host system
+- Batch generation creates thumbnails at evenly spaced intervals: `videoDuration / (frameCount + 1)`
+- Output directory must exist or be creatable by the application
+- Quality parameter ranges: JPEG (1-31, lower=better), WebP (0-100)
+
 **ThumbnailGeneratorService**: Generates thumbnail images from video files
 - FFmpeg-backed frame extraction at any timestamp
 - Text overlay via `drawtext` filter with configurable appearance
