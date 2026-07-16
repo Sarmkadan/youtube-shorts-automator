@@ -450,4 +450,111 @@ Console.WriteLine($"Deleted entry {entry1.Id}: {(deleted ? "Success" : "Failed")
 await repository.SaveChangesAsync();
 ```
 
+## UploadJobRepository
+
+The `UploadJobRepository` class provides data access operations for managing upload job entities in the YouTube Shorts automation system. It implements the `IRepository<UploadJob>` interface and offers specialized methods for querying upload jobs by status, retrieving jobs scheduled for upload, and finding retryable failed jobs. The repository handles all database operations for upload jobs including creation, retrieval, updating, and deletion, with support for tracking upload progress, retry attempts, and error messages.
+
+**Public Members:**
+- `GetByIdAsync()` - Retrieves an upload job by its unique identifier
+- `GetAllAsync()` - Retrieves all upload jobs from the database
+- `GetByStatusAsync()` - Retrieves upload jobs filtered by their status
+- `GetScheduledForUploadAsync()` - Retrieves upload jobs that are scheduled for upload and ready to be processed
+- `GetRetryableFailedJobsAsync()` - Retrieves failed upload jobs that are eligible for retry based on their attempt count
+- `AddAsync()` - Adds a new upload job to the database
+- `UpdateAsync()` - Updates an existing upload job in the database
+- `DeleteAsync()` - Deletes an upload job from the database by its identifier
+- `ExistsAsync()` - Checks if an upload job with the specified identifier exists in the database
+- `CountAsync()` - Returns the total count of upload jobs in the database
+- `SaveChangesAsync()` - Persists changes to the database
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Data;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize repository (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+services.AddDbContext<DatabaseContext>(options => options.UseSqlServer("YourConnectionString"));
+var serviceProvider = services.BuildServiceProvider();
+var repository = serviceProvider.GetRequiredService<UploadJobRepository>();
+
+// Example 1: Create a new upload job for a video
+var uploadJob = new UploadJob
+{
+    VideoShortId = 42,
+    Status = UploadStatus.Queued,
+    ScheduledAt = DateTime.UtcNow.AddHours(2),
+    MaxRetries = 3,
+    AttemptCount = 0,
+    UploadProgressPercentage = 0.0,
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+
+await repository.AddAsync(uploadJob);
+Console.WriteLine($"Created upload job {uploadJob.Id} for video {uploadJob.VideoShortId}");
+
+// Example 2: Get an upload job by ID
+var existingJob = await repository.GetByIdAsync(uploadJob.Id);
+if (existingJob != null)
+{
+    Console.WriteLine($"Found upload job: Status={existingJob.Status}, Scheduled={existingJob.ScheduledAt:u}");
+}
+
+// Example 3: Get all upload jobs
+var allJobs = await repository.GetAllAsync();
+Console.WriteLine($"Total upload jobs: {allJobs.Count()}");
+
+// Example 4: Get upload jobs by status
+var queuedJobs = await repository.GetByStatusAsync(UploadStatus.Queued);
+Console.WriteLine($"Queued jobs: {queuedJobs.Count()}");
+
+var failedJobs = await repository.GetByStatusAsync(UploadStatus.Failed);
+Console.WriteLine($"Failed jobs: {failedJobs.Count()}");
+
+// Example 5: Get jobs scheduled for upload (ready to process)
+var scheduledJobs = await repository.GetScheduledForUploadAsync();
+Console.WriteLine($"Jobs ready for upload: {scheduledJobs.Count()}");
+
+foreach (var job in scheduledJobs)
+{
+    Console.WriteLine($"- Job {job.Id}: Video {job.VideoShortId}, Scheduled: {job.ScheduledAt:u}");
+}
+
+// Example 6: Get retryable failed jobs (failed but not exceeded max retries)
+var retryableJobs = await repository.GetRetryableFailedJobsAsync();
+Console.WriteLine($"Retryable failed jobs: {retryableJobs.Count()}");
+
+foreach (var job in retryableJobs)
+{
+    Console.WriteLine($"- Job {job.Id}: Attempt {job.AttemptCount}/{job.MaxRetries}, Error: {job.ErrorMessage}");
+}
+
+// Example 7: Update an upload job (e.g., after upload completes)
+if (existingJob != null)
+{
+    existingJob.Status = UploadStatus.Completed;
+    existingJob.UploadedAt = DateTime.UtcNow;
+    existingJob.YouTubeVideoId = "dQw4w9WgXcQ"; // YouTube video ID
+    existingJob.UploadProgressPercentage = 100.0;
+    existingJob.UpdatedAt = DateTime.UtcNow;
+    
+    await repository.UpdateAsync(existingJob);
+    Console.WriteLine("Updated upload job status to Completed");
+}
+
+// Example 8: Check if job exists and get total count
+bool jobExists = await repository.ExistsAsync(uploadJob.Id);
+int totalJobs = await repository.CountAsync();
+Console.WriteLine($"Job {uploadJob.Id} exists: {jobExists}");
+Console.WriteLine($"Total jobs in database: {totalJobs}");
+
+// Example 9: Delete a completed upload job
+bool deleted = await repository.DeleteAsync(uploadJob.Id);
+Console.WriteLine($"Deleted job {uploadJob.Id}: {(deleted ? "Success" : "Failed")}");
+```
+
 ## ThumbnailAbTestService
