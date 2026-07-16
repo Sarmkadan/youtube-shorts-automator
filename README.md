@@ -742,4 +742,90 @@ Console.WriteLine($"Connection opened: {connection.State}");
 await databaseContext.DisposeAsync();
 ```
 
+## AppSettings
+
+The `AppSettings` class provides centralized configuration management for the YouTube Shorts Automator application. It encapsulates all application settings including database connections, file paths, processing limits, YouTube API credentials, and scheduling parameters. This class is typically accessed through dependency injection in ASP.NET Core applications or manually instantiated in console applications.
+
+The configuration values control core application behavior such as concurrent processing limits, retry strategies, analytics synchronization frequency, and watermark application settings.
+
+**Public Members:**
+- `ConnectionString` - Database connection string for SQL Server access
+- `DatabasePath` - File path to the SQLite database
+- `LogDirectory` - Directory path for application log files
+- `ProcessingDirectory` - Directory path for temporary processing files
+- `OutputDirectory` - Directory path for final output files
+- `MaxConcurrentUploads` - Maximum number of concurrent upload operations
+- `MaxConcurrentProcessing` - Maximum number of concurrent video processing operations
+- `DefaultRetryCount` - Default number of retry attempts for failed operations
+- `UploadTimeoutSeconds` - Timeout duration for upload operations in seconds
+- `ProcessingQueueLimit` - Maximum size of the processing queue
+- `EnableAnalyticsSyncing` - Flag to enable/disable analytics synchronization
+- `AnalyticsSyncIntervalHours` - Interval between analytics sync operations in hours
+- `YouTubeApiKey` - API key for YouTube API access
+- `YouTubeClientId` - Client ID for YouTube OAuth authentication
+- `YouTubeClientSecret` - Client secret for YouTube OAuth authentication
+- `ScheduleCheckIntervalSeconds` - Interval between schedule checks in seconds
+- `EnableWatermark` - Flag to enable/disable watermark application
+- `WatermarkImagePath` - File path to the watermark image (nullable)
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Configuration;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+// Example 1: Manual instantiation with configuration binding
+var appSettings = new AppSettings
+{
+    ConnectionString = "Server=localhost;Database=YouTubeShortsAutomator;User Id=sa;Password=YourPassword;",
+    DatabasePath = "./data/youtube-shorts-automator.db",
+    LogDirectory = "./logs",
+    ProcessingDirectory = "./processing",
+    OutputDirectory = "./output",
+    MaxConcurrentUploads = 5,
+    MaxConcurrentProcessing = 10,
+    DefaultRetryCount = 3,
+    UploadTimeoutSeconds = 300,
+    ProcessingQueueLimit = 100,
+    EnableAnalyticsSyncing = true,
+    AnalyticsSyncIntervalHours = 24,
+    YouTubeApiKey = "AIzaSyDqjKXlX...",
+    YouTubeClientId = "1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com",
+    YouTubeClientSecret = "GOCSPX-abcdefghijklmnopqrstuvwxyz",
+    ScheduleCheckIntervalSeconds = 60,
+    EnableWatermark = true,
+    WatermarkImagePath = "./assets/watermark.png"
+};
+
+Console.WriteLine($"Database path: {appSettings.DatabasePath}");
+Console.WriteLine($"Max concurrent uploads: {appSettings.MaxConcurrentUploads}");
+Console.WriteLine($"YouTube API enabled: {!string.IsNullOrEmpty(appSettings.YouTubeApiKey)}");
+
+// Example 2: Configuration binding from IConfiguration
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Build();
+
+var appSettingsFromConfig = new AppSettings();
+configuration.GetSection("AppSettings").Bind(appSettingsFromConfig);
+
+Console.WriteLine($"Loaded configuration - Database: {appSettingsFromConfig.DatabasePath}");
+
+// Example 3: Using with dependency injection (ASP.NET Core)
+var services = new ServiceCollection();
+services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
+services.AddSingleton<AppSettings>(sp => 
+    sp.GetRequiredService<IOptions<AppSettings>>().Value);
+
+var serviceProvider = services.BuildServiceProvider();
+var settings = serviceProvider.GetRequiredService<AppSettings>();
+
+Console.WriteLine($"DI-injected settings - Log directory: {settings.LogDirectory}");
+Console.WriteLine($"Analytics sync enabled: {settings.EnableAnalyticsSyncing}");
+```
+
 ## ThumbnailAbTestService
