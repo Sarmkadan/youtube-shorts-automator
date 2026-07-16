@@ -557,4 +557,83 @@ bool deleted = await repository.DeleteAsync(uploadJob.Id);
 Console.WriteLine($"Deleted job {uploadJob.Id}: {(deleted ? "Success" : "Failed")}");
 ```
 
+## DatabaseContext
+
+The `DatabaseContext` class provides a lightweight database access layer for executing SQL commands against a Microsoft SQL Server database. It manages database connections, executes parameterized SQL commands, and returns results in various formats including scalar values, DataTables, and row counts. The context is designed for direct SQL execution scenarios where Entity Framework's DbContext is not required, providing lower-level control over database operations.
+
+
+
+**Public Members:**
+- `GetConnectionAsync()` - Opens and returns a SQL Server connection
+- `ExecuteCommandAsync()` - Executes a parameterized SQL command and returns the number of affected rows
+- `ExecuteScalarAsync<T>()` - Executes a scalar SQL query and returns a single value of type T
+- `ExecuteDataTableAsync()` - Executes a SQL query and returns results as a DataTable
+- `DisposeAsync()` - Properly closes and disposes the database connection
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Data;
+using System.Data;
+
+// Initialize database context with connection string
+var connectionString = "Server=localhost;Database=YouTubeShortsAutomator;User Id=sa;Password=YourPassword;";
+var databaseContext = new DatabaseContext(connectionString);
+
+// Example 1: Execute a simple SQL command
+int rowsAffected = await databaseContext.ExecuteCommandAsync(
+    "UPDATE Videos SET Status = 'Processed' WHERE VideoShortId = @id",
+    parameters: new Dictionary<string, object?> { { "@id", 42 } 
+);
+Console.WriteLine($"Updated {rowsAffected} rows");
+
+// Example 2: Execute a scalar query to get a count
+int videoCount = await databaseContext.ExecuteScalarAsync<int>(
+    "SELECT COUNT(*) FROM Videos WHERE Status = 'Queued'"
+);
+Console.WriteLine($"Queued videos: {videoCount}");
+
+// Example 3: Execute a parameterized query with multiple parameters
+var parameters = new Dictionary<string, object?> 
+{
+    { "@title", "Learn C# in 30 Days" },
+    { "@description", "A comprehensive guide to mastering C#" },
+    { "@channelId", 1 }
+};
+
+int newVideoId = await databaseContext.ExecuteScalarAsync<int>(
+    @"INSERT INTO Videos (Title, Description, ChannelId, CreatedAt)
+      VALUES (@title, @description, @channelId, GETUTCDATE());
+      SELECT SCOPE_IDENTITY()",
+    parameters: parameters
+);
+Console.WriteLine($"Created new video with ID: {newVideoId}");
+
+// Example 4: Execute a query and return results as DataTable
+var dataTable = await databaseContext.ExecuteDataTableAsync(
+    "SELECT VideoShortId, Title, Status, CreatedAt FROM Videos WHERE Status = 'Queued'"
+);
+
+foreach (DataRow row in dataTable.Rows)
+{
+    Console.WriteLine($"Video {row["VideoShortId"]}: {row["Title"]} - {row["Status"]}");
+}
+
+// Example 5: Execute a command with CommandType.StoredProcedure
+int result = await databaseContext.ExecuteCommandAsync(
+    "sp_UpdateVideoStatus",
+    commandType: CommandType.StoredProcedure,
+    parameters: new Dictionary<string, object?> { { "@videoId", 42 }, { "@newStatus", "Processed" } }
+);
+Console.WriteLine($"Stored procedure executed, result: {result}");
+
+// Example 6: Get a database connection for direct ADO.NET usage
+using var connection = await databaseContext.GetConnectionAsync();
+Console.WriteLine($"Connection opened: {connection.State}");
+
+// The context should be disposed when done (typically via using statement or async disposal)
+await databaseContext.DisposeAsync();
+```
+
 ## ThumbnailAbTestService
