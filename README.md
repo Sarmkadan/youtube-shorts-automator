@@ -330,6 +330,106 @@ if (testResult.IsComplete && testResult.WinnerLabel != null)
 - **Scheduling Integration**: `ScheduleEntryAsync` links a calendar entry to an `UploadJob` via `SchedulingService`, storing the job reference on the entry
 - **Validation**: Title length, description length, tag count and channel-ID checks are enforced at creation and update time
 
+## ContentCalendarService
+
+The `ContentCalendarService` class orchestrates the content publishing calendar for YouTube Shorts automation. It manages the complete entry lifecycle from creation through optimization, scheduling, and publishing, coordinating between video content, title optimization, scheduling services, and analytics to ensure optimal content publishing strategy.
+
+**Key Features:**
+- Manages full calendar entry lifecycle with validation and state transitions
+- Integrates with title optimization engine to improve video metadata for better engagement
+- Coordinates scheduling with the `SchedulingService` to create upload jobs
+- Provides analytics-driven recommendations for optimal posting times
+- Enforces content length constraints and validation rules
+- Supports auto-optimization on entry creation
+
+**Public Members:**
+- `CreateEntryAsync()` - Creates a new calendar entry with validation and optional auto-optimization
+- `GetEntryAsync()` - Retrieves a calendar entry by ID
+- `GetEntriesInRangeAsync()` - Retrieves entries within a specific date range
+- `GetUpcomingEntriesAsync()` - Retrieves upcoming entries scheduled for publication
+- `UpdateEntryAsync()` - Updates an existing calendar entry with validation
+- `DeleteEntryAsync()` - Deletes a calendar entry
+- `OptimizeEntryAsync()` - Optimizes entry title and description using the title optimization engine
+- `ApplyOptimizationAsync()` - Applies a specific optimization suggestion to an entry
+- `GetRecommendedSlotsAsync()` - Retrieves recommended posting times for a channel based on historical analytics
+- `ScheduleEntryAsync()` - Schedules a calendar entry for publication at a specific time
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize service (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+services.AddSingleton<IContentCalendarService, ContentCalendarService>();
+var serviceProvider = services.BuildServiceProvider();
+var calendarService = serviceProvider.GetRequiredService<ContentCalendarService>();
+
+// Example 1: Create a new calendar entry
+var newEntry = new ContentCalendarEntry
+{
+    Title = "10 Essential C# Tips Every Developer Should Know",
+    Description = "Quick C# tips to boost your coding productivity and write cleaner code. Learn essential techniques that every .NET developer needs!",
+    Tags = new[] { "csharp", "dotnet", "tutorial", "coding", "productivity", "shorts", "development" },
+    YouTubeChannelId = 1,
+    Status = CalendarEntryStatus.Draft,
+    ScheduledPublishAt = DateTime.UtcNow.AddDays(7)
+};
+
+var createdEntry = await calendarService.CreateEntryAsync(newEntry);
+Console.WriteLine($"Created entry {createdEntry.Id}: {createdEntry.Title}");
+
+// Example 2: Optimize entry title and description
+var optimizationResult = await calendarService.OptimizeEntryAsync(createdEntry.Id);
+Console.WriteLine($"Optimization completed with {optimizationResult.Suggestions.Count} suggestions");
+Console.WriteLine($"Best suggestion confidence: {optimizationResult.BestSuggestion?.ConfidenceScore:F2}");
+
+// Example 3: Apply the best optimization suggestion
+var optimizedEntry = await calendarService.ApplyOptimizationAsync(createdEntry.Id, suggestionIndex: 0);
+Console.WriteLine($"Applied optimization - new title: {optimizedEntry.Title}");
+
+// Example 4: Schedule the entry for publication
+var scheduledEntry = await calendarService.ScheduleEntryAsync(
+    entryId: createdEntry.Id,
+    scheduledAt: DateTime.UtcNow.AddDays(7),
+    cancellationToken: CancellationToken.None
+);
+Console.WriteLine($"Scheduled entry {scheduledEntry.Id} for {scheduledEntry.ScheduledPublishAt:u}");
+
+// Example 5: Get upcoming entries for the next 7 days
+var upcomingEntries = await calendarService.GetUpcomingEntriesAsync(daysAhead: 7);
+Console.WriteLine($"Found {upcomingEntries.Count()} upcoming entries");
+
+foreach (var entry in upcomingEntries)
+{
+    Console.WriteLine($"- Entry {entry.Id}: {entry.Title} (Status: {entry.Status})");
+}
+
+// Example 6: Get recommended posting slots for a channel
+var recommendedSlots = await calendarService.GetRecommendedSlotsAsync(
+    channelId: 1,
+    count: 5
+);
+
+Console.WriteLine("Recommended posting times:");
+foreach (var slot in recommendedSlots)
+{
+    Console.WriteLine($"- {slot:yyyy-MM-dd HH:mm:ss} UTC");
+}
+
+// Example 7: Update an existing entry
+scheduledEntry.Title = "Updated: 10 Essential C# Tips Every Developer Should Know";
+var updatedEntry = await calendarService.UpdateEntryAsync(scheduledEntry);
+Console.WriteLine($"Updated entry {updatedEntry.Id}");
+
+// Example 8: Delete an entry (if needed)
+var deleteSuccess = await calendarService.DeleteEntryAsync(createdEntry.Id);
+Console.WriteLine($"Delete {(deleteSuccess ? "succeeded" : "failed")}");
+```
+
 ### Enterprise Features
 - **Multi-Channel Support**: Manage multiple YouTube channels from single platform
 - **Role-based Access Control**: User permissions and channel delegation
