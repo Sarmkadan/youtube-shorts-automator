@@ -76,6 +76,68 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - **Hashtag Recommendations**: Appends configured trending hashtags (`#shorts`, `#fyp`, …) plus content-derived hashtags to every optimised description
 - **Posting-Time Prediction**: `RecommendPostingTimesAsync` derives optimal UTC upload slots from historical engagement patterns, skipping Sundays and enforcing a configurable minimum gap between slots
 
+## TitleOptimizationEngine
+
+The `TitleOptimizationEngine` class provides intelligent title and description optimization for YouTube Shorts videos. It analyzes video metadata against historical channel performance data to generate ranked optimization suggestions, extract relevant keywords, score titles for engagement potential, and recommend optimal posting times based on channel analytics.
+
+The engine uses deterministic, data-driven scoring against historical analytics to produce optimization suggestions including power-word injection, question format conversion, and keyword alignment with top-performing content from the channel.
+
+**Public Members:**
+- `OptimizeAsync()` - Generates optimization suggestions, hashtags, and optimal posting times based on video metadata and historical performance
+- `RecommendPostingTimesAsync()` - Recommends optimal UTC posting times for a channel based on historical engagement patterns
+- `ScoreTitle()` - Scores a title for engagement potential (0-1 scale) based on length, power words, question format, and keyword presence
+- `ExtractKeywords()` - Extracts relevant keywords from title and description by filtering stop words and short tokens
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+// Initialize service (typically via dependency injection)
+var titleOptimizationEngine = serviceProvider.GetRequiredService<ITitleOptimizationEngine>();
+
+// Example 1: Optimize video title and description
+var optimizationResult = await titleOptimizationEngine.OptimizeAsync(
+    title: "Learn C# in 30 Days",
+    description: "A comprehensive guide to mastering C# programming language fundamentals and advanced concepts",
+    tags: new[] { "csharp", "programming", "tutorial", "dotnet" },
+    channelId: 1
+);
+
+Console.WriteLine($"Original title: {optimizationResult.OriginalTitle}");
+Console.WriteLine($"Best suggestion: {optimizationResult.Suggestions[0].SuggestedTitle}");
+Console.WriteLine($"Confidence: {optimizationResult.Suggestions[0].ConfidenceScore:F2}");
+Console.WriteLine($"Optimal posting hour: {optimizationResult.OptimalPostingHour}:00 UTC");
+Console.WriteLine($"Recommended hashtags: {string.Join(", ", optimizationResult.RecommendedHashtags)}");
+
+// Example 2: Score a title for engagement potential
+double titleScore = titleOptimizationEngine.ScoreTitle("10 Essential Python Tips Every Developer Should Know");
+Console.WriteLine($"Title score: {titleScore:F2}");
+
+// Example 3: Extract keywords from title and description
+string[] keywords = titleOptimizationEngine.ExtractKeywords(
+    title: "Master JavaScript in 2024",
+    description: "Learn modern JavaScript ES6+ features with practical examples and coding exercises"
+);
+Console.WriteLine($"Extracted keywords: {string.Join(", ", keywords)}");
+
+// Example 4: Recommend optimal posting times for a channel
+var postingTimes = await titleOptimizationEngine.RecommendPostingTimesAsync(
+    channelId: 1,
+    count: 5
+);
+
+Console.WriteLine("Recommended posting times:");
+foreach (var time in postingTimes)
+{
+    Console.WriteLine($"- {time:yyyy-MM-dd HH:mm:ss} UTC");
+}
+```
+
 ### Scheduling Calendar
 - **Full Entry Lifecycle**: Draft → Optimised → Approved → Scheduled → Published state machine with `Approve`, `Cancel`, `Archive` and `ApplyOptimization` transitions
 - **REST API**: `ContentCalendarController` exposes ten endpoints: create, read, update, delete, upcoming window, date-range query, optimise, apply-suggestion, schedule and recommended-slot retrieval
