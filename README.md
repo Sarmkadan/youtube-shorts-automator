@@ -557,6 +557,112 @@ bool deleted = await repository.DeleteAsync(uploadJob.Id);
 Console.WriteLine($"Deleted job {uploadJob.Id}: {(deleted ? "Success" : "Failed")}");
 ```
 
+## VideoShortRepository
+
+The `VideoShortRepository` class provides data access operations for managing video short entities in the YouTube Shorts automation system. It implements the `IRepository<VideoShort>` interface and offers comprehensive CRUD operations for video shorts with specialized methods for querying by status, channel, and retrieving all records. The repository handles all database operations for video shorts including creation, retrieval, updating, and deletion, with support for tracking video processing status, quality metrics, and error handling.
+
+**Public Members:**
+- `GetByIdAsync()` - Retrieves a video short by its unique identifier
+- `GetAllAsync()` - Retrieves all video shorts from the database
+- `GetByStatusAsync()` - Retrieves video shorts filtered by their processing status
+- `GetByChannelAsync()` - Retrieves all video shorts for a specific YouTube channel
+- `AddAsync()` - Creates a new video short in the database
+- `UpdateAsync()` - Updates an existing video short in the database
+- `DeleteAsync()` - Deletes a video short from the database by its identifier
+- `ExistsAsync()` - Checks if a video short with the specified identifier exists in the database
+- `CountAsync()` - Returns the total count of video shorts in the database
+- `SaveChangesAsync()` - Persists changes to the database
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Data;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize repository (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+services.AddDbContext<DatabaseContext>(options => options.UseSqlServer("YourConnectionString"));
+var serviceProvider = services.BuildServiceProvider();
+var repository = serviceProvider.GetRequiredService<VideoShortRepository>();
+
+// Example 1: Create a new video short
+var videoShort = new VideoShort
+{
+    Title = "Learn C# in 30 Days",
+    Description = "A comprehensive guide to mastering C# programming language fundamentals",
+    FilePath = "/videos/learn-csharp-30-days.mp4",
+    ThumbnailPath = "/thumbnails/learn-csharp-30-days.jpg",
+    Duration = TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(32)),
+    FileSizeBytes = 125432100, // ~125 MB
+    Quality = VideoQuality.HD1080,
+    Status = ProcessingStatus.Queued,
+    ProcessingProfileId = 1,
+    YouTubeChannelId = 1,
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+
+await repository.AddAsync(videoShort);
+Console.WriteLine($"Created video short with ID: {videoShort.Id}");
+
+// Example 2: Get a video short by ID
+var existingVideo = await repository.GetByIdAsync(videoShort.Id);
+if (existingVideo != null)
+{
+    Console.WriteLine($"Found video: {existingVideo.Title}");
+    Console.WriteLine($" - Duration: {existingVideo.Duration:mm\\:ss}");
+    Console.WriteLine($" - Status: {existingVideo.Status}");
+    Console.WriteLine($" - Quality: {existingVideo.Quality}");
+}
+
+// Example 3: Get all video shorts
+var allVideos = await repository.GetAllAsync();
+Console.WriteLine($"Total video shorts: {allVideos.Count()}");
+
+// Example 4: Get video shorts by processing status
+var queuedVideos = await repository.GetByStatusAsync(ProcessingStatus.Queued);
+Console.WriteLine($"Queued videos: {queuedVideos.Count()}");
+
+var processedVideos = await repository.GetByStatusAsync(ProcessingStatus.Processed);
+Console.WriteLine($"Processed videos: {processedVideos.Count()}");
+
+// Example 5: Get video shorts by YouTube channel
+var channelVideos = await repository.GetByChannelAsync(channelId: 1);
+Console.WriteLine($"Videos for channel 1: {channelVideos.Count()}");
+
+foreach (var video in channelVideos)
+{
+    Console.WriteLine($"- Video {video.Id}: {video.Title}");
+    Console.WriteLine($"  Status: {video.Status}, Quality: {video.Quality}");
+}
+
+// Example 6: Update a video short status
+if (existingVideo != null)
+{
+    existingVideo.Status = ProcessingStatus.Processed;
+    existingVideo.ProcessedAt = DateTime.UtcNow;
+    existingVideo.UpdatedAt = DateTime.UtcNow;
+    
+    await repository.UpdateAsync(existingVideo);
+    Console.WriteLine("Updated video short status to Processed");
+}
+
+// Example 7: Check if video exists and get total count
+bool videoExists = await repository.ExistsAsync(videoShort.Id);
+int totalVideos = await repository.CountAsync();
+Console.WriteLine($"Video {videoShort.Id} exists: {videoExists}");
+Console.WriteLine($"Total videos in database: {totalVideos}");
+
+// Example 8: Delete a video short (e.g., after successful upload)
+bool deleted = await repository.DeleteAsync(videoShort.Id);
+Console.WriteLine($"Deleted video {videoShort.Id}: {(deleted ? "Success" : "Failed")}");
+
+// Don't forget to save changes after batch operations
+await repository.SaveChangesAsync();
+```
+
 ## DatabaseContext
 
 The `DatabaseContext` class provides a lightweight database access layer for executing SQL commands against a Microsoft SQL Server database. It manages database connections, executes parameterized SQL commands, and returns results in various formats including scalar values, DataTables, and row counts. The context is designed for direct SQL execution scenarios where Entity Framework's DbContext is not required, providing lower-level control over database operations.
