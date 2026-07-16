@@ -1712,6 +1712,82 @@ var overdueJobs = await schedulingService.GetOverdueJobsAsync(new[] { 1, 2 });
 Console.WriteLine($"Found {overdueJobs.Count()} overdue jobs");
 ```
 
+## ContentCalendarRepositoryExtensions
+
+The `ContentCalendarRepositoryExtensions` class provides a collection of extension methods for the `ContentCalendarRepository` that simplify common repository operations on content calendar entries. These extension methods offer convenient ways to query and filter content calendar entries by various criteria such as status, channel, date ranges, and specific attributes like optimization status or video short associations.
+
+
+**Public Members:**
+- `GetFirstUpcomingByStatusAsync` - Gets the first upcoming entry matching a specific status
+- `GetByChannelIdAsync` - Gets all entries for a specific YouTube channel
+- `GetByStatusAsync` - Gets all entries with a specific status
+- `GetByDateAsync` - Gets all entries scheduled for publication on a specific date
+- `GetNextEntryAsync` - Gets the next chronological entry after the specified entry ID
+- `GetPreviousEntryAsync` - Gets the previous chronological entry before the specified entry ID
+- `GetWithOptimizationAppliedAsync` - Gets all entries that have optimization applied
+- `GetWithVideoShortsAsync` - Gets all entries that have video short IDs assigned
+- `GetWithUploadJobsAsync` - Gets all entries that have upload job IDs assigned
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Data;
+using YouTubeShortAutomator.Domain.Models;
+
+// Initialize repository (typically via dependency injection)
+var repository = new ContentCalendarRepository(dbContext);
+
+// Example 1: Get the first upcoming entry with "Approved" status
+var approvedEntry = await repository.GetFirstUpcomingByStatusAsync(
+    status: CalendarEntryStatus.Approved,
+    cutoffUtc: DateTime.UtcNow.AddDays(7)
+);
+Console.WriteLine(approvedEntry != null 
+    ? $"Found approved entry: {approvedEntry.Title} (Scheduled: {approvedEntry.ScheduledPublishAt:u})"
+    : "No approved entries found in the next 7 days");
+
+// Example 2: Get all entries for a specific YouTube channel
+var channelEntries = await repository.GetByChannelIdAsync(channelId: 1);
+Console.WriteLine($"Found {channelEntries.Count()} entries for channel 1");
+
+foreach (var entry in channelEntries)
+{
+    Console.WriteLine($"- {entry.Title} (Status: {entry.Status}, Scheduled: {entry.ScheduledPublishAt:d})");
+}
+
+// Example 3: Get all entries with "Scheduled" status
+var scheduledEntries = await repository.GetByStatusAsync(CalendarEntryStatus.Scheduled);
+Console.WriteLine($"Found {scheduledEntries.Count()} scheduled entries");
+
+// Example 4: Get all entries scheduled for publication on a specific date
+var dateEntries = await repository.GetByDateAsync(DateTime.UtcNow.AddDays(1));
+Console.WriteLine($"Found {dateEntries.Count()} entries scheduled for tomorrow");
+
+// Example 5: Get the next chronological entry after a specific entry
+var nextEntry = await repository.GetNextEntryAsync(currentEntryId: 42);
+Console.WriteLine(nextEntry != null
+    ? $"Next entry: {nextEntry.Title} (Scheduled: {nextEntry.ScheduledPublishAt:u})"
+    : "This is the last entry in the calendar");
+
+// Example 6: Get the previous chronological entry before a specific entry
+var previousEntry = await repository.GetPreviousEntryAsync(currentEntryId: 42);
+Console.WriteLine(previousEntry != null
+    ? $"Previous entry: {previousEntry.Title} (Scheduled: {previousEntry.ScheduledPublishAt:u})"
+    : "This is the first entry in the calendar");
+
+// Example 7: Get all entries that have optimization applied
+var optimizedEntries = await repository.GetWithOptimizationAppliedAsync();
+Console.WriteLine($"Found {optimizedEntries.Count()} entries with optimization applied");
+
+// Example 8: Get all entries that have video short IDs assigned
+var entriesWithShorts = await repository.GetWithVideoShortsAsync();
+Console.WriteLine($"Found {entriesWithShorts.Count()} entries with video shorts assigned");
+
+// Example 9: Get all entries that have upload job IDs assigned
+var entriesWithUploadJobs = await repository.GetWithUploadJobsAsync();
+Console.WriteLine($"Found {entriesWithUploadJobs.Count()} entries with upload jobs assigned");
+```
+
 ## ContentCalendarServiceExtensions
 
 The `ContentCalendarServiceExtensions` class provides a collection of extension methods for the `ContentCalendarService` that simplify common content calendar operations. These methods reduce boilerplate code by providing convenient, fluent APIs for creating, retrieving, optimizing, scheduling, and managing content calendar entries throughout their lifecycle.
