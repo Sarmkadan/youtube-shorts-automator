@@ -735,6 +735,70 @@ public class ProcessingTask
 }
 ```
 
+#### UploadHistoryEntry
+
+The `UploadHistoryEntry` class represents an immutable record of a single upload attempt, persisted to the UploadHistory table. It tracks the outcome of each upload operation including success/failure status, YouTube video ID (if successful), error messages, and timestamps for auditing and analytics purposes.
+
+
+
+
+**Public Members:**
+- `Id` - Primary key identifier
+- `VideoFileName` - Original file name of the video that was uploaded
+- `YouTubeVideoId` - YouTube video ID assigned after successful upload (null if failed/skipped)
+- `UploadedAt` - UTC timestamp of the upload attempt
+- `Status` - Outcome of the upload attempt (Success, Failed, or Skipped)
+- `ErrorMessage` - Error detail when Status is Failed (null otherwise)
+- `CreatedAt` - Record creation timestamp
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+
+// Create a new upload history entry for a successful upload
+var successfulUpload = new UploadHistoryEntry
+{
+    VideoFileName = "my_short_1080p.mp4",
+    YouTubeVideoId = "dQw4w9WgXcQ",
+    UploadedAt = DateTime.UtcNow,
+    Status = UploadHistoryStatus.Success,
+    ErrorMessage = null,
+    CreatedAt = DateTime.UtcNow
+};
+
+Console.WriteLine($"Successfully uploaded {successfulUpload.VideoFileName} to YouTube video {successfulUpload.YouTubeVideoId}");
+
+// Create a history entry for a failed upload
+var failedUpload = new UploadHistoryEntry
+{
+    VideoFileName = "failing_short.mp4",
+    YouTubeVideoId = null,
+    UploadedAt = DateTime.UtcNow.AddMinutes(-5),
+    Status = UploadHistoryStatus.Failed,
+    ErrorMessage = "YouTube API quota exceeded",
+    CreatedAt = DateTime.UtcNow
+};
+
+Console.WriteLine($"Upload failed for {failedUpload.VideoFileName}: {failedUpload.ErrorMessage}");
+
+// Create a history entry for a skipped upload (e.g., video too short)
+var skippedUpload = new UploadHistoryEntry
+{
+    VideoFileName = "too_short.mp4",
+    YouTubeVideoId = null,
+    UploadedAt = DateTime.UtcNow.AddHours(-1),
+    Status = UploadHistoryStatus.Skipped,
+    ErrorMessage = "Video duration less than 15 seconds",
+    CreatedAt = DateTime.UtcNow
+};
+
+Console.WriteLine($"Upload skipped for {skippedUpload.VideoFileName}: {skippedUpload.ErrorMessage}");
+```
+
 ### Service Layer
 
 **ThumbnailGeneratorService**: Generates thumbnail images from video files
