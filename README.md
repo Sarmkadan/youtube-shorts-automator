@@ -334,6 +334,72 @@ var (paginatedJobs, totalCount) = await processingJobRepository.GetPaginatedAsyn
 Console.WriteLine($"Found {paginatedJobs.Count} jobs out of {totalCount} total");
 ```
 
+### ApiCredentialRepository
+
+The `ApiCredentialRepository` class provides data access methods for managing API credentials used to authenticate with external services like YouTube API. It implements the `IApiCredentialRepository` interface and offers various methods for retrieving credentials by user ID, status, type, and expiration date.
+
+**Key Features:**
+- Retrieve credentials by user ID with ordering by creation date
+- Get active credentials for authentication
+- Filter credentials by status (active, expired, revoked)
+- Retrieve expired credentials for renewal
+- Search credentials by type (YouTube, Google, etc.)
+
+
+
+
+
+
+**Usage Example:**
+
+
+
+```csharp
+using YouTubeShortsAutomator.Infrastructure.Repositories;
+using YouTubeShortsAutomator.Domain.Models;
+
+// Initialize repository (typically via dependency injection)
+var apiCredentialRepository = new ApiCredentialRepository(dbContext, logger);
+
+// Example 1: Get credentials for a specific user
+var userCredentials = await apiCredentialRepository.GetByUserIdAsync(userId);
+Console.WriteLine($"Found {userCredentials.Count} credentials for user {userId}");
+
+// Example 2: Get active credential for authentication
+var activeCredential = await apiCredentialRepository.GetActiveCredentialAsync(userId);
+if (activeCredential != null)
+{
+    Console.WriteLine($"Active credential: {activeCredential.CredentialType} (Expires: {activeCredential.AccessTokenExpiresAt:u})");
+}
+
+// Example 3: Get credentials by status
+var activeCredentials = await apiCredentialRepository.GetByStatusAsync(CredentialStatus.Active);
+Console.WriteLine($"Found {activeCredentials.Count} active credentials");
+
+var revokedCredentials = await apiCredentialRepository.GetByStatusAsync(CredentialStatus.Revoked);
+Console.WriteLine($"Found {revokedCredentials.Count} revoked credentials");
+
+// Example 4: Get expired credentials for renewal
+var expiredCredentials = await apiCredentialRepository.GetExpiredCredentialsAsync();
+Console.WriteLine($"Found {expiredCredentials.Count} expired credentials that need renewal");
+
+foreach (var credential in expiredCredentials)
+{
+    Console.WriteLine($"Credential {credential.Id} expired on {credential.AccessTokenExpiresAt:u}");
+}
+
+// Example 5: Get credentials by type
+var youtubeCredentials = await apiCredentialRepository.GetByTypeAsync(ApiCredentialType.YouTube);
+Console.WriteLine($"Found {youtubeCredentials.Count} YouTube credentials");
+
+var googleCredentials = await apiCredentialRepository.GetByTypeAsync(ApiCredentialType.Google);
+Console.WriteLine($"Found {googleCredentials.Count} Google credentials");
+
+// Example 6: Check if user has valid credentials
+var hasValidCredentials = await apiCredentialRepository.GetActiveCredentialAsync(userId) != null;
+Console.WriteLine($"User has valid credentials: {hasValidCredentials}");
+```
+
 #### VideoShort
 ```csharp
 public class VideoShort
