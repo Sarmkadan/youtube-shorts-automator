@@ -334,6 +334,66 @@ var (paginatedJobs, totalCount) = await processingJobRepository.GetPaginatedAsyn
 Console.WriteLine($"Found {paginatedJobs.Count} jobs out of {totalCount} total");
 ```
 
+### ScheduleRepository
+
+The `ScheduleRepository` class provides data access methods for querying and managing upload schedules from the database. It implements the `IScheduleRepository` interface and offers specialized methods for retrieving schedules by user, status, frequency, and pagination, as well as managing scheduled uploads.
+
+**Key Features:**
+- Query schedules by user ID with eager loading of related scheduled uploads
+- Filter schedules by active status and next scheduled time
+- Retrieve schedules by frequency (daily, weekly, monthly)
+- Manage scheduled uploads associated with schedules
+- Paginated queries with total count for UI pagination
+
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Infrastructure.Repositories;
+using YouTubeShortsAutomator.Domain.Models;
+
+// Initialize repository (typically via dependency injection)
+var scheduleRepository = new ScheduleRepository(dbContext, logger);
+
+// Example 1: Get schedules for a user
+var userSchedules = await scheduleRepository.GetByUserIdAsync(userId);
+Console.WriteLine($"Found {userSchedules.Count} schedules for user {userId}");
+
+// Example 2: Get active schedules
+var activeSchedules = await scheduleRepository.GetActiveSchedulesAsync();
+Console.WriteLine($"Found {activeSchedules.Count} active schedules");
+
+// Example 3: Get schedules due for execution
+var dueSchedules = await scheduleRepository.GetDueSchedulesAsync();
+Console.WriteLine($"Found {dueSchedules.Count} schedules due for execution");
+
+// Example 4: Get schedules by frequency
+var dailySchedules = await scheduleRepository.GetByFrequencyAsync(ScheduleFrequency.Daily);
+Console.WriteLine($"Found {dailySchedules.Count} daily schedules");
+
+// Example 5: Get paginated schedules (page 1, 10 items per page)
+var (paginatedSchedules, totalCount) = await scheduleRepository.GetPaginatedAsync(pageNumber: 1, pageSize: 10);
+Console.WriteLine($"Found {paginatedSchedules.Count} schedules out of {totalCount} total");
+
+// Example 6: Get a specific scheduled upload
+var scheduledUpload = await scheduleRepository.GetScheduledUploadAsync(scheduleUploadId);
+if (scheduledUpload != null)
+{
+    Console.WriteLine($"Found scheduled upload: {scheduledUpload.Title} (Status: {scheduledUpload.Status})");
+}
+
+// Example 7: Update a scheduled upload
+if (scheduledUpload != null)
+{
+    scheduledUpload.Status = UploadStatus.Completed;
+    await scheduleRepository.UpdateScheduledUploadAsync(scheduledUpload);
+    Console.WriteLine("Scheduled upload updated successfully");
+}
+```
+
 ### ApiCredentialRepository
 
 The `ApiCredentialRepository` class provides data access methods for managing API credentials used to authenticate with external services like YouTube API. It implements the `IApiCredentialRepository` interface and offers various methods for retrieving credentials by user ID, status, type, and expiration date.
