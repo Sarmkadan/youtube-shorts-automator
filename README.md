@@ -450,6 +450,104 @@ Console.WriteLine($"Deleted entry {entry1.Id}: {(deleted ? "Success" : "Failed")
 await repository.SaveChangesAsync();
 ```
 
+## VideoShortModelTests
+
+The `VideoShortModelTests` class contains unit tests for the `VideoShort` model validation and processing logic. It verifies that video metadata validation works correctly and that the processing status management functions as expected.
+
+This test suite validates the core business rules for video shorts including title requirements, duration constraints, and processing state transitions.
+
+**Public Members:**
+- `IsValid_WithValidMetadata_ReturnsTrue()` - Verifies that a video with valid metadata passes validation
+- `IsValid_WithEmptyTitle_ReturnsFalse()` - Verifies that a video with an empty title fails validation
+- `IsValid_WithDurationBeyond60Seconds_ReturnsFalse()` - Verifies that a video exceeding 60 seconds duration fails validation
+- `MarkAsProcessed_WithoutError_SetsCompletedStatusAndTimestamp()` - Verifies successful processing status update
+- `MarkAsProcessed_WithErrorMessage_SetsFailedStatusAndPreservesError()` - Verifies error handling during processing
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using YouTubeShortAutomator.Domain.Models;
+using FluentAssertions;
+
+// Example 1: Test valid video metadata
+var validVideo = new VideoShort
+{
+    Title = "Learn C# in 30 Days",
+    Description = "A comprehensive guide to mastering C# programming",
+    FilePath = "/videos/learn-csharp.mp4",
+    Duration = TimeSpan.FromSeconds(45),
+    ProcessingProfileId = 1,
+    YouTubeChannelId = 1
+};
+
+bool isValid = validVideo.IsValid();
+isValid.Should().BeTrue();
+
+// Example 2: Test invalid video (empty title)
+var invalidVideo = new VideoShort
+{
+    Title = "",
+    Description = "A comprehensive guide",
+    FilePath = "/videos/test.mp4",
+    Duration = TimeSpan.FromSeconds(30),
+    ProcessingProfileId = 1,
+    YouTubeChannelId = 1
+};
+
+bool isInvalid = invalidVideo.IsValid();
+isInvalid.Should().BeFalse();
+
+// Example 3: Test video exceeding duration limit
+var longVideo = new VideoShort
+{
+    Title = "Long Tutorial",
+    Description = "A very long tutorial",
+    FilePath = "/videos/long.mp4",
+    Duration = TimeSpan.FromMinutes(2), // Exceeds 60 seconds limit
+    ProcessingProfileId = 1,
+    YouTubeChannelId = 1
+};
+
+bool isTooLong = longVideo.IsValid();
+isTooLong.Should().BeFalse();
+
+// Example 4: Test successful processing completion
+var videoToProcess = new VideoShort
+{
+    Title = "Test Video",
+    Description = "Test description",
+    FilePath = "/videos/test.mp4",
+    Duration = TimeSpan.FromSeconds(30),
+    ProcessingProfileId = 1,
+    YouTubeChannelId = 1,
+    Status = ProcessingStatus.Processing
+};
+
+videoToProcess.MarkAsProcessed();
+videoToProcess.Status.Should().Be(ProcessingStatus.Completed);
+videoToProcess.ErrorMessage.Should().BeNull();
+videoToProcess.ProcessedAt.Should().NotBeNull();
+
+// Example 5: Test processing failure with error message
+var videoToFail = new VideoShort
+{
+    Title = "Test Video",
+    Description = "Test description",
+    FilePath = "/videos/test.mp4",
+    Duration = TimeSpan.FromSeconds(30),
+    ProcessingProfileId = 1,
+    YouTubeChannelId = 1,
+    Status = ProcessingStatus.Processing
+};
+
+const string errorMessage = "FFmpeg process exited with code 1";
+videoToFail.MarkAsProcessed(errorMessage);
+videoToFail.Status.Should().Be(ProcessingStatus.Failed);
+videoToFail.ErrorMessage.Should().Be(errorMessage);
+videoToFail.ProcessedAt.Should().BeNull();
+```
+
 ## UploadJobRepository
 
 The `UploadJobRepository` class provides data access operations for managing upload job entities in the YouTube Shorts automation system. It implements the `IRepository<UploadJob>` interface and offers specialized methods for querying upload jobs by status, retrieving jobs scheduled for upload, and finding retryable failed jobs. The repository handles all database operations for upload jobs including creation, retrieval, updating, and deletion, with support for tracking upload progress, retry attempts, and error messages.
