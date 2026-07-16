@@ -375,6 +375,129 @@ bool isValid = channel.IsValid();
 Console.WriteLine($"Channel is valid: {isValid}");
 ```
 
+## YouTubeUploadService
+
+The `YouTubeUploadService` class provides comprehensive functionality for uploading videos to YouTube, managing upload jobs, and handling video metadata. It serves as the central service for all YouTube upload operations including job creation, video uploads, retry logic, metadata updates, and publishing.
+
+**Key Features:**
+- Creates and manages upload jobs with scheduling and retry logic
+- Handles direct video uploads to YouTube with progress tracking
+- Implements intelligent retry logic with configurable maximum attempts
+- Updates video metadata (title, description, tags) after upload
+- Publishes videos to make them publicly available
+- Tracks upload history and provides job retrieval capabilities
+- Integrates with YouTube channel authentication and token management
+
+**Public Members:**
+- `CreateUploadJobAsync()` - Creates a new upload job for a video short with scheduled time
+- `UploadVideoAsync()` - Uploads a video file to YouTube with progress tracking
+- `RetryFailedUploadAsync()` - Retries a failed upload job with attempt counting
+- `UpdateVideoMetadataAsync()` - Updates video title, description, and tags on YouTube
+- `PublishVideoAsync()` - Publishes a video to make it publicly available
+- `GetUploadJobAsync()` - Retrieves an upload job by ID
+- `GetScheduledJobsAsync()` - Retrieves all jobs scheduled for upload
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize service (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+// Add required repositories and other services
+var serviceProvider = services.BuildServiceProvider();
+var uploadService = serviceProvider.GetRequiredService<YouTubeUploadService>();
+
+// Example 1: Create a new upload job
+var uploadJob = await uploadService.CreateUploadJobAsync(
+  videoShortId: 42,
+  scheduledTime: DateTime.UtcNow.AddHours(2)
+);
+
+Console.WriteLine($"Created upload job {uploadJob.Id} for video {uploadJob.VideoShortId}");
+Console.WriteLine($"Scheduled at: {uploadJob.ScheduledAt:u}");
+
+// Example 2: Upload a video to YouTube
+var videoFilePath = "/videos/my_short.mp4";
+var channel = new YouTubeChannel
+{
+  ChannelId = "UC1234567890",
+  ChannelName = "My Awesome Coding Channel",
+  AccessToken = "ya29.a0AfH6SMB...",
+  TokenExpiresAt = DateTime.UtcNow.AddHours(1)
+};
+
+var videoShort = new VideoShort
+{
+  Id = 42,
+  Title = "10 Essential C# Tips",
+  Description = "Learn essential C# programming tips and tricks"
+};
+
+var uploadedJob = await uploadService.UploadVideoAsync(
+  uploadJob,
+  filePath: videoFilePath,
+  channel: channel,
+  videoShort: videoShort
+);
+
+if (uploadedJob.Status == UploadStatus.Completed)
+{
+  Console.WriteLine($"Successfully uploaded video! YouTube ID: {uploadedJob.YouTubeVideoId}");
+}
+
+// Example 3: Retry a failed upload job
+if (uploadedJob.Status == UploadStatus.Failed && uploadedJob.CanRetry())
+{
+  var retrySuccess = await uploadService.RetryFailedUploadAsync(
+    uploadJob: uploadedJob,
+    filePath: videoFilePath,
+    channel: channel,
+    videoShort: videoShort
+  );
+
+  Console.WriteLine($"Retry {(retrySuccess ? "succeeded" : "failed")}");
+}
+
+// Example 4: Update video metadata after upload
+var updateSuccess = await uploadService.UpdateVideoMetadataAsync(
+  videoId: uploadedJob.YouTubeVideoId,
+  title: "10 Essential C# Tips Every Developer Should Know",
+  description: "Master C# programming with these 10 essential tips and tricks for developers! #csharp #programming #tutorial",
+  tags: new[] { "csharp", "programming", "tutorial", "dotnet", "development", "coding tips", "software engineering" },
+  channel: channel
+);
+
+Console.WriteLine($"Metadata update {(updateSuccess ? "succeeded" : "failed")}");
+
+// Example 5: Publish the video to make it public
+var publishSuccess = await uploadService.PublishVideoAsync(
+  videoId: uploadedJob.YouTubeVideoId,
+  channel: channel
+);
+
+Console.WriteLine($"Publish {(publishSuccess ? "succeeded" : "failed")}");
+
+// Example 6: Retrieve an upload job by ID
+var retrievedJob = await uploadService.GetUploadJobAsync(uploadJob.Id);
+if (retrievedJob != null)
+{
+  Console.WriteLine($"Found job {retrievedJob.Id}: Status={retrievedJob.Status}");
+}
+
+// Example 7: Get all scheduled jobs for monitoring
+var scheduledJobs = await uploadService.GetScheduledJobsAsync();
+Console.WriteLine($"Found {scheduledJobs.Count()} jobs scheduled for upload");
+```
+
+
+
 ## VideoShort
 
 The `VideoShort` class represents a short-form video entity that can be processed, optimized, and uploaded to YouTube as a Short. It encapsulates video metadata, processing state, quality settings, and relationships to processing profiles, YouTube channels, and upload jobs throughout the video lifecycle.
