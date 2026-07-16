@@ -974,6 +974,92 @@ var skippedUpload = new UploadHistoryEntry
 Console.WriteLine($"Upload skipped for {skippedUpload.VideoFileName}: {skippedUpload.ErrorMessage}");
 ```
 
+## ProcessingTaskExtensions
+
+The `ProcessingTaskExtensions` class provides a collection of extension methods for the `ProcessingTask` class that simplify common task operations and calculations. These methods help with determining task progress, checking task states, and managing task priorities in a clean, fluent manner.
+
+
+
+
+
+
+
+
+
+
+**Public Members:**
+- `GetCompletionPercentage()` - Calculates estimated completion percentage based on task status
+- `IsProcessing()` - Determines if task is in an active processing state
+- `IsTerminal()` - Determines if task is in a terminal state
+- `GetDurationDisplay()` - Gets task duration in human-readable format
+- `AdjustPriority()` - Updates task priority by a relative delta
+
+
+
+
+
+
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+
+// Create a processing task
+var task = new ProcessingTask
+{
+    Id = 1,
+    UploadJobId = 101,
+    Status = ProcessingStatus.Processing,
+    Progress = 45,
+    StartedAt = DateTime.UtcNow.AddMinutes(-10),
+    Priority = 5,
+    CreatedAt = DateTime.UtcNow
+};
+
+// Example 1: Get completion percentage based on task status
+int completionPercentage = task.GetCompletionPercentage();
+Console.WriteLine($"Task completion: {completionPercentage}%");
+
+// Example 2: Check if task is currently processing
+bool isProcessing = task.IsProcessing();
+Console.WriteLine($"Is processing: {isProcessing}");
+
+// Example 3: Check if task is in a terminal state
+bool isTerminal = task.IsTerminal();
+Console.WriteLine($"Is terminal: {isTerminal}");
+
+// Example 4: Get human-readable duration display
+string durationDisplay = task.GetDurationDisplay();
+Console.WriteLine($"Duration: {durationDisplay}");
+
+// Example 5: Adjust task priority (increase by 2)
+task.AdjustPriority(2);
+Console.WriteLine($"New priority: {task.Priority}");
+
+// Example 6: Decrease task priority (decrease by 1)
+task.AdjustPriority(-1);
+Console.WriteLine($"Adjusted priority: {task.Priority}");
+
+// Example 7: Chain multiple operations
+var completedTask = new ProcessingTask
+{
+    Status = ProcessingStatus.Completed,
+    StartedAt = DateTime.UtcNow.AddMinutes(-5),
+    CompletedAt = DateTime.UtcNow,
+    Priority = 3
+};
+
+int finalPercentage = completedTask.GetCompletionPercentage();
+string finalDuration = completedTask.GetDurationDisplay();
+bool finalIsTerminal = completedTask.IsTerminal();
+
+Console.WriteLine($"Final status - Percentage: {finalPercentage}%, Duration: {finalDuration}, IsTerminal: {finalIsTerminal}");
+```
+
 ### Service Layer
 
 **ThumbnailGeneratorService**: Generates thumbnail images from video files
