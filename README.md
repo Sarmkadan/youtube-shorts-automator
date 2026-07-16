@@ -838,6 +838,79 @@ bool deleted = fileValidationServiceTests.DeleteTemporaryFile_WithExistingFile_D
 Assert.True(deleted);
 ```
 
+## VideoProcessingServiceTests
+
+The `VideoProcessingServiceTests` class contains unit tests for the `VideoProcessingService` that validate video processing functionality including file validation, task creation, video processing, and status management. It tests various scenarios including successful operations, error handling, validation edge cases, and ensures the processing pipeline works correctly across different profiles and configurations.
+
+This test suite validates the complete video processing workflow including validation exceptions, repository errors, priority settings, and FFmpeg transcoding task creation with comprehensive error handling and boundary condition testing.
+
+**Public Members:**
+- `ValidateVideoFileAsync_WithValidFile_ReturnsTrue` - Validates that a proper video file passes all validation checks
+- `ValidateVideoFileAsync_WithNonExistentFile_ReturnsFalse` - Validates behavior with missing files
+- `ValidateVideoFileAsync_WithFileTooLarge_ReturnsFalse` - Validates file size limits
+- `ValidateVideoFileAsync_WithFileTooSmall_ReturnsFalse` - Validates minimum file size requirements
+- `CreateProcessingTaskAsync_WithValidVideo_CreatesTask` - Tests successful task creation with valid video
+- `CreateProcessingTaskAsync_WithInvalidVideo_ThrowsValidationException` - Validates error handling for invalid videos
+- `CreateProcessingTaskAsync_WithDurationTooLong_ThrowsValidationException` - Tests duration validation
+- `CreateProcessingTaskAsync_WithRepositoryException_ThrowsVideoProcessingException` - Tests repository error handling
+- `CreateProcessingTaskAsync_SetsStatusToPending` - Validates status management
+- `CreateProcessingTaskAsync_SetsCreatedAtToCurrentTime` - Validates timestamp setting
+- `ProcessVideoAsync_WithValidInputs_ReturnsProcessingTask` - Tests complete video processing workflow
+- `ProcessVideoAsync_WithInvalidProfile_ThrowsValidationException` - Validates profile validation
+- `ProcessVideoAsync_SetsCorrectPriority` - Tests priority setting functionality
+- `ProcessVideoAsync_WithDifferentProfiles_AppliesCorrectSettings` - Tests profile application
+- `ProcessVideoAsync_Sets_FFmpegTranscodeTaskType` - Validates task type assignment
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.Logging;
+using Xunit;
+
+// Initialize test service with mock logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<VideoProcessingServiceTests>();
+var videoProcessingServiceTests = new VideoProcessingServiceTests(logger);
+
+// Example 1: Validate a valid video file
+bool isValidFile = await videoProcessingServiceTests.ValidateVideoFileAsync_WithValidFile_ReturnsTrue();
+Assert.True(isValidFile);
+
+// Example 2: Validate file size limits
+bool isValidSize = await videoProcessingServiceTests.ValidateVideoFileAsync_WithFileTooLarge_ReturnsFalse();
+Assert.False(isValidSize);
+
+// Example 3: Create processing task with valid video
+var processingTask = await videoProcessingServiceTests.CreateProcessingTaskAsync_WithValidVideo_CreatesTask();
+Assert.NotNull(processingTask);
+Assert.Equal(ProcessingStatus.Pending, processingTask.Status);
+
+// Example 4: Test duration validation
+await Assert.ThrowsAsync<ValidationException>(() => 
+    videoProcessingServiceTests.CreateProcessingTaskAsync_WithDurationTooLong_ThrowsValidationException());
+
+// Example 5: Process video with valid inputs
+var processedTask = await videoProcessingServiceTests.ProcessVideoAsync_WithValidInputs_ReturnsProcessingTask();
+Assert.NotNull(processedTask);
+Assert.Equal(ProcessingStatus.Completed, processedTask.Status);
+Assert.NotNull(processedTask.CompletedAt);
+
+// Example 6: Test invalid profile validation
+await Assert.ThrowsAsync<ValidationException>(() => 
+    videoProcessingServiceTests.ProcessVideoAsync_WithInvalidProfile_ThrowsValidationException());
+
+// Example 7: Test priority setting
+var priorityTask = await videoProcessingServiceTests.ProcessVideoAsync_SetsCorrectPriority();
+Assert.Equal(ProcessingPriority.High, priorityTask.Priority);
+
+// Example 8: Test different profile application
+var profileTask = await videoProcessingServiceTests.ProcessVideoAsync_WithDifferentProfiles_AppliesCorrectSettings();
+Assert.Equal("High Quality", profileTask.ProcessingProfile.Name);
+Assert.True(profileTask.ProcessingProfile.ApplyWatermark);
+```
+
 ## UploadJobRepository
 
 The `UploadJobRepository` class provides data access operations for managing upload job entities in the YouTube Shorts automation system. It implements the `IRepository<UploadJob>` interface and offers specialized methods for querying upload jobs by status, retrieving jobs scheduled for upload, and finding retryable failed jobs. The repository handles all database operations for upload jobs including creation, retrieval, updating, and deletion, with support for tracking upload progress, retry attempts, and error messages.
