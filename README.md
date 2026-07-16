@@ -1189,19 +1189,118 @@ if (failedJob.Status == UploadStatus.Failed)
 }
 ```
 
-#### ProcessingTask
+## ProcessingTask
+
+The `ProcessingTask` class represents a task that processes a `VideoShort` entity throughout the video processing pipeline. It tracks task execution status, progress, output parameters, error handling, and timing information for video transcoding, thumbnail generation, and other processing operations.
+
+**Key Features:**
+- Manages video processing lifecycle with status tracking (Pending, Processing, Completed, Failed)
+- Tracks task execution timing with start/completion timestamps and elapsed time calculations
+- Stores output parameters (resolution, bitrate, format) for processed media
+- Provides error handling with detailed error messages and logging capabilities
+- Supports priority-based task scheduling (1-10 scale)
+- Includes validation methods to ensure task metadata integrity
+
+**Public Members:**
+- `Id` - Primary key identifier
+- `VideoShortId` - Identifier of the associated video short being processed
+- `TaskType` - Type of task (e.g., "Encode", "Thumbnail", "Transcode")
+- `Status` - Current processing status (Pending, Processing, Completed, Failed)
+- `Priority` - Task priority (1-10, where 10 is highest)
+- `StartedAt` - UTC timestamp when task started processing
+- `CompletedAt` - UTC timestamp when task completed (null if not completed)
+- `ElapsedTime` - Calculated time between start and completion
+- `ErrorMessage` - Error details if task failed (null otherwise)
+- `TaskLog` - Log of execution messages with timestamps
+- `OutputWidth` - Output video width in pixels
+- `OutputHeight` - Output video height in pixels
+- `OutputBitrate` - Output bitrate in kbps
+- `OutputFormat` - Output format (e.g., "mp4")
+- `CreatedAt` - UTC timestamp when task was created
+- `UpdatedAt` - UTC timestamp when task was last updated
+- `VideoShort` - Navigation property to the associated video short
+- `MarkAsStarted()` - Marks task as started with Processing status
+- `MarkAsCompleted()` - Marks task as completed with success
+- `MarkAsFailed()` - Marks task as failed with error message
+
+**Usage Example:**
+
 ```csharp
-public class ProcessingTask
+using YouTubeShortAutomator.Domain.Models;
+
+// Create a new processing task for video transcoding
+var task = new ProcessingTask
 {
-    public int Id { get; set; }
-    public int UploadJobId { get; set; }
-    public ProcessingStatus Status { get; set; }
-    public string? ErrorMessage { get; set; }
-    public int Progress { get; set; }
-    public DateTime StartedAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
+    VideoShortId = 42,
+    TaskType = "Transcode",
+    Priority = 8, // High priority task
+    OutputWidth = 1080,
+    OutputHeight = 1920,
+    OutputBitrate = 4000,
+    OutputFormat = "mp4",
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+
+// Validate task before processing
+if (!task.IsValid())
+{
+    Console.WriteLine("Task validation failed!");
+    return;
 }
+
+// Log task start
+Console.WriteLine($"Starting {task.TaskType} task for video {task.VideoShortId}");
+task.AppendLog("Task initialized with high priority settings");
+
+// Mark task as started when processing begins
+task.MarkAsStarted();
+Console.WriteLine($"Task started at {task.StartedAt:u}");
+
+try
+{
+    // Simulate processing steps
+    task.AppendLog("Processing video stream...");
+    await Task.Delay(1000); // Simulate work
+    
+    task.AppendLog("Applying color grading...");
+    await Task.Delay(500);
+    
+    task.AppendLog("Encoding audio...");
+    await Task.Delay(800);
+    
+    // Mark task as completed on success
+task.MarkAsCompleted();
+    task.AppendLog("Processing completed successfully!");
+    
+    Console.WriteLine($"Task completed in {task.ElapsedTime?.TotalSeconds:F1} seconds");
+    Console.WriteLine($"Output: {task.OutputWidth}x{task.OutputHeight} @ {task.OutputBitrate}kbps");
+}
+catch (Exception ex)
+{
+    // Mark task as failed with error message
+    task.MarkAsFailed(ex.Message);
+    task.AppendLog($"Processing failed: {ex.Message}");
+    Console.WriteLine($"Task failed: {task.ErrorMessage}");
+}
+
+// Access task status and results
+if (task.IsCompleted())
+{
+    Console.WriteLine($"✓ Task {task.Id} completed successfully");
+    Console.WriteLine($"  Duration: {task.ElapsedTime?.ToString("g")}");
+    Console.WriteLine($"  Output: {task.OutputWidth}x{task.OutputHeight} {task.OutputFormat}");
+}
+else if (task.IsFailed())
+{
+    Console.WriteLine($"✗ Task {task.Id} failed: {task.ErrorMessage}");
+}
+
+// View task log
+Console.WriteLine("\nTask Execution Log:");
+Console.WriteLine(task.TaskLog);
 ```
+
 
 #### UploadHistoryEntry
 
