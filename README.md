@@ -1578,6 +1578,59 @@ public class AnalyticsController : ControllerBase
 }
 ```
 
+## ConfigurationController
+
+The `ConfigurationController` provides REST endpoints for monitoring and retrieving application configuration, system status, storage settings, processing limitations, and YouTube integration status. It is a central utility for diagnostic and configuration-query operations within the pipeline.
+
+**Usage Example:**
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.API;
+using YouTubeShortsAutomator.Caching;
+
+// Assume controller is initialized via dependency injection
+var controller = new ConfigurationController(logger, configuration, cacheService);
+
+// Example 1: Get general configuration info
+var configResult = controller.GetConfigurationInfo();
+if (configResult is OkObjectResult configOk)
+{
+    var info = configOk.Value as ConfigurationInfo;
+    Console.WriteLine($"Environment: {info.Environment}, Max Upload Size: {info.MaxUploadSizeMb}MB");
+}
+
+// Example 2: Get storage configuration
+var storageResult = controller.GetStorageConfiguration();
+if (storageResult is OkObjectResult storageOk)
+{
+    var storage = storageOk.Value as StorageConfig;
+    Console.WriteLine($"Temp Dir: {storage.TempDirectoryPath}, Usage: {storage.CurrentUsageGb}/{storage.MaxStorageGb}GB");
+}
+
+// Example 3: Get processing settings
+var procResult = controller.GetProcessingSettings();
+if (procResult is OkObjectResult procOk)
+{
+    var settings = procOk.Value as ProcessingSettings;
+    Console.WriteLine($"Parallel Limit: {settings.ParallelJobLimit}, Timeout: {settings.TimeoutMinutes}min");
+}
+
+// Example 4: Get YouTube integration status
+var youtubeResult = controller.GetYouTubeIntegrationStatus();
+
+// Example 5: Get health status
+var healthResult = controller.GetHealthStatus();
+if (healthResult is OkObjectResult healthOk)
+{
+    var health = healthOk.Value as HealthStatus;
+    Console.WriteLine($"System Healthy: {health.IsHealthy}");
+}
+
+// Example 6: Get supported formats
+var formatsResult = controller.GetSupportedFormats();
+```
+
 ## API Reference
 
 ### Content Calendar Endpoints
