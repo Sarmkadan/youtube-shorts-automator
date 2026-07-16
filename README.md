@@ -683,6 +683,81 @@ Console.WriteLine($"Found {scheduledJobs.Count()} jobs scheduled for upload");
 
 
 
+## FileValidationService
+
+The `FileValidationService` class provides comprehensive file validation and management capabilities for video files in the YouTube Shorts automation pipeline. It handles file validation, integrity verification through hashing, duration extraction, and cleanup of temporary files and directories, ensuring that only valid and safe files are processed throughout the video lifecycle.
+
+**Key Features:**
+- Validates video files for processing with comprehensive checks (existence, size, format, readability)
+- Calculates SHA256 hashes for file integrity verification
+- Extracts video duration metadata (simulated in current implementation)
+- Safely deletes temporary files with error handling
+- Cleans up entire temporary directories
+- Returns list of supported video formats
+
+**Public Members:**
+- `ValidateVideoFile(string filePath)` - Validates a video file for processing with checks for existence, size limits, supported formats, and readability
+- `GetFileHash(string filePath)` - Calculates SHA256 hash of a file for integrity verification
+- `GetVideoDuration(string filePath)` - Attempts to get video duration (returns TimeSpan or null)
+- `DeleteTemporaryFile(string filePath)` - Safely deletes a temporary file with error handling
+- `CleanupTemporaryDirectory(string directoryPath)` - Cleans up all files in a temporary directory
+- `GetSupportedFormats()` - Returns a string of supported video formats
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize service (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+var serviceProvider = services.BuildServiceProvider();
+var fileValidationService = serviceProvider.GetRequiredService<FileValidationService>();
+
+// Example 1: Validate a video file before processing
+var videoFilePath = "/videos/my_short.mp4";
+bool isValid = fileValidationService.ValidateVideoFile(videoFilePath);
+
+if (isValid)
+{
+    Console.WriteLine("✓ Video file is valid for processing");
+}
+else
+{
+    Console.WriteLine("✗ Video file validation failed");
+}
+
+// Example 2: Calculate file hash for integrity verification
+string fileHash = fileValidationService.GetFileHash(videoFilePath);
+Console.WriteLine($"File hash: {fileHash}");
+
+// Example 3: Get video duration (simulated in current implementation)
+TimeSpan? duration = fileValidationService.GetVideoDuration(videoFilePath);
+if (duration.HasValue)
+{
+    Console.WriteLine($"Video duration: {duration.Value.TotalSeconds:F1} seconds");
+}
+else
+{
+    Console.WriteLine("Could not determine video duration");
+}
+
+// Example 4: Delete a temporary file after processing
+var tempFilePath = "/temp/processed_video_temp.mp4";
+fileValidationService.DeleteTemporaryFile(tempFilePath);
+Console.WriteLine("Temporary file deleted successfully");
+
+// Example 5: Clean up an entire temporary directory
+var tempDirectory = "/temp/processing_temp";
+fileValidationService.CleanupTemporaryDirectory(tempDirectory);
+Console.WriteLine("Temporary directory cleaned up successfully");
+
+// Example 6: Get supported video formats
+string supportedFormats = fileValidationService.GetSupportedFormats();
+Console.WriteLine($"Supported formats: {supportedFormats}");
+```
+
 ## VideoShort
 
 The `VideoShort` class represents a short-form video entity that can be processed, optimized, and uploaded to YouTube as a Short. It encapsulates video metadata, processing state, quality settings, and relationships to processing profiles, YouTube channels, and upload jobs throughout the video lifecycle.
