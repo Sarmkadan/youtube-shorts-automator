@@ -1530,6 +1530,82 @@ public class AnalyticsController : ControllerBase
 - Get application version
 - Response: `{ version: "2.0.2", buildDate: datetime }`
 
+## MetricsController
+
+The `MetricsController` provides REST endpoints for retrieving various performance and system metrics from the YouTube Shorts Automator application. It exposes endpoints for system-wide metrics, API call tracking, error statistics, and processing performance analysis, making it easy to monitor application health and performance in real-time.
+
+**Key Features:**
+- Retrieve system-wide performance metrics including total API calls, processing performance, and error statistics
+- Monitor API call patterns with endpoint-level breakdowns and timing information
+- Track error rates and types across the application
+- Analyze processing pipeline performance with duration statistics and throughput metrics
+- Access captured timestamps for when metrics were collected
+
+**Usage Example:**
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.API;
+using YouTubeShortsAutomator.Domain.Models;
+
+// Initialize controller (typically via dependency injection)
+var metricsController = new MetricsController();
+
+// Example 1: Get system metrics
+var systemMetrics = await metricsController.GetSystemMetricsAsync();
+if (systemMetrics is OkObjectResult okResult)
+{
+    var metrics = okResult.Value as MetricsResponse;
+    Console.WriteLine($"Total API calls: {metrics.TotalApiCalls}");
+    Console.WriteLine($"Captured at: {metrics.CapturedAtUtc}");
+}
+
+// Example 2: Get API call metrics with endpoint breakdown
+var apiMetrics = await metricsController.GetApiCallMetricsAsync();
+if (apiMetrics is OkObjectResult apiOkResult)
+{
+    var apiMetricsResponse = apiOkResult.Value as ApiCallMetricsResponse;
+    Console.WriteLine($"Total API calls: {apiMetricsResponse.TotalCalls}");
+    Console.WriteLine($"Average duration: {apiMetricsResponse.AverageDurationMs:F2}ms");
+    
+    foreach (var group in apiMetricsResponse.Groups)
+    {
+        Console.WriteLine($"Endpoint: {group.Endpoint}");
+        Console.WriteLine($"  Calls: {group.CallCount}");
+        Console.WriteLine($"  Avg duration: {group.AverageDurationMs:F2}ms");
+    }
+}
+
+// Example 3: Get error statistics
+var errorStats = await metricsController.GetErrorStatsAsync();
+if (errorStats is OkObjectResult errorOkResult)
+{
+    var errorResponse = errorOkResult.Value as ErrorStatsResponse;
+    Console.WriteLine($"Total errors: {errorResponse.TotalErrors}");
+    
+    foreach (var error in errorResponse.ErrorCounts)
+    {
+        Console.WriteLine($"Error type: {error.Key}, Count: {error.Value}");
+    }
+}
+
+// Example 4: Get processing performance metrics
+var performance = await metricsController.GetProcessingPerformanceAsync();
+if (performance is OkObjectResult perfOkResult)
+{
+    var perfResponse = perfOkResult.Value as ProcessingPerformanceResponse;
+    Console.WriteLine($"Processing type: {perfResponse.ProcessType}");
+    Console.WriteLine($"Total processed: {perfResponse.TotalCalls}");
+    Console.WriteLine($"Total bytes: {perfResponse.TotalBytesProcessed:N0}");
+    
+    foreach (var metric in perfResponse.ProcessingMetrics)
+    {
+        Console.WriteLine($"Duration range: {metric.MinDurationMs:F2}ms - {metric.MaxDurationMs:F2}ms");
+        Console.WriteLine($"Average: {metric.AverageDurationMs:F2}ms");
+    }
+}
+```
+
 **GET** `/api/metrics`
 - Get system metrics
 - Response: `{ processingQueue: int, failedJobs: int, uptime: int }`
