@@ -73,6 +73,8 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddScoped<VideoProcessingService>();
+        // expose the interface too, resolving to the same scoped instance
+        services.AddScoped<IVideoProcessingService>(sp => sp.GetRequiredService<VideoProcessingService>());
         services.AddScoped<YouTubeUploadService>();
         services.AddScoped<AnalyticsService>();
         services.AddScoped<SchedulingService>();

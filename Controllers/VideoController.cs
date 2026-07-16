@@ -15,14 +15,14 @@ namespace YouTubeShortsAutomator.Controllers;
 public class VideoController : ControllerBase
 {
     private readonly IVideoRepository _videoRepository;
-    private readonly VideoProcessingService _processingService;
+    private readonly IVideoProcessingService _processingService;
     private readonly YouTubeUploadService _uploadService;
     private readonly AnalyticsService _analyticsService;
     private readonly ILogger<VideoController> _logger;
 
     public VideoController(
         IVideoRepository videoRepository,
-        VideoProcessingService processingService,
+        IVideoProcessingService processingService,
         YouTubeUploadService uploadService,
         AnalyticsService analyticsService,
         ILogger<VideoController> logger)
