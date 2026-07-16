@@ -91,6 +91,10 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - **Rate Limiting**: Configurable API rate limiting and throttling
 - **Caching Layer**: Redis-based caching for performance optimization
 
+## Architecture
+
+The solution ships two applications: an ASP.NET Core web API at the repo root (controllers, application services, EF Core repositories, polling background workers) and the original console pipeline under `src/`. Layering, DI wiring, the job queue model, extension points and known limitations are documented in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## ProcessingController
 
 The `ProcessingController` manages the video submission pipeline, allowing users to upload video files, track processing status, retrieve available encoding profiles, and cancel ongoing jobs. It acts as the primary API interface for initiating and managing the transcoding workflows defined within the application.

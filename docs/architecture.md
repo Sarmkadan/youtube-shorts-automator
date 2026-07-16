@@ -5,6 +5,9 @@
 
 # Architecture Guide
 
+> Note: parts of this guide describe the intended design rather than the current code.
+> For an up-to-date, code-accurate description see [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## System Overview
 
 YouTube Shorts Automator is built on a layered, domain-driven architecture that separates concerns and enables maintainability, testability, and scalability.
