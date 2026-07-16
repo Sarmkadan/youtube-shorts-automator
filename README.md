@@ -450,6 +450,72 @@ Console.WriteLine($"Deleted entry {entry1.Id}: {(deleted ? "Success" : "Failed")
 await repository.SaveChangesAsync();
 ```
 
+## IntegrationTests
+
+The `IntegrationTests` class provides comprehensive integration testing for the complete YouTube Shorts automation pipeline. It validates end-to-end workflows including video processing, upload scheduling, analytics synchronization, and concurrent operation handling across the entire system.
+
+
+
+This test suite exercises the real integration points between components, ensuring that the automation pipeline works correctly when all services are wired together through dependency injection and actual database operations.
+
+**Public Members:**
+- `EndToEnd_ScheduleUpload_CompletesSuccessfully` - Tests the complete pipeline from video scheduling to successful upload completion
+- `EndToEnd_CreateVideo_CreateAnalytics_SyncMetrics` - Validates video creation, analytics generation, and metrics synchronization workflow
+- `ConcurrencyTest_MultipleSchedulesSimultaneously` - Tests concurrent schedule creation and processing
+- `ConcurrencyTest_MultipleVideoCreationsSimultaneously` - Validates concurrent video processing operations
+- `ConfigurationTest_DifferentProcessingProfiles` - Tests various processing profile configurations
+- `SchedulingWorkflow_CreateScheduleAndRetrieveUpcoming` - Validates schedule creation and retrieval workflow
+- `SchedulingWorkflow_RescheduleAndVerify` - Tests schedule modification and verification
+- `SchedulingWorkflow_CancelUpload` - Validates upload cancellation functionality
+- `AnalyticsWorkflow_CreateAndGenerateReport` - Tests analytics generation and reporting workflow
+- `FileValidationWorkflow_ValidateAndHash` - Validates file validation and hashing operations
+- `MainUseCase_ProcessVideoAndScheduleUpload` - Tests the primary use case of processing video and scheduling upload
+- `Dispose` - Cleanup method for test resources
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+// Initialize integration test suite with dependency injection
+var services = new ServiceCollection();
+services.AddLogging(configure => configure.AddConsole());
+services.AddDbContext<DatabaseContext>(options => 
+    options.UseSqlServer("Server=localhost;Database=YouTubeShortsAutomator;User Id=sa;Password=YourPassword;"));
+services.AddScoped<IntegrationTests>();
+
+var serviceProvider = services.BuildServiceProvider();
+var integrationTests = serviceProvider.GetRequiredService<IntegrationTests>();
+
+// Example 1: Test complete end-to-end video processing and upload pipeline
+var pipelineResult = await integrationTests.EndToEnd_ScheduleUpload_CompletesSuccessfully();
+Console.WriteLine($"Pipeline completed: {pipelineResult.Status}");
+Console.WriteLine($"Video ID: {pipelineResult.VideoShortId}, Upload Job ID: {pipelineResult.UploadJobId}");
+
+// Example 2: Test concurrent schedule creation
+var concurrentResult = await integrationTests.ConcurrencyTest_MultipleSchedulesSimultaneously(5);
+Console.WriteLine($"Created {concurrentResult} concurrent schedules successfully");
+
+// Example 3: Test different processing profiles
+var profileResult = await integrationTests.ConfigurationTest_DifferentProcessingProfiles();
+Console.WriteLine($"Successfully tested {profileResult} different processing profiles");
+
+// Example 4: Test analytics synchronization workflow
+var analyticsResult = await integrationTests.AnalyticsWorkflow_CreateAndGenerateReport();
+Console.WriteLine($"Analytics sync completed: {analyticsResult.SyncedCount} videos, {analyticsResult.FailedCount} failed");
+
+// Example 5: Test file validation and hashing workflow
+var fileResult = await integrationTests.FileValidationWorkflow_ValidateAndHash("/videos/sample.mp4");
+Console.WriteLine($"File validation result: {fileResult.IsValid}, Hash: {fileResult.FileHash}");
+
+// Cleanup
+integrationTests.Dispose();
+```
+
 ## VideoShortModelTests
 
 The `VideoShortModelTests` class contains unit tests for the `VideoShort` model validation and processing logic. It verifies that video metadata validation works correctly and that the processing status management functions as expected.
