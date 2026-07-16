@@ -91,6 +91,60 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - **Rate Limiting**: Configurable API rate limiting and throttling
 - **Caching Layer**: Redis-based caching for performance optimization
 
+## ProcessingController
+
+The `ProcessingController` manages the video submission pipeline, allowing users to upload video files, track processing status, retrieve available encoding profiles, and cancel ongoing jobs. It acts as the primary API interface for initiating and managing the transcoding workflows defined within the application.
+
+**Usage Example:**
+
+```csharp
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.API;
+
+// Assume controller is initialized via dependency injection
+var controller = new ProcessingController(logger, responseFormatter, cacheService);
+
+// Example 1: Get available profiles
+var profilesResult = await controller.GetAvailableProfilesAsync();
+if (profilesResult is OkObjectResult profilesOk)
+{
+    var profilesResponse = profilesOk.Value as ProfilesResponse;
+    foreach (var profile in profilesResponse.Profiles)
+    {
+        Console.WriteLine($"Profile: {profile.Name} ({profile.Code}) - {profile.Resolution} @ {profile.Bitrate}");
+    }
+}
+
+// Example 2: Submit a video for processing
+// (In a real scenario, SubmitVideoRequest would be populated from an IFormFile/Multipart request)
+var request = new SubmitVideoRequest
+{
+    Title = "My New Short",
+    Description = "A great short video",
+    ProcessingProfile = "hq"
+};
+var submitResult = await controller.SubmitVideoAsync(request);
+if (submitResult is OkObjectResult submitOk)
+{
+    var response = submitOk.Value as ProcessingResponse;
+    Console.WriteLine($"Submitted job {response.ProcessingId}: {response.Message}");
+
+    // Example 3: Get status
+    var statusResult = await controller.GetProcessingStatusAsync(response.ProcessingId);
+    if (statusResult is OkObjectResult statusOk)
+    {
+        var statusResponse = statusOk.Value as ProcessingStatusResponse;
+        Console.WriteLine($"Job {statusResponse.ProcessingId} status: {statusResponse.Status}, Progress: {statusResponse.Progress}%");
+    }
+
+    // Example 4: Cancel processing
+    var cancelResult = await controller.CancelProcessingAsync(response.ProcessingId);
+    Console.WriteLine($"Cancellation result: {cancelResult}");
+}
+```
+
+
 ## Repository
 
 The `Repository<TEntity>` base class provides a generic data access layer implementation for common CRUD operations against your database context. It serves as the foundation for all repository implementations in the application and offers standard methods for entity persistence, retrieval, updating, and deletion.
