@@ -1700,6 +1700,58 @@ if (performance is OkObjectResult perfOkResult)
 - Get system metrics
 - Response: `{ processingQueue: int, failedJobs: int, uptime: int }`
 
+## SystemController
+
+The `SystemController` provides endpoints to monitor the overall health, versioning, and configuration of the YouTube Shorts Automator service. It serves as a diagnostic tool for checking system status, API version compatibility, and runtime environment details.
+
+**Usage Example:**
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.API;
+
+// Initialize controller via dependency injection (mocked logger and configuration)
+var controller = new SystemController(logger, configuration);
+
+// Example 1: Get system health status
+var healthResult = await controller.GetHealthAsync();
+if (healthResult is OkObjectResult healthOk)
+{
+    var response = healthOk.Value as HealthCheckResponse;
+    Console.WriteLine($"System status: {response.Status}");
+    foreach (var check in response.Checks)
+    {
+        Console.WriteLine($"Check: {check.Key} - {check.Value.Status} ({check.Value.ResponseTime})");
+    }
+}
+
+// Example 2: Get API version info
+var versionResult = controller.GetVersionAsync();
+if (versionResult is OkObjectResult versionOk)
+{
+    var version = versionOk.Value as VersionInfo;
+    Console.WriteLine($"API Version: {version.ApiVersion}, Build Date: {version.BuildDate}");
+}
+
+// Example 3: Get system diagnostics
+var infoResult = controller.GetSystemInfoAsync();
+if (infoResult is OkObjectResult infoOk)
+{
+    var info = infoOk.Value as SystemInfoResponse;
+    Console.WriteLine($"OS: {info.OperatingSystem}, .NET: {info.DotNetVersion}");
+    Console.WriteLine($"Uptime: {info.Uptime}");
+}
+
+// Example 4: Get supported features
+var featuresResult = controller.GetFeaturesAsync();
+if (featuresResult is OkObjectResult featuresOk)
+{
+    var features = featuresOk.Value as FeaturesResponse;
+    Console.WriteLine($"Analytics enabled: {features.Analytics}");
+}
+```
+
+
 ## WebhookController
 
 The `WebhookController` provides API endpoints for managing webhook registrations, enabling the system to receive real-time notifications about events such as upload completions or failures. It supports CRUD operations, allowing users to register, list, retrieve, update, and delete webhook configurations.
