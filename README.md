@@ -687,6 +687,157 @@ bool deleted = fileValidationServiceTests.DeleteTemporaryFile_WithExistingFile_D
 Assert.True(deleted);
 ```
 
+## AnalyticsServiceTests
+
+The `AnalyticsServiceTests` class contains unit tests for the `AnalyticsService` that validate analytics data creation, synchronization from YouTube, retrieval, performance analysis, and report generation functionality. It tests various scenarios including successful operations, error handling, edge cases, and data validation to ensure the analytics service works correctly across different use cases.
+
+This test suite validates the complete analytics workflow including video analytics tracking, performance metrics analysis, channel growth calculations, and custom report generation with comprehensive error handling and boundary condition testing.
+
+**Public Members:**
+- `CreateAnalyticsRecordAsync_WithValidVideoId_CreatesRecord` - Validates successful analytics record creation
+- `CreateAnalyticsRecordAsync_WithRepositoryException_ThrowsInvalidOperationException` - Tests error handling during record creation
+- `SyncAnalyticsFromYouTubeAsync_WithValidInputs_UpdatesAnalytics` - Validates YouTube data synchronization
+- `SyncAnalyticsFromYouTubeAsync_WithNullYoutubeId_ThrowsArgumentNullException` - Tests null parameter validation
+- `SyncAnalyticsFromYouTubeAsync_WithNullChannel_ThrowsArgumentNullException` - Tests null parameter validation
+- `SyncAnalyticsFromYouTubeAsync_WhenNoExistingRecord_CreatesNew` - Tests behavior when no existing record exists
+- `GetVideoAnalyticsAsync_WithValidVideoId_ReturnsAnalytics` - Validates analytics retrieval
+- `GetVideoAnalyticsAsync_WhenNotFound_ReturnsNull` - Tests handling of non-existent records
+- `GetTopPerformingVideosAsync_WithValidLimit_ReturnsTopVideos` - Validates top videos retrieval
+- `GetTopPerformingVideosAsync_WithInvalidLimit_ThrowsArgumentOutOfRangeException` - Tests parameter validation
+- `GetTopPerformingVideosAsync_WithNegativeLimit_ThrowsArgumentOutOfRangeException` - Tests parameter validation
+- `GeneratePeriodReportAsync_WithValidDateRange_ReturnsReport` - Validates report generation
+- `GeneratePeriodReportAsync_WithInvertedDates_ThrowsArgumentException` - Tests date range validation
+- `GeneratePeriodReportAsync_WithEmptyAnalytics_ReturnsEmptyReport` - Tests edge case handling
+- `AnalyzePerformanceMetrics_WithValidData_ReturnsInsights` - Validates performance analysis
+- `AnalyzePerformanceMetrics_WithLowEngagement_ReturnsWarning` - Tests warning generation
+- `AnalyzePerformanceMetrics_WithoutValidData_ReturnsDefaultMessage` - Tests default behavior
+- `CalculateChannelGrowthAsync_WithMultipleAnalytics_ReturnsTotalGrowth` - Validates growth calculations
+- `CalculateChannelGrowthAsync_WithNegativeGrowth_ReturnsNegativeValue` - Tests negative growth scenarios
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.Logging;
+using Xunit;
+
+// Initialize test service with mock logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<AnalyticsServiceTests>();
+var analyticsServiceTests = new AnalyticsServiceTests(logger);
+
+// Example 1: Test successful analytics record creation
+var createResult = await analyticsServiceTests.CreateAnalyticsRecordAsync_WithValidVideoId_CreatesRecord();
+Assert.NotNull(createResult);
+Assert.Equal("UC1234567890", createResult.YouTubeChannelId);
+
+// Example 2: Test YouTube data synchronization
+var syncResult = await analyticsServiceTests.SyncAnalyticsFromYouTubeAsync_WithValidInputs_UpdatesAnalytics();
+Assert.True(syncResult);
+Assert.Equal(5, syncResult.UpdatedCount);
+
+// Example 3: Test analytics retrieval
+var analytics = await analyticsServiceTests.GetVideoAnalyticsAsync_WithValidVideoId_ReturnsAnalytics();
+Assert.NotNull(analytics);
+Assert.Equal("dQw4w9WgXcQ", analytics.YouTubeVideoId);
+Assert.Equal(1500, analytics.ViewCount);
+Assert.Equal(75, analytics.LikeCount);
+
+// Example 4: Test top performing videos retrieval
+var topVideos = await analyticsServiceTests.GetTopPerformingVideosAsync_WithValidLimit_ReturnsTopVideos();
+Assert.NotNull(topVideos);
+Assert.Equal(3, topVideos.Count());
+Assert.All(topVideos, video => Assert.True(video.ViewCount > 1000));
+
+// Example 5: Test period report generation
+var report = await analyticsServiceTests.GeneratePeriodReportAsync_WithValidDateRange_ReturnsReport();
+Assert.NotNull(report);
+Assert.Equal(2, report.Periods.Count);
+Assert.Equal(7500, report.TotalViews);
+
+// Example 6: Test performance analysis
+var insights = analyticsServiceTests.AnalyzePerformanceMetrics_WithValidData_ReturnsInsights();
+Assert.NotNull(insights);
+Assert.Contains("high", insights.ToLower());
+
+// Example 7: Test channel growth calculation
+var growth = await analyticsServiceTests.CalculateChannelGrowthAsync_WithMultipleAnalytics_ReturnsTotalGrowth();
+Assert.NotNull(growth);
+Assert.True(growth.TotalGrowthPercentage > 0);
+
+// Example 8: Test error handling - null YouTube ID
+Assert.Throws<ArgumentNullException>(() => 
+    analyticsServiceTests.SyncAnalyticsFromYouTubeAsync_WithNullYoutubeId_ThrowsArgumentNullException());
+```
+
+**Public Members:**
+- `ValidateVideoFile_WithValidMp4File_ReturnsTrue` - Validates that a proper MP4 file passes all checks
+- `ValidateVideoFile_WithNullPath_ThrowsArgumentException` - Verifies null path handling
+- `ValidateVideoFile_WithEmptyPath_ThrowsArgumentException` - Verifies empty path handling
+- `ValidateVideoFile_WithNonExistentFile_ReturnsFalse` - Validates behavior with missing files
+- `ValidateVideoFile_WithFileTooLarge_ReturnsFalse` - Validates file size limits
+- `ValidateVideoFile_WithFileTooSmall_ReturnsFalse` - Validates minimum file size requirements
+- `ValidateVideoFile_WithUnsupportedFormat_ReturnsFalse` - Validates format restrictions
+- `ValidateVideoFile_WithEmptyFile_ReturnsFalse` - Validates handling of empty files
+- `ValidateVideoFile_WithSupportedFormats_ReturnsTrue` - Validates multiple supported formats
+- `GetFileHash_WithValidFile_ReturnsConsistentHash` - Tests hash generation consistency
+- `GetFileHash_WithNullPath_ThrowsArgumentException` - Verifies null path handling for hashing
+- `GetFileHash_WithEmptyPath_ThrowsArgumentException` - Verifies empty path handling for hashing
+- `GetFileHash_WithNonExistentFile_ThrowsInvalidOperationException` - Validates error handling for missing files
+- `GetFileHash_WithDifferentFiles_ReturnsDifferentHashes` - Verifies hash uniqueness
+- `GetVideoDuration_WithExistentFile_ReturnsTimeSpan` - Tests duration extraction
+- `GetVideoDuration_WithNullPath_ThrowsArgumentException` - Verifies null path handling for duration
+- `GetVideoDuration_WithEmptyPath_ThrowsArgumentException` - Verifies empty path handling for duration
+- `GetVideoDuration_WithNonExistentFile_ReturnsNull` - Validates behavior with missing files
+- `DeleteTemporaryFile_WithExistingFile_DeletesFile` - Tests file cleanup functionality
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using Microsoft.Extensions.Logging;
+using Xunit;
+
+// Initialize test service with mock logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<FileValidationServiceTests>();
+var fileValidationServiceTests = new FileValidationServiceTests(logger);
+
+// Example 1: Validate a valid MP4 file
+bool isValidMp4 = fileValidationServiceTests.ValidateVideoFile_WithValidMp4File_ReturnsTrue();
+Assert.True(isValidMp4);
+
+// Example 2: Validate an unsupported format (MKV)
+bool isValidMkv = fileValidationServiceTests.ValidateVideoFile_WithUnsupportedFormat_ReturnsFalse();
+Assert.False(isValidMkv);
+
+// Example 3: Validate file size limits
+bool isValidSize = fileValidationServiceTests.ValidateVideoFile_WithFileTooLarge_ReturnsFalse();
+Assert.False(isValidSize);
+
+// Example 4: Generate file hash for change detection
+string fileHash = fileValidationServiceTests.GetFileHash_WithValidFile_ReturnsConsistentHash();
+Assert.NotNull(fileHash);
+Assert.Equal(64, fileHash.Length); // SHA256 hash length
+
+// Example 5: Get video duration from file
+TimeSpan? duration = fileValidationServiceTests.GetVideoDuration_WithExistentFile_ReturnsTimeSpan();
+Assert.NotNull(duration);
+Assert.True(duration.Value.TotalSeconds > 0);
+
+// Example 6: Test null path validation
+Assert.Throws<ArgumentException>(() => fileValidationServiceTests.GetFileHash_WithNullPath_ThrowsArgumentException());
+
+// Example 7: Test empty file handling
+bool isValidEmptyFile = fileValidationServiceTests.ValidateVideoFile_WithEmptyFile_ReturnsFalse();
+Assert.False(isValidEmptyFile);
+
+// Example 8: Test temporary file cleanup
+bool deleted = fileValidationServiceTests.DeleteTemporaryFile_WithExistingFile_DeletesFile();
+Assert.True(deleted);
+```
+
 ## UploadJobRepository
 
 The `UploadJobRepository` class provides data access operations for managing upload job entities in the YouTube Shorts automation system. It implements the `IRepository<UploadJob>` interface and offers specialized methods for querying upload jobs by status, retrieving jobs scheduled for upload, and finding retryable failed jobs. The repository handles all database operations for upload jobs including creation, retrieval, updating, and deletion, with support for tracking upload progress, retry attempts, and error messages.
