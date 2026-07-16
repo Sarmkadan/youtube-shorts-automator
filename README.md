@@ -221,6 +221,98 @@ var stats = await controller.GetJobStatsAsync(jobId);
 Console.WriteLine($"Successful: {stats.SuccessfulCount}, Failed: {stats.FailedCount}");
 ```
 
+## YouTubeChannel
+
+The `YouTubeChannel` class represents a YouTube channel entity that stores authentication credentials, channel metadata, and statistics. It provides methods for managing OAuth tokens, verifying channels, and tracking channel performance metrics.
+
+**Key Features:**
+- Stores YouTube channel authentication tokens (access and refresh) with automatic expiration tracking
+- Maintains channel statistics including subscriber count, view count, and video count
+- Provides methods for token refresh management, channel verification, and activation status
+- Tracks channel metadata such as profile image, description, and language settings
+- Includes validation logic to ensure channel data integrity
+
+**Public Members:**
+- `Id` - Primary key identifier
+- `ChannelId` - YouTube channel ID (starts with "UC")
+- `ChannelName` - Display name of the channel
+- `Description` - Channel description text
+- `AccessToken` - OAuth 2.0 access token for API authentication
+- `RefreshToken` - OAuth 2.0 refresh token for obtaining new access tokens
+- `TokenExpiresAt` - DateTime when the current access token expires
+- `SubscriberCount` - Number of channel subscribers
+- `ViewCount` - Total number of channel views
+- `VideoCount` - Total number of videos uploaded
+- `ProfileImageUrl` - URL to the channel's profile image
+- `IsVerified` - Whether the channel is YouTube-verified
+- `IsActive` - Whether the channel is currently active in the system
+- `DefaultLanguage` - Channel's default language (default: "en")
+- `CreatedAt` - When the channel record was created
+- `UpdatedAt` - When the channel record was last updated
+- `LastSyncAt` - When channel statistics were last synchronized with YouTube API
+- `VideoShorts` - Collection of video shorts associated with this channel
+- `IsTokenExpired()` - Method to check if access token has expired
+- `UpdateToken()` - Method to update OAuth tokens and expiration
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+
+// Create a new YouTube channel
+var channel = new YouTubeChannel
+{
+    ChannelId = "UC1234567890",
+    ChannelName = "My Awesome Coding Channel",
+    Description = "Learn coding, software development, and tech tutorials",
+    AccessToken = "ya29.a0AfH6SMB...",
+    RefreshToken = "1//09wgY...",
+    TokenExpiresAt = DateTime.UtcNow.AddHours(1),
+    SubscriberCount = 15000,
+    ViewCount = 2500000,
+    VideoCount = 420,
+    ProfileImageUrl = "https://yt3.ggpht.com/...",
+    IsVerified = true,
+    IsActive = true,
+    DefaultLanguage = "en",
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+
+// Check if token needs refresh
+if (channel.NeedsTokenRefresh())
+{
+    Console.WriteLine("Token will expire soon - refresh needed");
+}
+
+// Update OAuth tokens after successful refresh
+channel.UpdateToken(
+    accessToken: "new_access_token_here",
+    refreshToken: "new_refresh_token_here",
+    expiresInSeconds: 3600
+);
+
+// Sync channel statistics from YouTube API
+channel.SyncChannelStats(
+    subscribers: 15500,
+    views: 2600000,
+    videos: 435
+);
+
+// Verify the channel
+channel.Verify();
+
+// Activate or deactivate the channel
+channel.Activate();
+// channel.Deactivate();
+
+// Validate channel data
+bool isValid = channel.IsValid();
+Console.WriteLine($"Channel is valid: {isValid}");
+```
+
 ## Repository
 
 The `Repository<TEntity>` base class provides a generic data access layer implementation for common CRUD operations against your database context. It serves as the foundation for all repository implementations in the application and offers standard methods for entity persistence, retrieval, updating, and deletion.
