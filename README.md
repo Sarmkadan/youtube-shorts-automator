@@ -2160,6 +2160,52 @@ var uploadException = new UploadException(
 throw uploadException;
 ```
 
+## YouTubeApiException
+
+The `YouTubeApiException` is a specialized exception type thrown when errors are returned from the YouTube API. It provides detailed error information including the channel ID, API error code, HTTP status code, and helper methods to check for common error conditions like token expiration or quota exceeded errors.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Exceptions;
+
+try
+{
+    await youtubeService.UploadVideoAsync(video);
+}
+catch (YouTubeApiException ex)
+{
+    Console.WriteLine($"YouTube API error: {ex.Message}");
+    
+    if (ex.IsTokenExpired())
+    {
+        Console.WriteLine("Token expired - need to refresh authentication");
+        await RefreshYouTubeTokenAsync(ex.ChannelId);
+    }
+    else if (ex.IsQuotaExceeded())
+    {
+        Console.WriteLine("API quota exceeded - wait before retrying");
+    }
+    else
+    {
+        Console.WriteLine($"Channel {ex.ChannelId}: API Error {ex.ApiErrorCode}, HTTP {ex.HttpStatusCode}");
+    }
+}
+
+// Creating a YouTubeApiException with full context
+var apiException = new YouTubeApiException(
+    message: "Invalid grant - token has expired",
+    channelId: 42,
+    apiErrorCode: "invalid_grant",
+    httpStatusCode: 401
+);
+
+if (apiException.IsTokenExpired())
+{
+    Console.WriteLine("Token expired - refresh required");
+}
+```
+
 ## VideoUploadStartedEventHandler
 
 The `VideoUploadStartedEventHandler` processes `VideoUploadStartedEvent` domain events triggered when a video upload begins. This handler logs the event and facilitates business logic such as database updates or external notifications to signal the start of the upload pipeline.
