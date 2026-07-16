@@ -2224,11 +2224,153 @@ if (overlayResult.Success)
 - REST surface via `ContentCalendarController` (10 endpoints)
 - Registered as `IContentCalendarService`
 
-**VideoProcessingService**: Handles FFmpeg operations
-- Transcoding with multiple profiles
-- Watermark application
-- Format conversion and validation
-- Quality analysis and optimization
+## VideoProcessingService
+
+The `VideoProcessingService` class provides comprehensive video processing capabilities for YouTube Shorts automation. It handles video validation, transcoding with multiple profiles, watermark application, color grading, thumbnail generation, and format conversion using FFmpeg. This service serves as the central hub for all video processing operations throughout the video lifecycle.
+
+**Key Features:**
+- Validates video files before processing with comprehensive checks
+- Transcodes videos with configurable profiles (resolution, bitrate, frame rate)
+- Applies watermarks with customizable positioning and transparency
+- Performs color grading and enhancement during transcoding
+- Generates thumbnails at specific timestamps with text overlays
+- Converts between supported formats (MP4, MKV, WebM, AVI)
+- Analyzes video quality and applies optimal processing parameters
+- Processes videos asynchronously with progress tracking
+
+**Public Members:**
+- `ValidateVideoFileAsync()` - Validates a video file for processing with checks for existence, size limits, supported formats, and readability
+- `CreateProcessingTaskAsync()` - Creates a new processing task for a video short
+- `ProcessVideoAsync()` - Processes a video with specified profile, watermark, and color grading options
+- `ApplyWatermarkAsync()` - Applies a watermark overlay to a video file
+- `ApplyColorGradingAsync()` - Applies color grading and enhancement to a video file
+- `GenerateThumbnailAsync()` - Generates a thumbnail from a video at a specific timestamp
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Services;
+using YouTubeShortsAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize service (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+var serviceProvider = services.BuildServiceProvider();
+var videoProcessingService = serviceProvider.GetRequiredService<VideoProcessingService>();
+
+// Example 1: Validate a video file before processing
+var videoFilePath = "/videos/my_short.mp4";
+bool isValid = await videoProcessingService.ValidateVideoFileAsync(videoFilePath);
+
+if (isValid)
+{
+    Console.WriteLine("✓ Video file is valid for processing");
+}
+else
+{
+    Console.WriteLine("✗ Video file validation failed");
+}
+
+// Example 2: Create a processing task for a video short
+var videoShort = new VideoShort
+{
+    Id = 42,
+    Title = "10 Essential C# Tips Every Developer Should Know",
+    FilePath = videoFilePath,
+    Duration = TimeSpan.FromSeconds(58),
+    Quality = VideoQuality.HD1080,
+    Tags = new[] { "csharp", "dotnet", "tutorial", "programming", "shorts" }
+};
+
+var processingTask = await videoProcessingService.CreateProcessingTaskAsync(
+    videoShort: videoShort,
+    processingProfile: new ProcessingProfile
+    {
+        Name = "High Quality",
+        Resolution = "1080p",
+        Bitrate = "4000k",
+        ApplyWatermark = true,
+        ApplyColorGrading = true,
+        Format = "mp4"
+    }
+);
+
+Console.WriteLine($"Created processing task {processingTask.Id} for video {processingTask.VideoShortId}");
+
+// Example 3: Process a video with watermark and color grading
+var processedVideoPath = await videoProcessingService.ProcessVideoAsync(
+    videoShort: videoShort,
+    processingProfile: new ProcessingProfile
+    {
+        Name = "HD Quality with Watermark",
+        Resolution = "1080p",
+        Bitrate = "3500k",
+        ApplyWatermark = true,
+        WatermarkPath = "/assets/watermark.png",
+        WatermarkPosition = WatermarkPosition.BottomRight,
+        WatermarkOpacity = 0.3,
+        ApplyColorGrading = true,
+        ColorProfile = "cinematic",
+        Format = "mp4"
+    },
+    cancellationToken: CancellationToken.None
+);
+
+Console.WriteLine($"Video processed successfully: {processedVideoPath}");
+
+// Example 4: Apply watermark to an existing video
+var watermarkedVideoPath = await videoProcessingService.ApplyWatermarkAsync(
+    inputVideoPath: "/videos/source.mp4",
+    outputVideoPath: "/videos/watermarked.mp4",
+    watermarkPath: "/assets/logo.png",
+    position: WatermarkPosition.TopLeft,
+    opacity: 0.2
+);
+
+Console.WriteLine($"Watermark applied: {watermarkedVideoPath}");
+
+// Example 5: Apply color grading to a video
+var gradedVideoPath = await videoProcessingService.ApplyColorGradingAsync(
+    inputVideoPath: "/videos/source.mp4",
+    outputVideoPath: "/videos/graded.mp4",
+    colorProfile: "vintage"
+);
+
+Console.WriteLine($"Color grading applied: {gradedVideoPath}");
+
+// Example 6: Generate thumbnail from video
+var thumbnailPath = await videoProcessingService.GenerateThumbnailAsync(
+    videoPath: "/videos/my_short.mp4",
+    outputPath: "/thumbnails/thumbnail.jpg",
+    timestamp: TimeSpan.FromSeconds(15),
+    width: 720,
+    height: 1280,
+    textOverlay: "C# Tips"
+);
+
+Console.WriteLine($"Thumbnail generated: {thumbnailPath}");
+```
+
+**ProcessingProfile Options:**
+- `Name` - Profile name (e.g., "High Quality", "Mobile", "Social Media")
+- `Resolution` - Target resolution (e.g., "720p", "1080p", "4K")
+- `Bitrate` - Target bitrate (e.g., "2500k", "4000k", "8000k")
+- `ApplyWatermark` - Whether to apply watermark (default: false)
+- `WatermarkPath` - Path to watermark image file
+- `WatermarkPosition` - WatermarkPosition enum (TopLeft, TopRight, BottomLeft, BottomRight, Center)
+- `WatermarkOpacity` - Watermark opacity (0.0 to 1.0)
+- `ApplyColorGrading` - Whether to apply color grading (default: false)
+- `ColorProfile` - Color grading profile (e.g., "cinematic", "vintage", "bright", "dark")
+- `Format` - Output format (e.g., "mp4", "mkv", "webm")
+
+**WatermarkPosition Options:**
+- `TopLeft`, `TopRight`, `BottomLeft`, `BottomRight`, `Center`
+
+**VideoQuality Options:**
+- `SD`, `HD720`, `HD1080`, `HD1440`, `HD2160`, `HD4320`
+
+**Note:** FFmpeg must be installed and available on PATH or configured via `appsettings.json` for all video processing operations.
 
 **YouTubeUploadService**: Manages YouTube integration
 - OAuth authentication and token management
