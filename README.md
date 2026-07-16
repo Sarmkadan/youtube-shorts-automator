@@ -1969,7 +1969,28 @@ var groupMany = CollectionUtilityBenchmarksExtensions.GroupByToDictionaryManyGro
 // Example 3: Distinct operations
 var distinctEmpty = CollectionUtilityBenchmarksExtensions.DistinctByEmptyCollection();
 var distinctUnique = CollectionUtilityBenchmarksExtensions.DistinctByAllUnique();
+```
 var distinctSame = CollectionUtilityBenchmarksExtensions.DistinctByAllSame();
+```
+
+## VideoUploadStartedEvent
+
+This event is published when a video upload process begins. It contains essential details about the video, including its identifier, file name, size, and title.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Events;
+
+var uploadStartedEvent = new VideoUploadStartedEvent
+{
+    VideoId = Guid.NewGuid(),
+    FileName = "my_video.mp4",
+    FileSizeBytes = 10485760, // 10 MB
+    Title = "My New Short"
+};
+
+Console.WriteLine($"Upload started for: {uploadStartedEvent.Title} (ID: {uploadStartedEvent.VideoId})");
 ```
 
 ## CLI Reference
