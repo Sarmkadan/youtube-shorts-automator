@@ -313,6 +313,111 @@ bool isValid = channel.IsValid();
 Console.WriteLine($"Channel is valid: {isValid}");
 ```
 
+## VideoShort
+
+The `VideoShort` class represents a short-form video entity that can be processed, optimized, and uploaded to YouTube as a Short. It encapsulates video metadata, processing state, quality settings, and relationships to processing profiles, YouTube channels, and upload jobs throughout the video lifecycle.
+
+**Key Features:**
+- Tracks complete video lifecycle from creation through processing, upload, and analytics
+- Stores essential metadata including title, description, duration, file paths, and quality settings
+- Maintains processing status with automatic state transitions and timestamps
+- Supports tagging for discoverability and categorization
+- Provides validation methods to ensure data integrity before processing
+- Includes navigation properties for related entities (ProcessingProfile, YouTubeChannel, UploadJobs, ProcessingTasks)
+
+**Public Members:**
+- `Id` - Primary key identifier
+- `Title` - Video title (max 100 characters)
+- `Description` - Video description (max 5000 characters)
+- `FilePath` - File system path to the video file
+- `ThumbnailPath` - File system path to the thumbnail image
+- `Duration` - Video duration as TimeSpan
+- `FileSizeBytes` - Video file size in bytes
+- `Quality` - Video quality level (SD, HD720, HD1080, etc.)
+- `Status` - Current processing status (Pending, Processing, Completed, Failed, Uploaded)
+- `Tags` - Array of tags for categorization and discoverability
+- `ProcessingProfileId` - Identifier of the processing profile used for transcoding
+- `YouTubeChannelId` - Identifier of the target YouTube channel
+- `ErrorMessage` - Error details if processing failed (null otherwise)
+- `CreatedAt` - When the video record was created
+- `UpdatedAt` - When the video record was last updated
+- `ProcessedAt` - When the video finished processing (null if not processed)
+- `ProcessingProfile` - Navigation property to the processing profile
+- `YouTubeChannel` - Navigation property to the YouTube channel
+- `UploadJobs` - Collection of upload jobs associated with this video
+- `ProcessingTasks` - Collection of processing tasks associated with this video
+- `Analytics` - Analytics data for this video
+- `IsValid()` - Validates video metadata
+- `MarkAsProcessing()` - Marks video as currently being processed
+- `MarkAsProcessed()` - Marks video as processed (success or failure)
+- `MarkAsUploaded()` - Marks video as successfully uploaded
+- `CanBeProcessed()` - Checks if video can be processed
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+
+// Create a new video short for processing and upload
+var videoShort = new VideoShort
+{
+    Title = "10 Essential C# Tips Every Developer Should Know",
+    Description = "Quick C# tips to boost your coding productivity and write cleaner code. Learn essential techniques that every .NET developer needs!",
+    FilePath = "/videos/csharp_tips_2024.mp4",
+    ThumbnailPath = "/thumbnails/csharp_tips_thumbnail.jpg",
+    Duration = TimeSpan.FromSeconds(58),
+    FileSizeBytes = 8421376, // 8 MB
+    Quality = VideoQuality.HD1080,
+    Tags = new[] { "csharp", "dotnet", "tutorial", "coding", "productivity", "shorts", "development" },
+    ProcessingProfileId = 1, // High quality processing profile
+    YouTubeChannelId = 1, // Target YouTube channel
+    Status = ProcessingStatus.Pending,
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+
+// Validate the video short before processing
+bool isValid = videoShort.IsValid();
+Console.WriteLine($"Video is valid for processing: {isValid}");
+
+// Mark video as processing when transcoding begins
+videoShort.MarkAsProcessing();
+Console.WriteLine($"Status: {videoShort.Status}, Updated: {videoShort.UpdatedAt:u}");
+
+// After successful processing
+videoShort.MarkAsProcessed();
+Console.WriteLine($"Processing completed! Status: {videoShort.Status}, Processed at: {videoShort.ProcessedAt:u}");
+
+// After successful upload
+videoShort.MarkAsUploaded();
+Console.WriteLine($"Upload completed! Status: {videoShort.Status}");
+
+// Check if video can be processed
+if (videoShort.CanBeProcessed())
+{
+    Console.WriteLine("Video is ready for processing pipeline");
+}
+
+// Handle processing failure
+var failedVideo = new VideoShort
+{
+    Title = "Broken Video",
+    FilePath = "/videos/broken.mp4",
+    Duration = TimeSpan.FromSeconds(30),
+    Quality = VideoQuality.SD,
+    ProcessingProfileId = 1,
+    YouTubeChannelId = 1,
+    Status = ProcessingStatus.Pending,
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+
+failedVideo.MarkAsProcessed(error: "FFmpeg failed to decode video stream");
+Console.WriteLine($"Processing failed: {failedVideo.ErrorMessage}");
+```
+
 ## Repository
 
 The `Repository<TEntity>` base class provides a generic data access layer implementation for common CRUD operations against your database context. It serves as the foundation for all repository implementations in the application and offers standard methods for entity persistence, retrieval, updating, and deletion.
