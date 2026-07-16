@@ -1657,6 +1657,87 @@ var overdueJobs = await schedulingService.GetOverdueJobsAsync(new[] { 1, 2 });
 Console.WriteLine($"Found {overdueJobs.Count()} overdue jobs");
 ```
 
+## ContentCalendarServiceExtensions
+
+The `ContentCalendarServiceExtensions` class provides a collection of extension methods for the `ContentCalendarService` that simplify common content calendar operations. These methods reduce boilerplate code by providing convenient, fluent APIs for creating, retrieving, optimizing, scheduling, and managing content calendar entries throughout their lifecycle.
+
+**Public Members:**
+- `CreateEntryAsync` - Creates a new content calendar entry with optional immediate optimization
+- `GetRequiredEntryAsync` - Retrieves an entry by ID or throws if not found
+- `GetEntriesInRangeAsync` - Retrieves entries within a specific date range
+- `GetUpcomingEntriesAsync` - Retrieves upcoming entries scheduled for publication
+- `OptimizeAndApplyAsync` - Optimizes an entry and optionally applies the best suggestion
+- `ScheduleAtOptimalTimeAsync` - Schedules an entry for publication at the optimal posting time
+- `IsReadyToPublishAsync` - Checks if an entry is ready for immediate publication
+- `GetEntriesNeedingOptimizationAsync` - Retrieves entries that need optimization
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+// Initialize services
+var calendarService = serviceProvider.GetRequiredService<ContentCalendarService>();
+
+// Example 1: Create a new content calendar entry with immediate optimization
+var entry = await calendarService.CreateEntryAsync(
+  title: "10 Essential Python Tips Every Developer Should Know",
+  channelId: 1,
+  description: "Quick Python tips to boost your coding productivity",
+  category: ContentCategory.Tutorial,
+  tags: new[] { "python", "tutorial", "coding", "development" },
+  keywords: new[] { "python", "tips", "productivity" },
+  optimizeImmediately: true
+);
+
+Console.WriteLine($"Created entry: {entry.Title} (Status: {entry.Status})");
+
+// Example 2: Get a required entry (throws if not found)
+var requiredEntry = await calendarService.GetRequiredEntryAsync(entry.Id);
+Console.WriteLine($"Entry found: {requiredEntry.Title}");
+
+// Example 3: Get entries within a date range
+var dateRangeEntries = await calendarService.GetEntriesInRangeAsync(
+  from: DateTime.UtcNow,
+  to: DateTime.UtcNow.AddDays(7)
+);
+Console.WriteLine($"Found {dateRangeEntries.Count()} entries in date range");
+
+// Example 4: Get upcoming entries (next 14 days)
+var upcomingEntries = await calendarService.GetUpcomingEntriesAsync(daysAhead: 14);
+Console.WriteLine($"Found {upcomingEntries.Count()} upcoming entries");
+
+// Example 5: Optimize an entry and apply the best suggestion
+var (optimizationResult, updatedEntry) = await calendarService.OptimizeAndApplyAsync(
+  entryId: entry.Id,
+  applyBestSuggestion: true
+);
+
+if (updatedEntry != null)
+{
+  Console.WriteLine($"Optimized entry: {updatedEntry.Title}");
+  Console.WriteLine($"Best suggestion applied with confidence: {optimizationResult.BestSuggestion?.ConfidenceScore:F2}");
+}
+
+// Example 6: Schedule an entry at the optimal posting time
+var scheduledEntry = await calendarService.ScheduleAtOptimalTimeAsync(
+  entryId: entry.Id,
+  videoShortId: 42
+);
+Console.WriteLine($"Scheduled entry for optimal time: {scheduledEntry.ScheduledPublishAt:u}");
+
+// Example 7: Check if an entry is ready to publish immediately
+bool isReady = await calendarService.IsReadyToPublishAsync(entry.Id);
+Console.WriteLine($"Entry ready to publish: {isReady}");
+
+// Example 8: Get entries that need optimization
+var entriesNeedingOptimization = await calendarService.GetEntriesNeedingOptimizationAsync(
+  daysOlderThan: 7
+);
+Console.WriteLine($"Found {entriesNeedingOptimization.Count()} entries needing optimization");
+```
+
 ## Testing
 
 ```bash
