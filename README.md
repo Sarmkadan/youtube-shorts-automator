@@ -2017,6 +2017,91 @@ if (failedJob.Status == UploadStatus.Failed)
 }
 ```
 
+## SchedulingException
+
+The `SchedulingException` class represents an exception that occurs during scheduling operations in the YouTube Shorts automation pipeline. It extends the standard `Exception` class to include additional context about failed scheduling attempts, such as the scheduled time and job identifier, enabling better error handling and debugging for upload scheduling failures.
+
+This exception is thrown when scheduling operations encounter issues like invalid time windows, conflicts with existing schedules, or other scheduling-related errors that prevent successful job creation or execution.
+
+**Public Members:**
+- `ScheduledTime` - The scheduled time of the job that failed (nullable DateTime)
+- `JobId` - The ID of the job that failed (nullable int)
+- `SchedulingException(string message)` - Constructor with error message
+- `SchedulingException(string message, Exception innerException)` - Constructor with error message and inner exception
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+// Example 1: Create a SchedulingException with basic error message
+try
+{
+    // Attempt to schedule a video upload
+    var uploadJob = await schedulingService.ScheduleUploadAsync(
+        videoShortId: 42,
+        scheduledTime: DateTime.UtcNow.AddHours(-1), // Invalid - past time
+        cancellationToken: CancellationToken.None
+    );
+}
+catch (SchedulingException ex)
+{
+    Console.WriteLine($"Scheduling failed: {ex.Message}");
+    Console.WriteLine($"Job ID: {ex.JobId ?? -1}");
+    Console.WriteLine($"Scheduled Time: {ex.ScheduledTime?.ToString("u") ?? "N/A"}");
+}
+
+// Example 2: Create a SchedulingException with job context
+var job = new UploadJob
+{
+    Id = 101,
+    VideoShortId = 42,
+    ScheduledAt = DateTime.UtcNow.AddHours(2),
+    Status = UploadStatus.Queued
+};
+
+try
+{
+    if (job.ScheduledAt < DateTime.UtcNow)
+    {
+        throw new SchedulingException(
+            message: "Cannot schedule upload in the past",
+            jobId: job.Id,
+            scheduledTime: job.ScheduledAt
+        );
+    }
+}
+catch (SchedulingException ex)
+{
+    Console.WriteLine($"Validation failed for job {ex.JobId}: {ex.Message}");
+    Console.WriteLine($"Attempted schedule time: {ex.ScheduledTime?.ToString("yyyy-MM-dd HH:mm:ss")}");
+    
+    // Log to error tracking system
+    logger.LogError(ex, "Scheduling validation failed", new {
+        JobId = ex.JobId,
+        ScheduledTime = ex.ScheduledTime
+    });
+}
+
+// Example 3: Handle scheduling conflicts
+try
+{
+    // Attempt to schedule overlapping uploads
+    await schedulingService.ScheduleUploadAsync(videoShortId: 42, scheduledTime: DateTime.UtcNow.AddHours(1));
+    await schedulingService.ScheduleUploadAsync(videoShortId: 43, scheduledTime: DateTime.UtcNow.AddHours(1)); // Conflict
+}
+catch (SchedulingException ex) when (ex.JobId.HasValue)
+{
+    Console.WriteLine($"Schedule conflict detected for job {ex.JobId}: {ex.Message}");
+    Console.WriteLine($"Conflicting time: {ex.ScheduledTime?.ToString("HH:mm")}");
+    
+    // Suggest alternative time
+    var alternativeTime = ex.ScheduledTime?.AddMinutes(30);
+    Console.WriteLine($"Consider scheduling at: {alternativeTime?.ToString("HH:mm")}");
+}
+```
+
 ## ProcessingTask
 
 The `ProcessingTask` class represents a task that processes a `VideoShort` entity throughout the video processing pipeline. It tracks task execution status, progress, output parameters, error handling, and timing information for video transcoding, thumbnail generation, and other processing operations.
