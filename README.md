@@ -1972,6 +1972,51 @@ var distinctUnique = CollectionUtilityBenchmarksExtensions.DistinctByAllUnique()
 var distinctSame = CollectionUtilityBenchmarksExtensions.DistinctByAllSame();
 ```
 
+## CacheServiceBenchmarks
+
+`CacheServiceBenchmarks` measures the performance of the in-memory cache service (`ICacheService`) which is used extensively throughout the video processing and upload scheduling pipeline. These benchmarks test the most frequent cache operations: get, set, and remove, providing insight into the overhead of the `ValueTask`-based async API and the actual cache lookup cost.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Benchmarks;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize the benchmark class
+var services = new ServiceCollection()
+    .AddMemoryCache()
+    .AddLogging()
+    .AddSingleton<ICacheService, CacheService>();
+
+var serviceProvider = services.BuildServiceProvider();
+var cache = serviceProvider.GetRequiredService<ICacheService>();
+
+// Pre-populate cache with test data
+const string cacheKey = "benchmark:video:processed:channel-42:2026-05";
+const string cacheValue = "/var/data/output/channel-42/short_1080p_h264.mp4";
+await cache.SetAsync(cacheKey, cacheValue);
+
+// Example 1: Get cached value (hit)
+var cachedValue = await cache.GetAsync<string>(cacheKey);
+Console.WriteLine($"Cache hit: {cachedValue != null}");
+
+// Example 2: Get non-existent value (miss)
+var missingValue = await cache.GetAsync<string>("non-existent-key");
+Console.WriteLine($"Cache miss: {missingValue == null}");
+
+// Example 3: Set new value
+await cache.SetAsync(cacheKey, cacheValue, TimeSpan.FromHours(1));
+
+// Example 4: Remove value
+await cache.RemoveAsync(cacheKey);
+
+// Example 5: Complete round-trip
+const string tempKey = "benchmark:roundtrip:tmp";
+await cache.SetAsync(tempKey, cacheValue);
+var retrieved = await cache.GetAsync<string>(tempKey);
+await cache.RemoveAsync(tempKey);
+```
+
 ## ValidationUtilityBenchmarks
 
 `ValidationUtilityBenchmarks` provides performance benchmarking for the validation utilities within the application. It specifically measures the execution speed of regex-based validation for email addresses, URLs, and YouTube channel/video identifiers, ensuring they meet performance requirements under load.
