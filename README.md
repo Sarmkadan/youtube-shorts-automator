@@ -1422,7 +1422,54 @@ var best = candidates.Where(r => r.Success).ToList();
 Console.WriteLine($"Generated {best.Count} candidate thumbnails.");
 ```
 
-### Example: Title & Description Optimisation
+### TextOverlayOptions
+
+The `TextOverlayOptions` class configures the appearance of text overlays drawn on thumbnails using FFmpeg's `drawtext` filter. It supports customizable font size, color, positioning, wrapping, and background box styling to ensure readable text regardless of the underlying image content.
+
+
+
+**Public Members:**
+- `FontSize` - Font size in pixels (default: 48)
+- `FontColor` - FFmpeg-compatible color string (default: "white")
+- `ShowBox` - Whether to show a semi-transparent background box (default: true)
+- `BoxColor` - Background box color with optional alpha (default: "black@0.5")
+- `BoxPadding` - Padding in pixels around text inside box (default: 10)
+- `Position` - Text anchor position (default: `TextPosition.BottomCenter`)
+- `WrapWidth` - Maximum character width before word-wrapping (default: 40)
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Domain.Models;
+
+// Create text overlay configuration for a title
+var textOverlay = new TextOverlayOptions
+{
+    FontSize = 52,
+    FontColor = "white",
+    ShowBox = true,
+    BoxColor = "black@0.6",
+    BoxPadding = 12,
+    Position = TextPosition.BottomCenter,
+    WrapWidth = 35
+};
+
+// Use in thumbnail generation
+var request = new ThumbnailGenerationRequest
+{
+    CaptureTimestamp = TimeSpan.FromSeconds(3),
+    AspectRatio = ThumbnailAspectRatio.Vertical,
+    Format = ThumbnailOutputFormat.Jpeg,
+    Quality = 90,
+    OutputDirectory = "/thumbnails",
+    OverlayText = "5 Python Tips You NEED to Know",
+    TextOverlay = textOverlay
+};
+```
+
+### Example: Generating a Thumbnail with Text Overlay
 
 ```csharp
 using YouTubeShortAutomator.Services;
