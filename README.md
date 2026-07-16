@@ -742,6 +742,33 @@ Console.WriteLine($"Connection opened: {connection.State}");
 await databaseContext.DisposeAsync();
 ```
 
+## ContentCalendarOptions
+
+The `ContentCalendarOptions` class provides configuration settings for the content calendar system that manages scheduling, optimization, and analytics for YouTube Shorts uploads. These options control title length constraints, posting time optimization, keyword weighting, and engagement-based scheduling algorithms to maximize video performance.
+
+This configuration class is typically registered with the dependency injection container and accessed by services that handle content planning, title optimization, and upload scheduling.
+
+**Public Members:**
+- `DefaultLookAheadDays` - Default number of days to look ahead when planning content (typically 7-30 days)
+- `MaxTitleLength` - Maximum allowed title length in characters (YouTube limit: 100 characters)
+- `OptimalTitleMinLength` - Minimum recommended title length for optimal engagement (typically 40-60 characters)
+- `OptimalTitleMaxLength` - Maximum recommended title length for optimal engagement (typically 60-80 characters)
+- `MaxDescriptionLength` - Maximum allowed description length in characters (YouTube limit: 5000 characters)
+- `MaxTagCount` - Maximum number of tags allowed per video (YouTube limit: 500 tags, recommended: 10-15)
+- `OptimizationSuggestionCount` - Number of optimization suggestions to generate per video (typically 1-5)
+- `OptimalPostingHoursUtc` - Array of optimal UTC hours for posting videos based on historical engagement data
+- `KeywordWeightMultiplier` - Weight multiplier applied to keywords when scoring titles and descriptions (typically 1.0-2.5)
+- `EngagementScoreWeight` - Weight of engagement score in overall optimization calculations (typically 0.3-0.7)
+- `MinSlotGapMinutes` - Minimum time gap in minutes between scheduled upload slots to avoid clustering (typically 60-180 minutes)
+- `AutoOptimizeOnCreate` - Whether to automatically optimize titles and descriptions when content is created
+- `HighEngagementKeywords` - Array of keywords that historically perform well for this channel
+- `TrendingHashtags` - Array of trending hashtags to append to video descriptions
+- `HistoricalSampleSize` - Number of historical videos to analyze for optimization patterns (typically 50-200)
+- `HighEngagementBonus` - Bonus multiplier applied to titles containing high-engagement keywords (typically 1.1-1.5)
+- `EngagementRateThreshold` - Minimum engagement rate threshold for considering content high-performing (typically 0.05-0.15)
+
+
+
 ## AppSettings
 
 The `AppSettings` class provides centralized configuration management for the YouTube Shorts Automator application. It encapsulates all application settings including database connections, file paths, processing limits, YouTube API credentials, and scheduling parameters. This class is typically accessed through dependency injection in ASP.NET Core applications or manually instantiated in console applications.
@@ -767,6 +794,77 @@ The configuration values control core application behavior such as concurrent pr
 - `ScheduleCheckIntervalSeconds` - Interval between schedule checks in seconds
 - `EnableWatermark` - Flag to enable/disable watermark application
 - `WatermarkImagePath` - File path to the watermark image (nullable)
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
+// Example 1: Manual configuration with optimal values for a coding channel
+var contentCalendarOptions = new ContentCalendarOptions
+{
+    DefaultLookAheadDays = 14,
+    MaxTitleLength = 100,
+    OptimalTitleMinLength = 50,
+    OptimalTitleMaxLength = 70,
+    MaxDescriptionLength = 5000,
+    MaxTagCount = 15,
+    OptimizationSuggestionCount = 3,
+    OptimalPostingHoursUtc = new[] { 8, 12, 16, 20 }, // UTC hours
+    KeywordWeightMultiplier = 1.8,
+    EngagementScoreWeight = 0.5,
+    MinSlotGapMinutes = 120,
+    AutoOptimizeOnCreate = true,
+    HighEngagementKeywords = new[] { "tutorial", "guide", "learn", "master", "complete" },
+    TrendingHashtags = new[] { "#coding", "#programming", "#csharp", "#dotnet", "#tutorial" },
+    HistoricalSampleSize = 100,
+    HighEngagementBonus = 1.3,
+    EngagementRateThreshold = 0.08
+};
+
+Console.WriteLine($"Content calendar configured with {contentCalendarOptions.OptimalPostingHoursUtc.Length} optimal posting hours");
+Console.WriteLine($"High engagement keywords: {string.Join(", ", contentCalendarOptions.HighEngagementKeywords)}");
+Console.WriteLine($"Trending hashtags: {string.Join(", ", contentCalendarOptions.TrendingHashtags)}");
+
+// Example 2: Configuration binding from IConfiguration (ASP.NET Core)
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Build();
+
+var services = new ServiceCollection();
+services.Configure<ContentCalendarOptions>(configuration.GetSection("ContentCalendar"));
+services.AddSingleton<ContentCalendarOptions>(sp =>
+    sp.GetRequiredService<IOptions<ContentCalendarOptions>>().Value);
+
+var serviceProvider = services.BuildServiceProvider();
+var options = serviceProvider.GetRequiredService<ContentCalendarOptions>();
+
+Console.WriteLine($"Loaded configuration - Look ahead days: {options.DefaultLookAheadDays}");
+Console.WriteLine($"Optimal title range: {options.OptimalTitleMinLength}-{options.OptimalTitleMaxLength} characters");
+
+// Example 3: Using with TitleOptimizationEngine
+var titleOptimizationEngine = new TitleOptimizationEngine(
+    options,
+    new MockAnalyticsService(),
+    new MockKeywordService()
+);
+
+var optimizationResult = await titleOptimizationEngine.OptimizeAsync(
+    title: "Learn C# in 30 Days - Complete Programming Guide",
+    description: "Master C# programming from beginner to advanced with practical examples and exercises",
+    tags: new[] { "csharp", "programming", "tutorial", "dotnet" },
+    channelId: 1
+);
+
+Console.WriteLine($"Optimized title: {optimizationResult.Suggestions[0].SuggestedTitle}");
+Console.WriteLine($"Confidence score: {optimizationResult.Suggestions[0].ConfidenceScore:F2}");
+Console.WriteLine($"Recommended posting time: {optimizationResult.OptimalPostingHour}:00 UTC");
+```
 
 
 
