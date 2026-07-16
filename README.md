@@ -2114,6 +2114,48 @@ var uploadStartedEvent = new VideoUploadStartedEvent
 Console.WriteLine($"Upload started for: {uploadStartedEvent.Title} (ID: {uploadStartedEvent.VideoId})");
 ```
 
+## UploadException
+
+The `UploadException` is a specialized exception type thrown when upload operations fail. It provides additional context about the failure, including the upload job ID, video short ID, and whether the operation can be retried, enabling better error handling and recovery strategies.
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Exceptions;
+
+// Example 1: Basic exception with message only
+try
+{
+    await uploadService.UploadVideoAsync(uploadJob);
+}
+catch (UploadException ex)
+{
+    Console.WriteLine($"Upload failed: {ex.Message}");
+    Console.WriteLine($"Retryable: {ex.IsRetryable}");
+}
+
+// Example 2: Exception with upload job and video context
+try
+{
+    await uploadService.UploadVideoAsync(uploadJob);
+}
+catch (UploadException ex) when (ex.IsRetryable)
+{
+    Console.WriteLine($"Retryable upload failure for job {ex.UploadJobId}, video {ex.VideoShortId}: {ex.Message}");
+    await uploadService.RetryUploadAsync(ex.UploadJobId.Value);
+}
+
+// Example 3: Creating a custom UploadException with context
+var uploadException = new UploadException(
+    message: "YouTube API quota exceeded",
+    uploadJobId: 42,
+    videoShortId: 17,
+    isRetryable: true
+);
+
+throw uploadException;
+```
+
 ## VideoUploadStartedEventHandler
 
 The `VideoUploadStartedEventHandler` processes `VideoUploadStartedEvent` domain events triggered when a video upload begins. This handler logs the event and facilitates business logic such as database updates or external notifications to signal the start of the upload pipeline.
