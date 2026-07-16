@@ -1084,6 +1084,99 @@ var queuedOrPending = await uploadJobRepository.GetQueuedOrPendingJobsAsync();
 Console.WriteLine($"Found {queuedOrPending.Count()} queued or pending jobs");
 ```
 
+## SchedulingService
+
+The `SchedulingService` class manages the scheduling and coordination of YouTube upload jobs. It provides functionality for creating, retrieving, updating, and canceling upload schedules, as well as calculating optimal upload times and validating scheduling windows. This service is the central orchestrator for all scheduled content publishing operations.
+
+**Key Features:**
+- Schedule uploads at specific times with validation against past dates
+- Retrieve upcoming and overdue jobs for processing pipeline management
+- Reschedule existing upload jobs with time validation
+- Cancel scheduled jobs that are no longer needed
+- Calculate optimal upload times based on video creation and processing duration
+- Validate scheduling windows to avoid off-peak hours
+- Track queued job counts for monitoring and load balancing
+
+**Public Members:**
+- `ScheduleUploadAsync()` - Creates a new upload job scheduled for a specific time
+- `GetUpcomingJobsAsync()` - Retrieves all scheduled jobs within a time window
+- `GetOverdueJobsAsync()` - Retrieves jobs that are past their scheduled time
+- `RescheduleUploadAsync()` - Updates an existing upload job's scheduled time
+- `CancelUploadAsync()` - Cancels a scheduled upload job
+- `GetQueuedJobCountAsync()` - Returns the count of queued upload jobs
+- `CalculateOptimalUploadTime()` - Computes optimal upload timing based on video metadata
+- `IsWithinOptimalUploadWindow()` - Validates if a schedule time is within optimal hours
+
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+
+// Initialize service (typically via dependency injection)
+var schedulingService = serviceProvider.GetRequiredService<SchedulingService>();
+
+// Example 1: Schedule a new upload job
+var scheduledJob = await schedulingService.ScheduleUploadAsync(
+    videoShortId: 42,
+    scheduledTime: DateTime.UtcNow.AddHours(2),
+    cancellationToken: CancellationToken.None
+);
+
+Console.WriteLine($"Scheduled upload job {scheduledJob.Id} for video {scheduledJob.VideoShortId}");
+Console.WriteLine($"Scheduled at: {scheduledJob.ScheduledAt:u}");
+
+// Example 2: Get upcoming jobs (next 24 hours)
+var upcomingJobs = await schedulingService.GetUpcomingJobsAsync(hoursAhead: 24);
+Console.WriteLine($"Found {upcomingJobs.Count()} upcoming jobs");
+
+foreach (var job in upcomingJobs)
+{
+    var timeUntilUpload = job.ScheduledAt - DateTime.UtcNow;
+    Console.WriteLine($"- Job {job.Id}: {timeUntilUpload.TotalHours:F1} hours until upload");
+}
+
+// Example 3: Calculate optimal upload time for a video
+var videoCreatedAt = DateTime.UtcNow.AddMinutes(-30); // Video created 30 minutes ago
+var estimatedProcessingMinutes = 15; // Estimated processing time
+var optimalUploadTime = schedulingService.CalculateOptimalUploadTime(
+    videoCreatedAt,
+    estimatedProcessingMinutes
+);
+
+Console.WriteLine($"Optimal upload time: {optimalUploadTime.TotalMinutes:F0} minutes from now");
+Console.WriteLine($"Is within optimal window: {schedulingService.IsWithinOptimalUploadWindow(DateTime.UtcNow.Add(optimalUploadTime))}");
+
+// Example 4: Reschedule an upload job
+var rescheduleSuccess = await schedulingService.RescheduleUploadAsync(
+    uploadJobId: scheduledJob.Id,
+    newScheduledTime: DateTime.UtcNow.AddHours(4)
+);
+
+if (rescheduleSuccess)
+{
+    Console.WriteLine("Upload job successfully rescheduled");
+}
+
+// Example 5: Get overdue jobs (past their scheduled time)
+var overdueJobs = await schedulingService.GetOverdueJobsAsync();
+Console.WriteLine($"Found {overdueJobs.Count()} overdue jobs that need attention");
+
+// Example 6: Cancel a scheduled upload
+var cancelSuccess = await schedulingService.CancelUploadAsync(scheduledJob.Id);
+if (cancelSuccess)
+{
+    Console.WriteLine("Upload job successfully cancelled");
+}
+
+// Example 7: Get count of queued jobs for monitoring
+var queuedCount = await schedulingService.GetQueuedJobCountAsync();
+Console.WriteLine($"Currently {queuedCount} jobs in the queue");
+```
+
 ## ChannelService
 
 The `ChannelService` class provides methods for managing YouTube channel status, authentication tokens, and credential validation. It serves as the primary service for channel lifecycle management including token validation, status updates, and credential verification throughout the YouTube integration pipeline.
