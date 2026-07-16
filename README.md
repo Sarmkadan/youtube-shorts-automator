@@ -970,6 +970,53 @@ foreach (var slot in slots)
     Console.WriteLine($"Recommended slot: {slot:u} UTC");
 ```
 
+## AnalyticsControllerExtensions
+
+Extension methods that provide additional analytics utilities for the `AnalyticsController`. These methods extend the built-in analytics functionality with helper methods for calculating engagement metrics, formatting percentages, and creating summary responses.
+
+### Usage Example
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using YouTubeShortsAutomator.API;
+
+// In your controller action
+public class AnalyticsController : ControllerBase
+{
+    private readonly AnalyticsController _analyticsController;
+    
+    public IActionResult GetVideoAnalytics(Guid videoId)
+    {
+        // Create analytics response using extension method
+        var analyticsResponse = _analyticsController.CreateVideoAnalyticsResponse(videoId);
+        
+        // Calculate additional metrics using extension methods
+        double engagementPerView = analyticsResponse.CalculateEngagementPerView();
+        string engagementRate = analyticsResponse.GetEngagementRatePercentage();
+        double watchTimeHours = analyticsResponse.GetWatchTimeHours();
+        double avgDurationMinutes = analyticsResponse.GetAverageWatchDurationMinutes();
+        
+        return Ok(new {
+            VideoId = videoId,
+            Title = analyticsResponse.Title,
+            Views = analyticsResponse.ViewCount,
+            EngagementPerView = engagementPerView,
+            EngagementRate = engagementRate,
+            WatchTimeHours = watchTimeHours,
+            AverageWatchDuration = avgDurationMinutes
+        });
+    }
+    
+    public IActionResult GetSummary()
+    {
+        // Create summary response using extension method
+        var summary = this.CreateAnalyticsSummary(days: 30);
+        
+        return Ok(summary);
+    }
+}
+```
+
 ## API Reference
 
 ### Content Calendar Endpoints
