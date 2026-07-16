@@ -353,4 +353,101 @@ if (oldVariant != null)
 }
 ```
 
+## ContentCalendarRepository
+
+The `ContentCalendarRepository` class provides data access operations for managing content calendar entries that define the scheduling and planning of YouTube Shorts content. It offers comprehensive CRUD operations for content calendar entries with specialized methods for querying by date ranges, retrieving upcoming content, and checking content existence.
+
+The repository handles database operations for content calendar entries including creation, retrieval, updating, and deletion, with support for managing content schedules, publication dates, and associated metadata.
+
+**Public Members:**
+- `GetByIdAsync()` - Retrieves a content calendar entry by its unique identifier
+- `GetAllAsync()` - Retrieves all content calendar entries from the database
+- `GetByDateRangeAsync()` - Retrieves content calendar entries within a specific date range
+- `GetUpcomingAsync()` - Retrieves content calendar entries that are scheduled for future publication dates
+- `AddAsync()` - Creates a new content calendar entry in the database
+- `UpdateAsync()` - Updates an existing content calendar entry
+- `DeleteAsync()` - Removes a content calendar entry from the database
+- `ExistsAsync()` - Checks if a content calendar entry with the given ID exists
+- `CountAsync()` - Returns the total count of content calendar entries
+- `SaveChangesAsync()` - Persists changes to the database
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Data;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize repository (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+services.AddDbContext<DatabaseContext>(options => options.UseSqlServer("YourConnectionString"));
+var serviceProvider = services.BuildServiceProvider();
+var repository = serviceProvider.GetRequiredService<ContentCalendarRepository>();
+
+// Example 1: Create a new content calendar entry
+var entry1 = new ContentCalendarEntry
+{
+    VideoShortId = 1,
+    ScheduledDate = DateTime.UtcNow.Date.AddDays(7),
+    Status = ContentStatus.Scheduled,
+    Title = "Advanced C# Features Tutorial",
+    Description = "Deep dive into C# 10 features with practical examples",
+    Tags = new[] { "csharp", "dotnet", "tutorial", "advanced" },
+    Priority = ContentPriority.High,
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+
+await repository.AddAsync(entry1);
+Console.WriteLine($"Created content calendar entry {entry1.Id} for video {entry1.VideoShortId}");
+
+// Example 2: Get a content calendar entry by ID
+var existingEntry = await repository.GetByIdAsync(entry1.Id);
+if (existingEntry != null)
+{
+    Console.WriteLine($"Found entry: {existingEntry.Title}");
+    Console.WriteLine($"Scheduled for: {existingEntry.ScheduledDate:yyyy-MM-dd}");
+    Console.WriteLine($"Status: {existingEntry.Status}");
+}
+
+// Example 3: Get all content calendar entries
+var allEntries = await repository.GetAllAsync();
+Console.WriteLine($"Total content calendar entries: {allEntries.Count()}");
+
+// Example 4: Get entries within a specific date range
+var dateRangeEntries = await repository.GetByDateRangeAsync(
+    startDate: DateTime.UtcNow.Date,
+    endDate: DateTime.UtcNow.Date.AddDays(30)
+);
+Console.WriteLine($"Entries in next 30 days: {dateRangeEntries.Count()}");
+
+// Example 5: Get upcoming content (future scheduled entries)
+var upcomingEntries = await repository.GetUpcomingAsync();
+Console.WriteLine($"Upcoming content entries: {upcomingEntries.Count()}");
+
+// Example 6: Update an existing entry
+if (existingEntry != null)
+{
+    existingEntry.Status = ContentStatus.InProgress;
+    existingEntry.UpdatedAt = DateTime.UtcNow;
+    await repository.UpdateAsync(existingEntry);
+    Console.WriteLine("Updated entry status to InProgress");
+}
+
+// Example 7: Check if entry exists and get total count
+bool entryExists = await repository.ExistsAsync(entry1.Id);
+int totalEntries = await repository.CountAsync();
+Console.WriteLine($"Entry {entry1.Id} exists: {entryExists}");
+Console.WriteLine($"Total entries in database: {totalEntries}");
+
+// Example 8: Delete a content calendar entry
+bool deleted = await repository.DeleteAsync(entry1.Id);
+Console.WriteLine($"Deleted entry {entry1.Id}: {(deleted ? "Success" : "Failed")}");
+
+// Don't forget to save changes after batch operations
+await repository.SaveChangesAsync();
+```
+
 ## ThumbnailAbTestService
