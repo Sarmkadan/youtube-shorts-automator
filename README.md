@@ -76,6 +76,105 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - **Hashtag Recommendations**: Appends configured trending hashtags (`#shorts`, `#fyp`, …) plus content-derived hashtags to every optimised description
 - **Posting-Time Prediction**: `RecommendPostingTimesAsync` derives optimal UTC upload slots from historical engagement patterns, skipping Sundays and enforcing a configurable minimum gap between slots
 
+## JobOrchestrationService
+
+The `JobOrchestrationService` class orchestrates the complete video processing and upload pipeline for YouTube Shorts automation. It coordinates between video processing, upload scheduling, analytics tracking, and error recovery, providing a centralized service for managing the entire video lifecycle from validation to scheduled upload.
+
+**Key Features:**
+- Orchestrates multi-step video processing pipelines with validation and error handling
+- Manages upload scheduling and YouTube API integration
+- Tracks analytics synchronization and performance metrics
+- Provides retry logic for failed operations
+- Centralized logging and error recovery throughout the pipeline
+
+**Public Members:**
+- `ProcessFullPipelineAsync()` - Processes the complete video pipeline from validation to scheduled upload, coordinating video processing, thumbnail generation, analytics creation, and upload scheduling
+- `ProcessReadyUploadsAsync()` - Processes all upload jobs that are ready to be uploaded, attempting to upload each video to YouTube
+- `ProcessFailedRetriableJobsAsync()` - Processes failed upload jobs that are eligible for retry, implementing retry logic with configurable maximum attempts
+- `SyncAnalyticsAsync()` - Synchronizes analytics data for all videos from YouTube, providing statistics on successful and failed sync operations
+
+**Properties:**
+- `VideoShortId` - The unique identifier of the video short being processed
+- `UploadJobId` - The unique identifier of the generated upload job
+- `Status` - The pipeline execution status (Success, Failed, etc.)
+- `Error` - Error message if the pipeline failed; otherwise null
+- `ProcessingCompleted` - Whether video processing completed successfully
+- `ScheduledUploadTime` - The scheduled upload time for the video
+- `CompletedAt` - The completion timestamp of the pipeline
+- `Channel` - The name of the YouTube channel being synced
+- `SyncedCount` - The number of videos successfully synced with analytics data
+- `FailedCount` - The number of videos that failed to sync analytics data
+- `Error` - Error message if the sync failed; otherwise null
+- `CompletedAt` - The completion timestamp of the analytics sync
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+
+// Initialize service (typically via dependency injection)
+var services = new ServiceCollection();
+services.AddLogging();
+var serviceProvider = services.BuildServiceProvider();
+var orchestrationService = serviceProvider.GetRequiredService<JobOrchestrationService>();
+
+// Example 1: Process complete video pipeline
+var processingProfile = new ProcessingProfile
+{
+    Name = "High Quality",
+    Resolution = "1080p",
+    Bitrate = "4000k",
+    ApplyWatermark = true,
+    ApplyColorGrading = true
+};
+
+var channel = new YouTubeChannel
+{
+    ChannelId = "UC1234567890",
+    ChannelName = "My Awesome Coding Channel",
+    AccessToken = "ya29.a0AfH6SMB...",
+    TokenExpiresAt = DateTime.UtcNow.AddHours(1)
+};
+
+var pipelineResult = await orchestrationService.ProcessFullPipelineAsync(
+    videoShortId: 42,
+    processingProfile: processingProfile,
+    channel: channel,
+    scheduledUploadTime: DateTime.UtcNow.AddHours(2),
+    cancellationToken: CancellationToken.None
+);
+
+if (pipelineResult.Status == "Success")
+{
+    Console.WriteLine($"✓ Pipeline completed successfully for video {pipelineResult.VideoShortId}");
+    Console.WriteLine($"  - Upload job ID: {pipelineResult.UploadJobId}");
+    Console.WriteLine($"  - Scheduled for: {pipelineResult.ScheduledUploadTime:u}");
+    Console.WriteLine($"  - Completed at: {pipelineResult.CompletedAt:u}");
+}
+else
+{
+    Console.WriteLine($"✗ Pipeline failed: {pipelineResult.Error}");
+}
+
+// Example 2: Process ready uploads
+var uploadSuccess = await orchestrationService.ProcessReadyUploadsAsync(channel, CancellationToken.None);
+Console.WriteLine($"Processed ready uploads: {(uploadSuccess ? "Success" : "Failed")}");
+
+// Example 3: Process failed jobs eligible for retry
+var retrySuccess = await orchestrationService.ProcessFailedRetriableJobsAsync(channel, CancellationToken.None);
+Console.WriteLine($"Processed retriable jobs: {(retrySuccess ? "Success" : "Failed")}");
+
+// Example 4: Sync analytics for all videos
+var syncResult = await orchestrationService.SyncAnalyticsAsync(channel, CancellationToken.None);
+Console.WriteLine($"Analytics sync completed: {syncResult.SyncedCount} synced, {syncResult.FailedCount} failed");
+if (syncResult.Error != null)
+{
+    Console.WriteLine($"Error: {syncResult.Error}");
+}
+```
+
 ## TitleOptimizationEngine
 
 The `TitleOptimizationEngine` class provides intelligent title and description optimization for YouTube Shorts videos. It analyzes video metadata against historical channel performance data to generate ranked optimization suggestions, extract relevant keywords, score titles for engagement potential, and recommend optimal posting times based on channel analytics.
