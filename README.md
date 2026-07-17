@@ -382,9 +382,120 @@ var conflictResult = ApiResult<VideoData>.Conflict("Video with this title alread
 Console.WriteLine($"Conflict detected: {conflictResult.IsSuccess}, Code: {conflictResult.ErrorCode}");
 ```
 
-## ProcessingJobRequest
+## ApiCredential
 
-`ProcessingJobRequest` represents a request for video processing, encapsulating details such as the video file path, title, description, tags, and processing options. It provides a structured way to define the requirements for video processing operations.
+`ApiCredential` represents OAuth and API credentials used for authenticating with external services like YouTube API. It stores client credentials, access tokens, refresh tokens, and metadata about token expiration and refresh attempts. The class provides methods for checking token validity, managing refresh cycles, and validating credential completeness.
+
+### Members
+
+- `Id` - Unique identifier for the credential
+- `UserId` - Reference to the associated user
+- `User` - Navigation property to the User entity
+- `CredentialType` - Type of credential (Google OAuth, Google Service Account, YouTube API Key, Custom API Key)
+- `ClientId` - OAuth client ID or API key identifier
+- `ClientSecret` - OAuth client secret or API key secret
+- `AccessToken` - Current access token for API authentication
+- `RefreshToken` - Refresh token for obtaining new access tokens
+- `AccessTokenExpiresAt` - When the access token expires
+- `RefreshTokenExpiresAt` - When the refresh token expires (nullable)
+- `CreatedAt` - When the credential was created
+- `UpdatedAt` - When the credential was last updated
+- `IsValid` - Whether the credential is currently valid
+- `Scope` - OAuth scope string
+- `Status` - Current credential status (Active, Inactive, Expired, RefreshFailed, Invalid, Revoked)
+- `RefreshAttempts` - Number of refresh attempts made
+- `IsAccessTokenExpired()` - Checks if access token has expired
+- `IsRefreshTokenExpired()` - Checks if refresh token has expired
+- `NeedsRefresh()` - Checks if credential needs refresh (30 minutes before expiration)
+- `UpdateAccessToken()` - Updates access token with new values
+- `RecordRefreshAttempt()` - Records a refresh attempt
+- `MarkRefreshTokenExpired()` - Marks refresh token as expired
+- `Invalidate()` - Invalidates the credential
+- `Validate()` - Validates credential completeness
+
+### Usage Examples
+
+#### Creating and Using API Credentials
+
+```csharp
+// Create a new Google OAuth credential
+var credential = new ApiCredential
+{
+  Id = Guid.NewGuid(),
+  UserId = Guid.Parse("123e4567-e89b-12d3-a456-426614174000"),
+  CredentialType = ApiCredentialType.GoogleOAuth,
+  ClientId = "your-client-id.apps.googleusercontent.com",
+  ClientSecret = "your-client-secret",
+  AccessToken = "ya29.a0Ae4...",
+  RefreshToken = "1//09j8...",
+  AccessTokenExpiresAt = DateTime.UtcNow.AddHours(1),
+  RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7),
+  Scope = "https://www.googleapis.com/auth/youtube.upload",
+  Status = CredentialStatus.Active,
+  IsValid = true,
+  CreatedAt = DateTime.UtcNow,
+  UpdatedAt = DateTime.UtcNow
+};
+
+// Check if token needs refresh
+if (credential.NeedsRefresh())
+{
+  Console.WriteLine("Access token will expire soon, refresh needed");
+}
+
+// Check token expiration
+if (credential.IsAccessTokenExpired())
+{
+  Console.WriteLine("Access token has expired");
+}
+
+// Update access token after successful refresh
+credential.UpdateAccessToken("new-access-token-xyz", DateTime.UtcNow.AddHours(1));
+
+// Record refresh attempt
+credential.RecordRefreshAttempt();
+
+// Validate credential
+var (isValid, validationErrors) = credential.Validate();
+if (!isValid)
+{
+  Console.WriteLine("Credential validation failed:");
+  foreach (var error in validationErrors)
+  {
+    Console.WriteLine($"- {error}");
+  }
+}
+```
+
+#### Managing Service Account Credentials
+
+```csharp
+// Create a Google Service Account credential
+var serviceAccountCredential = new ApiCredential
+{
+  Id = Guid.NewGuid(),
+  UserId = Guid.Parse("123e4567-e89b-12d3-a456-426614174000"),
+  CredentialType = ApiCredentialType.GoogleServiceAccount,
+  ClientId = "service-account-id@project.iam.gserviceaccount.com",
+  ClientSecret = "-----BEGIN PRIVATE KEY-----\n...service account key...\n-----END PRIVATE KEY-----",
+  AccessToken = "ya29.c.b0AX...",
+  AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(30),
+  Scope = "https://www.googleapis.com/auth/youtube.upload",
+  Status = CredentialStatus.Active,
+  IsValid = true,
+  CreatedAt = DateTime.UtcNow,
+  UpdatedAt = DateTime.UtcNow
+};
+
+// Service accounts typically don't use refresh tokens
+serviceAccountCredential.RefreshToken = null;
+
+// Check if service account token is valid
+if (serviceAccountCredential.IsValid && !serviceAccountCredential.IsAccessTokenExpired())
+{
+  Console.WriteLine("Service account token is valid and ready to use");
+}
+```
 
 ### Usage Example
 
