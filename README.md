@@ -911,6 +911,84 @@ Assert.Equal("High Quality", profileTask.ProcessingProfile.Name);
 Assert.True(profileTask.ProcessingProfile.ApplyWatermark);
 ```
 
+## SchedulingServiceTests
+
+The `SchedulingServiceTests` class contains unit tests for the `SchedulingService` that validate upload scheduling functionality including job creation, time validation, status management, and retrieval operations. It tests various scheduling scenarios including future and past times, job state transitions, and ensures the scheduling system works correctly across different time zones and edge cases.
+
+This test suite validates the complete upload scheduling workflow including job orchestration, retry logic, error handling, and comprehensive boundary condition testing for scheduling operations.
+
+**Public Members:**
+- `ScheduleUploadAsync_WithFutureTime_CreatesScheduledJob` - Validates successful scheduling for future times
+- `ScheduleUploadAsync_WithPastTime_ThrowsSchedulingException` - Validates error handling for past times
+- `ScheduleUploadAsync_WithNowTime_Succeeds` - Tests scheduling for current time
+- `ScheduleUploadAsync_SetsMaxRetriesCorrectly` - Validates max retry configuration
+- `GetUpcomingJobsAsync_WithPendingJobs_ReturnsScheduledJobs` - Tests retrieval of pending jobs
+- `GetUpcomingJobsAsync_WithHoursAhead_FiltersByTimeWindow` - Validates time-based filtering
+- `GetUpcomingJobsAsync_WithNoJobs_ReturnsEmpty` - Tests empty result handling
+- `GetUpcomingJobsAsync_ReturnsJobsOrderedByScheduledTime` - Validates chronological ordering
+- `GetOverdueJobsAsync_WithPastScheduledTime_ReturnsPendingJob` - Tests overdue job detection
+- `GetOverdueJobsAsync_IgnoresNonPendingJobs` - Validates status filtering
+- `RescheduleUploadAsync_WithValidJob_UpdatesScheduledTime` - Tests schedule modification
+- `RescheduleUploadAsync_WithNonExistentJob_ThrowsSchedulingException` - Validates error handling for missing jobs
+- `RescheduleUploadAsync_WithCompletedJob_ThrowsSchedulingException` - Tests completed job validation
+- `RescheduleUploadAsync_WithUploadingJob_ThrowsSchedulingException` - Tests uploading job validation
+- `RescheduleUploadAsync_WithPastTime_ThrowsSchedulingException` - Validates time validation
+- `CancelUploadAsync_WithPendingJob_CancelsJob` - Tests job cancellation
+- `CancelUploadAsync_WithNonExistentJob_ThrowsSchedulingException` - Validates error handling for missing jobs
+- `CancelUploadAsync_WithUploadingJob_ThrowsSchedulingException` - Tests uploading job validation
+- `GetQueuedJobCountAsync_ReturnsCountOfQueuedJobs` - Tests queue counting
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.Logging;
+using Xunit;
+
+// Initialize test service with mock logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<SchedulingServiceTests>();
+var schedulingServiceTests = new SchedulingServiceTests(logger);
+
+// Example 1: Schedule upload for future time
+var futureJob = await schedulingServiceTests.ScheduleUploadAsync_WithFutureTime_CreatesScheduledJob();
+Assert.NotNull(futureJob);
+Assert.Equal(UploadStatus.Scheduled, futureJob.Status);
+Assert.True(futureJob.ScheduledAt > DateTime.UtcNow);
+
+// Example 2: Attempt to schedule upload for past time (should throw)
+await Assert.ThrowsAsync<SchedulingException>(() =>
+  schedulingServiceTests.ScheduleUploadAsync_WithPastTime_ThrowsSchedulingException());
+
+// Example 3: Schedule upload for current time
+var nowJob = await schedulingServiceTests.ScheduleUploadAsync_WithNowTime_Succeeds();
+Assert.NotNull(nowJob);
+Assert.Equal(UploadStatus.Scheduled, nowJob.Status);
+
+// Example 4: Get upcoming jobs within time window
+var upcomingJobs = await schedulingServiceTests.GetUpcomingJobsAsync_WithPendingJobs_ReturnsScheduledJobs();
+Assert.NotEmpty(upcomingJobs);
+Assert.True(upcomingJobs.All(j => j.ScheduledAt > DateTime.UtcNow));
+
+// Example 5: Get overdue jobs (past scheduled time)
+var overdueJobs = await schedulingServiceTests.GetOverdueJobsAsync_WithPastScheduledTime_ReturnsPendingJob();
+Assert.NotEmpty(overdueJobs);
+Assert.True(overdueJobs.All(j => j.ScheduledAt < DateTime.UtcNow && j.Status == UploadStatus.Scheduled));
+
+// Example 6: Reschedule an existing job
+var rescheduledJob = await schedulingServiceTests.RescheduleUploadAsync_WithValidJob_UpdatesScheduledTime();
+Assert.True(rescheduledJob.ScheduledAt > DateTime.UtcNow.AddHours(1));
+
+// Example 7: Cancel a scheduled job
+var cancelled = await schedulingServiceTests.CancelUploadAsync_WithPendingJob_CancelsJob();
+Assert.True(cancelled);
+
+// Example 8: Get queue statistics
+var queuedCount = await schedulingServiceTests.GetQueuedJobCountAsync_ReturnsCountOfQueuedJobs();
+Console.WriteLine($"Queued jobs: {queuedCount}");
+```
+
 ## ThumbnailGeneratorServiceTests
 
 The `ThumbnailGeneratorServiceTests` class contains unit tests for the `ThumbnailGeneratorService` that validate thumbnail generation functionality including frame extraction, aspect ratio handling, text overlay rendering, output format generation, and batch processing operations. It tests various scenarios including successful operations, error handling, validation edge cases, and ensures the thumbnail generation pipeline works correctly across different video formats and configurations.
