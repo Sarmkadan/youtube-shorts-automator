@@ -10,44 +10,40 @@ using YouTubeShortsAutomator.Domain.Models;
 namespace YouTubeShortsAutomator.Infrastructure.Repositories;
 
 /// <summary>
-/// Validation helpers for ApiCredentialRepository operations
+/// Provides validation methods for <see cref="ApiCredentialRepository"/> and related parameters.
+/// All validation methods follow the pattern: Validate(), IsValid(), EnsureValid().
 /// </summary>
 public static class ApiCredentialRepositoryValidation
 {
     /// <summary>
-    /// Validates all parameters for repository operations
+    /// Validates the <see cref="ApiCredentialRepository"/> instance.
     /// </summary>
-    /// <param name="value">The repository instance to validate</param>
-    /// <returns>List of validation problems (empty if valid)</returns>
-    /// <exception cref="ArgumentNullException">Thrown if repository is null</exception>
+    /// <param name="value">The repository instance to validate.</param>
+    /// <returns>List of validation problems (empty if valid).</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static IReadOnlyList<string> Validate(this ApiCredentialRepository value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var problems = new List<string>();
-
         // Repository-level validations would go here if there were any
         // Currently the repository itself has no state to validate beyond being non-null
 
-        return problems.AsReadOnly();
+        return [];
     }
 
     /// <summary>
-    /// Checks if the repository instance is valid
+    /// Checks if the repository instance is valid.
     /// </summary>
-    /// <param name="value">The repository instance to check</param>
-    /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this ApiCredentialRepository value)
-    {
-        return value.Validate().Count == 0;
-    }
+    /// <param name="value">The repository instance to check.</param>
+    /// <returns>True if valid, false otherwise.</returns>
+    public static bool IsValid(this ApiCredentialRepository value) => value.Validate().Count == 0;
 
     /// <summary>
-    /// Ensures the repository instance is valid, throwing an exception if not
+    /// Ensures the repository instance is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="value">The repository instance to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if repository is null</exception>
-    /// <exception cref="ArgumentException">Thrown if repository is invalid with detailed error messages</exception>
+    /// <param name="value">The repository instance to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if repository is invalid with detailed error messages.</exception>
     public static void EnsureValid(this ApiCredentialRepository value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -61,35 +57,33 @@ public static class ApiCredentialRepositoryValidation
     }
 
     /// <summary>
-    /// Validates parameters for GetByUserIdAsync
+    /// Validates parameters for GetByUserIdAsync.
     /// </summary>
-    /// <param name="userId">User ID to query by</param>
-    /// <returns>List of validation problems (empty if valid)</returns>
+    /// <param name="userId">User ID to query by.</param>
+    /// <returns>List of validation problems (empty if valid).</returns>
+    /// <remarks>
+    /// Guid.Empty is a valid sentinel value for "all users" scenarios.
+    /// No validation needed beyond null check (Guid is a struct).
+    /// </remarks>
     public static IReadOnlyList<string> Validate(this Guid userId)
     {
-        var problems = new List<string>();
-
         // Guid.Empty is a valid sentinel value for "all users" scenarios
         // No validation needed beyond null check (Guid is a struct)
-
-        return problems.AsReadOnly();
+        return [];
     }
 
     /// <summary>
-    /// Checks if the userId parameter is valid for GetByUserIdAsync
+    /// Checks if the userId parameter is valid for GetByUserIdAsync.
     /// </summary>
-    /// <param name="userId">User ID to check</param>
-    /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this Guid userId)
-    {
-        return userId.Validate().Count == 0;
-    }
+    /// <param name="userId">User ID to check.</param>
+    /// <returns>True if valid, false otherwise.</returns>
+    public static bool IsValid(this Guid userId) => userId.Validate().Count == 0;
 
     /// <summary>
-    /// Ensures the userId parameter is valid, throwing an exception if not
+    /// Ensures the userId parameter is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="userId">User ID to validate</param>
-    /// <exception cref="ArgumentException">Thrown if userId is invalid</exception>
+    /// <param name="userId">User ID to validate.</param>
+    /// <exception cref="ArgumentException">Thrown if userId is invalid.</exception>
     public static void EnsureValid(this Guid userId)
     {
         var problems = userId.Validate();
@@ -101,41 +95,36 @@ public static class ApiCredentialRepositoryValidation
     }
 
     /// <summary>
-    /// Validates parameters for GetActiveCredentialAsync
+    /// Validates parameters for GetActiveCredentialAsync.
     /// </summary>
-    /// <param name="userId">User ID to query by</param>
-    /// <returns>List of validation problems (empty if valid)</returns>
+    /// <param name="userId">User ID to query by.</param>
+    /// <param name="paramName">Name of the parameter being validated.</param>
+    /// <returns>List of validation problems (empty if valid).</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="paramName"/> is null or empty.</exception>
     public static IReadOnlyList<string> Validate(this Guid userId, [NotNull] string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-        var problems = new List<string>();
-
-        if (userId == Guid.Empty)
-        {
-            problems.Add($"{paramName}: User ID cannot be empty");
-        }
-
-        return problems.AsReadOnly();
+        return userId == Guid.Empty
+            ? [$"{paramName}: User ID cannot be empty"]
+            : [];
     }
 
     /// <summary>
-    /// Checks if the userId parameter is valid for GetActiveCredentialAsync
+    /// Checks if the userId parameter is valid for GetActiveCredentialAsync.
     /// </summary>
-    /// <param name="userId">User ID to check</param>
-    /// <param name="paramName">Name of the parameter being validated</param>
-    /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this Guid userId, [NotNull] string paramName)
-    {
-        return userId.Validate(paramName).Count == 0;
-    }
+    /// <param name="userId">User ID to check.</param>
+    /// <param name="paramName">Name of the parameter being validated.</param>
+    /// <returns>True if valid, false otherwise.</returns>
+    public static bool IsValid(this Guid userId, [NotNull] string paramName) => userId.Validate(paramName).Count == 0;
 
     /// <summary>
-    /// Ensures the userId parameter is valid, throwing an exception if not
+    /// Ensures the userId parameter is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="userId">User ID to validate</param>
-    /// <param name="paramName">Name of the parameter being validated</param>
-    /// <exception cref="ArgumentException">Thrown if userId is invalid</exception>
+    /// <param name="userId">User ID to validate.</param>
+    /// <param name="paramName">Name of the parameter being validated.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="paramName"/> is null or empty.</exception>
+    /// <exception cref="ArgumentException">Thrown if userId is invalid.</exception>
     public static void EnsureValid(this Guid userId, [NotNull] string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName);
@@ -149,32 +138,25 @@ public static class ApiCredentialRepositoryValidation
     }
 
     /// <summary>
-    /// Validates parameters for GetByStatusAsync
+    /// Validates parameters for GetByStatusAsync.
     /// </summary>
-    /// <param name="status">Credential status to filter by</param>
-    /// <returns>List of validation problems (empty if valid)</returns>
-    public static IReadOnlyList<string> Validate(this CredentialStatus status)
-    {
-        // All CredentialStatus enum values are valid
-        // No validation needed
-        return Array.Empty<string>();
-    }
+    /// <param name="status">Credential status to filter by.</param>
+    /// <returns>List of validation problems (empty if valid).</returns>
+    /// <remarks>All <see cref="CredentialStatus"/> enum values are valid.</remarks>
+    public static IReadOnlyList<string> Validate(this CredentialStatus status) => [];
 
     /// <summary>
-    /// Checks if the status parameter is valid for GetByStatusAsync
+    /// Checks if the status parameter is valid for GetByStatusAsync.
     /// </summary>
-    /// <param name="status">Status to check</param>
-    /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this CredentialStatus status)
-    {
-        return status.Validate().Count == 0;
-    }
+    /// <param name="status">Status to check.</param>
+    /// <returns>True if valid, false otherwise.</returns>
+    public static bool IsValid(this CredentialStatus status) => status.Validate().Count == 0;
 
     /// <summary>
-    /// Ensures the status parameter is valid, throwing an exception if not
+    /// Ensures the status parameter is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="status">Status to validate</param>
-    /// <exception cref="ArgumentException">Thrown if status is invalid</exception>
+    /// <param name="status">Status to validate.</param>
+    /// <exception cref="ArgumentException">Thrown if status is invalid.</exception>
     public static void EnsureValid(this CredentialStatus status)
     {
         var problems = status.Validate();
@@ -186,28 +168,21 @@ public static class ApiCredentialRepositoryValidation
     }
 
     /// <summary>
-    /// Validates parameters for GetExpiredCredentialsAsync
+    /// Validates parameters for GetExpiredCredentialsAsync.
     /// </summary>
-    /// <returns>List of validation problems (empty if valid)</returns>
-    public static IReadOnlyList<string> Validate()
-    {
-        // No parameters to validate
-        return Array.Empty<string>();
-    }
+    /// <returns>List of validation problems (empty if valid).</returns>
+    public static IReadOnlyList<string> Validate() => [];
 
     /// <summary>
-    /// Checks if the parameters are valid for GetExpiredCredentialsAsync
+    /// Checks if the parameters are valid for GetExpiredCredentialsAsync.
     /// </summary>
-    /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid()
-    {
-        return Validate().Count == 0;
-    }
+    /// <returns>True if valid, false otherwise.</returns>
+    public static bool IsValid() => Validate().Count == 0;
 
     /// <summary>
-    /// Ensures the parameters are valid, throwing an exception if not
+    /// Ensures the parameters are valid, throwing an exception if not.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown if parameters are invalid</exception>
+    /// <exception cref="ArgumentException">Thrown if parameters are invalid.</exception>
     public static void EnsureValid()
     {
         var problems = Validate();
@@ -219,32 +194,25 @@ public static class ApiCredentialRepositoryValidation
     }
 
     /// <summary>
-    /// Validates parameters for GetByTypeAsync
+    /// Validates parameters for GetByTypeAsync.
     /// </summary>
-    /// <param name="type">Credential type to filter by</param>
-    /// <returns>List of validation problems (empty if valid)</returns>
-    public static IReadOnlyList<string> Validate(this ApiCredentialType type)
-    {
-        // All ApiCredentialType enum values are valid
-        // No validation needed
-        return Array.Empty<string>();
-    }
+    /// <param name="type">Credential type to filter by.</param>
+    /// <returns>List of validation problems (empty if valid).</returns>
+    /// <remarks>All <see cref="ApiCredentialType"/> enum values are valid.</remarks>
+    public static IReadOnlyList<string> Validate(this ApiCredentialType type) => [];
 
     /// <summary>
-    /// Checks if the type parameter is valid for GetByTypeAsync
+    /// Checks if the type parameter is valid for GetByTypeAsync.
     /// </summary>
-    /// <param name="type">Type to check</param>
-    /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this ApiCredentialType type)
-    {
-        return type.Validate().Count == 0;
-    }
+    /// <param name="type">Type to check.</param>
+    /// <returns>True if valid, false otherwise.</returns>
+    public static bool IsValid(this ApiCredentialType type) => type.Validate().Count == 0;
 
     /// <summary>
-    /// Ensures the type parameter is valid, throwing an exception if not
+    /// Ensures the type parameter is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="type">Type to validate</param>
-    /// <exception cref="ArgumentException">Thrown if type is invalid</exception>
+    /// <param name="type">Type to validate.</param>
+    /// <exception cref="ArgumentException">Thrown if type is invalid.</exception>
     public static void EnsureValid(this ApiCredentialType type)
     {
         var problems = type.Validate();
