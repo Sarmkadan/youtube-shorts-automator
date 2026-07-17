@@ -1,5 +1,168 @@
 // ... (rest of README.md content remains unchanged)
 
+## DomainException
+
+`DomainException` is a base exception class for domain-specific exceptions in the application. It provides structured error handling with support for error codes, contextual data, and validation errors. This exception type serves as the foundation for domain validation and business rule violations, enabling consistent error reporting across the application.
+
+### Members
+
+- `ErrorCode` - Optional string error code for programmatic error handling
+- `Context` - Dictionary for additional contextual data about the error
+- `ValidationErrors` - List of validation error messages
+- `AddContext` - Method to add contextual data to the exception
+
+### Usage Examples
+
+#### Basic DomainException
+
+```csharp
+try
+{
+    var videoValidator = new VideoValidator();
+    var validationResult = videoValidator.Validate(video);
+    
+    if (!validationResult.IsValid)
+    {
+        var domainException = new DomainException("Video validation failed");
+        foreach (var error in validationResult.Errors)
+        {
+            domainException.AddContext(error.PropertyName, error.ErrorMessage);
+            domainException.ValidationErrors.Add(error.ErrorMessage);
+        }
+        
+        throw domainException;
+    }
+}
+catch (DomainException ex) when (ex.ValidationErrors.Any())
+{
+    Console.WriteLine($"Validation failed with {ex.ValidationErrors.Count} errors:");
+    foreach (var error in ex.ValidationErrors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+```
+
+#### ProcessingJobException with Context
+
+```csharp
+try
+{
+    var job = await _jobRepository.GetByIdAsync(jobId);
+    
+    if (job == null)
+    {
+        throw new ProcessingJobException("Job not found", jobId);
+    }
+    
+    if (job.Status == JobStatus.Failed)
+    {
+        var exception = new ProcessingJobException("Job processing failed", jobId);
+        exception.AddContext("RetryCount", job.RetryCount);
+        exception.AddContext("LastError", job.LastErrorMessage);
+        exception.AddContext("FailedAt", job.FailedAtUtc?.ToString("o"));
+        
+        throw exception;
+    }
+}
+catch (ProcessingJobException ex)
+{
+    _logger.LogError(ex, "Job processing failed: {JobId}", ex.JobId);
+    await _notificationService.NotifyJobFailure(ex.JobId, ex.Message);
+}
+```
+
+#### ApiException with HttpStatusCode and ApiResponse
+
+```csharp
+try
+{
+    var response = await _httpClient.GetAsync($"/api/videos/{videoId}");
+    
+    if (!response.IsSuccessStatusCode)
+    {
+        var errorContent = await response.Content.ReadAsStringAsync();
+        var apiException = new ApiException(
+            "YouTube API request failed",
+            response.StatusCode,
+            errorContent
+        );
+        
+        apiException.AddContext("VideoId", videoId);
+        apiException.AddContext("Endpoint", $"/api/videos/{videoId}");
+        
+        throw apiException;
+    }
+}
+catch (ApiException ex) when (ex.HttpStatusCode == HttpStatusCode.TooManyRequests)
+{
+    _logger.LogWarning(ex, "API quota exceeded for video {VideoId}", ex.Context?["VideoId"]);
+    await _quotaService.RecordQuotaUsage(ex.QuotaBytes, ex.CurrentUsageBytes);
+}
+```
+
+#### QuotaExceededException
+
+```csharp
+try
+{
+    var uploadResult = await _storageService.UploadVideoAsync(videoFilePath);
+    
+    if (uploadResult.IsQuotaExceeded)
+    {
+        throw new QuotaExceededException(
+            "Storage quota exceeded",
+            uploadResult.CurrentUsageBytes,
+            uploadResult.QuotaBytes
+        );
+    }
+}
+catch (QuotaExceededException ex)
+{
+    _logger.LogError(ex, "Storage quota exceeded: {CurrentUsage} of {Quota} bytes", 
+        ex.CurrentUsageBytes, ex.QuotaBytes);
+    
+    var quotaPercentage = (double)ex.CurrentUsageBytes / ex.QuotaBytes * 100;
+    await _notificationService.SendQuotaAlert(quotaPercentage);
+}
+```
+
+#### CredentialException with ErrorCode
+
+```csharp
+try
+{
+    var credential = await _credentialRepository.GetByIdAsync(credentialId);
+    
+    if (credential == null || credential.IsExpired)
+    {
+        throw new CredentialException("Invalid or expired OAuth credentials", credentialId);
+    }
+}
+catch (CredentialException ex) when (ex.ErrorCode == "CREDENTIAL_INVALID")
+{
+    _logger.LogError(ex, "Invalid credentials detected for credential ID {CredentialId}", ex.CredentialId);
+    await _authService.RefreshCredentialsAsync(ex.CredentialId);
+}
+```
+
+#### OAuthTokenExpiredException
+
+```csharp
+try
+{
+    var video = await _videoRepository.GetByIdAsync(videoId);
+    var uploadResponse = await _youtubeApi.UploadVideoAsync(video);
+}
+catch (OAuthTokenExpiredException ex)
+{
+    _logger.LogWarning(ex, "OAuth token expired while uploading video {VideoId}", ex.VideoId);
+    await _authService.RefreshAccessTokenAsync();
+    // Retry the operation
+    var retryResponse = await _youtubeApi.UploadVideoAsync(video);
+}
+```
+
 ## IHttpClientFactory
 
 `IHttpClientFactory` is a factory interface for creating and managing instances of `HttpClient` with predefined configurations. It provides a centralized way to create HTTP clients for different services such as YouTube API, storage, webhooks, and analytics. This abstraction helps manage the lifecycle of HTTP clients and ensures consistent configurations across the application.
