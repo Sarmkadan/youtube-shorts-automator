@@ -19,11 +19,11 @@ public static class RepositoryExtensionsJsonExtensions
     };
 
     /// <summary>
-    /// Serializes a RepositoryExtensions type marker to a JSON string
+    /// Serializes an object to a JSON string using camelCase property naming
     /// </summary>
-    /// <param name="value">The RepositoryExtensions type marker</param>
+    /// <param name="value">The object to serialize</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability</param>
-    /// <returns>JSON representation of the RepositoryExtensions type marker</returns>
+    /// <returns>JSON representation of the object</returns>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is null</exception>
     public static string ToJson(this object? value, bool indented = false)
     {
@@ -37,35 +37,39 @@ public static class RepositoryExtensionsJsonExtensions
     }
 
     /// <summary>
-    /// Deserializes a JSON string to a RepositoryExtensions type marker
+    /// Deserializes a JSON string to an object
     /// </summary>
     /// <param name="json">JSON string to deserialize</param>
-    /// <returns>RepositoryExtensions type marker instance, or null if deserialization fails</returns>
+    /// <returns>The deserialized object, or null if deserialization fails</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is null</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is empty or whitespace</exception>
     public static object? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
+        ArgumentException.ThrowIfNullOrEmpty(json.Trim());
 
         try
         {
             return JsonSerializer.Deserialize<object>(json, _jsonSerializerOptions);
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            return null;
+            throw new JsonException("Failed to deserialize JSON string", ex);
         }
     }
 
     /// <summary>
-    /// Attempts to deserialize a JSON string to a RepositoryExtensions type marker
+    /// Attempts to deserialize a JSON string to an object
     /// </summary>
     /// <param name="json">JSON string to deserialize</param>
-    /// <param name="value">Output parameter receiving the deserialized type marker</param>
+    /// <param name="value">Output parameter receiving the deserialized object</param>
     /// <returns>True if deserialization succeeded; false otherwise</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is null</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is empty or whitespace</exception>
     public static bool TryFromJson(string json, out object? value)
     {
         ArgumentNullException.ThrowIfNull(json);
+        ArgumentException.ThrowIfNullOrEmpty(json.Trim());
 
         try
         {
