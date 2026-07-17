@@ -911,6 +911,120 @@ Assert.Equal("High Quality", profileTask.ProcessingProfile.Name);
 Assert.True(profileTask.ProcessingProfile.ApplyWatermark);
 ```
 
+## ThumbnailGeneratorServiceTests
+
+The `ThumbnailGeneratorServiceTests` class contains unit tests for the `ThumbnailGeneratorService` that validate thumbnail generation functionality including frame extraction, aspect ratio handling, text overlay rendering, output format generation, and batch processing operations. It tests various scenarios including successful operations, error handling, validation edge cases, and ensures the thumbnail generation pipeline works correctly across different video formats and configurations.
+
+This test suite validates the complete thumbnail generation workflow including dimension calculations, file validation, FFmpeg frame extraction commands, text rendering with drawtext filter, batch processing with evenly spaced frames, and comprehensive error handling for missing files, invalid formats, and boundary conditions.
+
+**Public Members:**
+- `GetDimensions_Vertical_Returns720x1280` - Validates vertical 9:16 aspect ratio returns 720×1280
+- `GetDimensions_Horizontal_Returns1280x720` - Validates horizontal 16:9 aspect ratio returns 1280×720
+- `GetDimensions_Square_Returns720x720` - Validates square 1:1 aspect ratio returns 720×720
+- `GenerateFromVideoAsync_NullVideoPath_ThrowsArgumentException` - Validates null video path handling
+- `GenerateFromVideoAsync_EmptyVideoPath_ThrowsArgumentException` - Validates empty video path handling
+- `GenerateFromVideoAsync_NullRequest_ThrowsArgumentNullException` - Validates null request handling
+- `GenerateFromVideoAsync_MissingVideoFile_ThrowsVideoProcessingException` - Validates missing file handling
+- `GenerateFromVideoAsync_EmptyOutputDirectory_ThrowsValidationException` - Validates empty output directory handling
+- `GenerateWithTextOverlayAsync_NullImagePath_ThrowsArgumentException` - Validates null image path handling
+- `GenerateWithTextOverlayAsync_EmptyText_ThrowsArgumentException` - Validates empty text handling
+- `GenerateWithTextOverlayAsync_MissingImageFile_ThrowsVideoProcessingException` - Validates missing image file handling
+- `GenerateBatchAsync_ZeroFrameCount_ThrowsArgumentOutOfRangeException` - Validates zero frame count handling
+- `GenerateBatchAsync_NegativeVideoDuration_ThrowsArgumentOutOfRangeException` - Validates negative duration handling
+- `ThumbnailGenerationRequest_DefaultValues_AreCorrect` - Validates request default values
+- `TextOverlayOptions_DefaultValues_AreCorrect` - Validates overlay options default values
+- `ThumbnailGenerationResult_SuccessFalseByDefault` - Validates result default state
+- `GenerateFromVideoAsync_CreatesOutputDirectoryIfMissing` - Validates directory creation
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.Logging;
+using Xunit;
+
+// Initialize test service with mock logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<ThumbnailGeneratorServiceTests>();
+var thumbnailGeneratorServiceTests = new ThumbnailGeneratorServiceTests(logger);
+
+// Example 1: Test vertical video dimensions
+var verticalDimensions = thumbnailGeneratorServiceTests.GetDimensions_Vertical_Returns720x1280();
+Assert.Equal(720, verticalDimensions.Width);
+Assert.Equal(1280, verticalDimensions.Height);
+
+// Example 2: Test horizontal video dimensions
+var horizontalDimensions = thumbnailGeneratorServiceTests.GetDimensions_Horizontal_Returns1280x720();
+Assert.Equal(1280, horizontalDimensions.Width);
+Assert.Equal(720, horizontalDimensions.Height);
+
+// Example 3: Test square video dimensions
+var squareDimensions = thumbnailGeneratorServiceTests.GetDimensions_Square_Returns720x720();
+Assert.Equal(720, squareDimensions.Width);
+Assert.Equal(720, squareDimensions.Height);
+
+// Example 4: Generate thumbnail from video file
+var request = new ThumbnailGenerationRequest
+{
+    VideoPath = "/videos/sample.mp4",
+    OutputPath = "/thumbnails/sample.jpg",
+    TimestampSeconds = 5.5,
+    AspectRatio = AspectRatio.Vertical,
+    Format = ThumbnailFormat.Jpeg,
+    Quality = 90
+};
+
+var result = await thumbnailGeneratorServiceTests.GenerateFromVideoAsync_CreatesOutputDirectoryIfMissing(request);
+Assert.True(result.Success);
+Assert.NotNull(result.OutputPath);
+Assert.True(File.Exists(result.OutputPath));
+
+// Example 5: Generate thumbnail with text overlay
+var overlayRequest = new ThumbnailGenerationRequest
+{
+    VideoPath = "/videos/tutorial.mp4",
+    OutputPath = "/thumbnails/tutorial_with_text.jpg",
+    TimestampSeconds = 10.0,
+    AspectRatio = AspectRatio.Horizontal,
+    Format = ThumbnailFormat.Jpeg,
+    Quality = 85,
+    TextOverlay = new TextOverlayOptions
+    {
+        Text = "Learn C# in 30 Days",
+        FontSize = 48,
+        FontColor = "#FFFFFF",
+        BackgroundColor = "#00000080", // Semi-transparent black
+        Position = TextPosition.TopCenter,
+        ShadowEnabled = true
+    }
+};
+
+var overlayResult = await thumbnailGeneratorServiceTests.GenerateWithTextOverlayAsync_MissingImageFile_ThrowsVideoProcessingException(overlayRequest);
+Assert.True(overlayResult.Success);
+
+// Example 6: Generate batch of thumbnails
+var batchRequest = new ThumbnailBatchRequest
+{
+    VideoPath = "/videos/long_tutorial.mp4",
+    OutputDirectory = "/thumbnails/batch/",
+    FrameCount = 5,
+    AspectRatio = AspectRatio.Square,
+    Format = ThumbnailFormat.Png
+};
+
+var batchResult = await thumbnailGeneratorServiceTests.GenerateBatchAsync_ZeroFrameCount_ThrowsArgumentOutOfRangeException(batchRequest);
+Assert.Equal(5, batchResult.GeneratedThumbnails.Count);
+
+// Example 7: Test error handling - null video path
+Assert.Throws<ArgumentException>(() =>
+    thumbnailGeneratorServiceTests.GenerateFromVideoAsync_NullVideoPath_ThrowsArgumentException());
+
+// Example 8: Test error handling - empty text
+Assert.Throws<ArgumentException>(() =>
+    thumbnailGeneratorServiceTests.GenerateWithTextOverlayAsync_EmptyText_ThrowsArgumentException());
+```
+
 ## UploadJobRepository
 
 The `UploadJobRepository` class provides data access operations for managing upload job entities in the YouTube Shorts automation system. It implements the `IRepository<UploadJob>` interface and offers specialized methods for querying upload jobs by status, retrieving jobs scheduled for upload, and finding retryable failed jobs. The repository handles all database operations for upload jobs including creation, retrieval, updating, and deletion, with support for tracking upload progress, retry attempts, and error messages.
