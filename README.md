@@ -1188,6 +1188,122 @@ Assert.Throws<ArgumentException>(() =>
     thumbnailGeneratorServiceTests.GenerateWithTextOverlayAsync_EmptyText_ThrowsArgumentException());
 ```
 
+## ContentCalendarServiceTests
+
+The `ContentCalendarServiceTests` class contains unit tests for the `ContentCalendarService` that validate content calendar entry creation, retrieval, updating, deletion, and optimization functionality. It tests various scenarios including successful operations, validation edge cases, error handling, and ensures the content calendar system works correctly for scheduling YouTube Shorts content with proper date range handling and optimization integration.
+
+This test suite validates the complete content calendar workflow including entry creation with validation, date range queries, upcoming content retrieval, optimization engine integration, and comprehensive error handling for boundary conditions and edge cases.
+
+**Public Members:**
+- `CreateEntryAsync_WithValidEntry_ReturnsPersistedEntry` - Validates successful creation of a content calendar entry with valid data
+- `CreateEntryAsync_NullEntry_ThrowsArgumentNullException` - Tests null entry validation
+- `CreateEntryAsync_EmptyTitle_ThrowsValidationException` - Validates title validation for empty strings
+- `CreateEntryAsync_TitleTooLong_ThrowsValidationException` - Validates title length constraints
+- `CreateEntryAsync_InvalidChannelId_ThrowsValidationException` - Validates channel ID validation
+- `CreateEntryAsync_TooManyTags_ThrowsValidationException` - Validates tag count limits
+- `CreateEntryAsync_SetsCreatedAtAndUpdatedAt` - Tests timestamp setting on creation
+- `GetEntryAsync_ExistingEntry_ReturnsIt` - Validates retrieval of existing entries
+- `GetEntryAsync_NonExistingEntry_ReturnsNull` - Tests handling of non-existent entries
+- `GetEntriesInRangeAsync_StartAfterEnd_ThrowsArgumentException` - Validates date range validation
+- `GetEntriesInRangeAsync_ValidRange_DelegatesToRepository` - Tests date range queries delegation
+- `GetUpcomingEntriesAsync_ZeroDays_ThrowsArgumentOutOfRangeException` - Validates parameter validation for zero days
+- `GetUpcomingEntriesAsync_PositiveDays_ReturnsEntries` - Tests upcoming content retrieval
+- `DeleteEntryAsync_ExistingEntry_ReturnsTrue` - Validates successful deletion
+- `DeleteEntryAsync_NonExistingEntry_ReturnsFalse` - Tests deletion of non-existent entries
+- `GetRecommendedSlotsAsync_DelegatesToOptimizationEngine` - Tests optimization engine integration
+- `ApplyOptimizationAsync_WhenNoOptimizationStored_ThrowsInvalidOperationException` - Tests optimization state validation
+- `ApplyOptimizationAsync_OutOfRangeIndex_ThrowsArgumentOutOfRangeException` - Validates optimization index validation
+- `UpdateEntryAsync_NullEntry_ThrowsArgumentNullException` - Tests null entry validation for updates
+
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Services;
+using YouTubeShortAutomator.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+// Initialize test service with mock logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<ContentCalendarServiceTests>();
+var contentCalendarServiceTests = new ContentCalendarServiceTests(logger);
+
+// Example 1: Create a valid content calendar entry
+var validEntry = new ContentCalendarEntry
+{
+    VideoShortId = 42,
+    ScheduledDate = DateTime.UtcNow.Date.AddDays(7),
+    Status = ContentStatus.Scheduled,
+    Title = "Advanced C# Features Tutorial",
+    Description = "Deep dive into C# 10 features with practical examples",
+    Tags = new[] { "csharp", "dotnet", "tutorial", "advanced" },
+    Priority = ContentPriority.High,
+    ChannelId = 1
+};
+
+var createdEntry = await contentCalendarServiceTests.CreateEntryAsync_WithValidEntry_ReturnsPersistedEntry(validEntry);
+Console.WriteLine($"Created entry {createdEntry.Id} for video {createdEntry.VideoShortId}");
+Console.WriteLine($"Scheduled for: {createdEntry.ScheduledDate:yyyy-MM-dd}");
+
+// Example 2: Test validation - null entry
+await Assert.ThrowsAsync<ArgumentNullException>(() =>
+    contentCalendarServiceTests.CreateEntryAsync_NullEntry_ThrowsArgumentNullException());
+
+// Example 3: Test validation - empty title
+await Assert.ThrowsAsync<ValidationException>(() =>
+    contentCalendarServiceTests.CreateEntryAsync_EmptyTitle_ThrowsValidationException());
+
+// Example 4: Test validation - title too long (over 100 characters)
+await Assert.ThrowsAsync<ValidationException>(() =>
+    contentCalendarServiceTests.CreateEntryAsync_TitleTooLong_ThrowsValidationException());
+
+// Example 5: Test validation - invalid channel ID
+await Assert.ThrowsAsync<ValidationException>(() =>
+    contentCalendarServiceTests.CreateEntryAsync_InvalidChannelId_ThrowsValidationException());
+
+// Example 6: Test validation - too many tags (over 15)
+await Assert.ThrowsAsync<ValidationException>(() =>
+    contentCalendarServiceTests.CreateEntryAsync_TooManyTags_ThrowsValidationException());
+
+// Example 7: Retrieve an existing entry
+var retrievedEntry = await contentCalendarServiceTests.GetEntryAsync_ExistingEntry_ReturnsIt(createdEntry.Id);
+Console.WriteLine($"Retrieved entry: {retrievedEntry.Title}");
+Console.WriteLine($"Status: {retrievedEntry.Status}, Priority: {retrievedEntry.Priority}");
+
+// Example 8: Get entries within a date range
+var dateRangeEntries = await contentCalendarServiceTests.GetEntriesInRangeAsync_ValidRange_DelegatesToRepository(
+    DateTime.UtcNow.Date,
+    DateTime.UtcNow.Date.AddDays(30)
+);
+Console.WriteLine($"Found {dateRangeEntries.Count()} entries in next 30 days");
+
+// Example 9: Get upcoming entries (future scheduled)
+var upcomingEntries = await contentCalendarServiceTests.GetUpcomingEntriesAsync_PositiveDays_ReturnsEntries(7);
+Console.WriteLine($"Found {upcomingEntries.Count()} upcoming entries");
+
+// Example 10: Apply optimization to content calendar entry
+var optimizedEntry = await contentCalendarServiceTests.ApplyOptimizationAsync_WhenNoOptimizationStored_ThrowsInvalidOperationException(createdEntry.Id);
+Console.WriteLine($"Applied optimization to entry {optimizedEntry.Id}");
+Console.WriteLine($"Recommended slots: {string.Join(", ", optimizedEntry.RecommendedSlots)}");
+
+// Example 11: Update an existing entry
+var updatedEntry = await contentCalendarServiceTests.UpdateEntryAsync_NullEntry_ThrowsArgumentNullException(createdEntry.Id, new ContentCalendarEntry
+{
+    Title = "Advanced C# Features - Updated",
+    Description = "Updated description with new content",
+    Status = ContentStatus.InProgress,
+    Priority = ContentPriority.High,
+    UpdatedAt = DateTime.UtcNow
+});
+Console.WriteLine($"Updated entry title to: {updatedEntry.Title}");
+
+// Example 12: Delete an entry
+bool deleted = await contentCalendarServiceTests.DeleteEntryAsync_ExistingEntry_ReturnsTrue(createdEntry.Id);
+Console.WriteLine($"Deleted entry {createdEntry.Id}: {(deleted ? "Success" : "Failed")}");
+```
+
 ## UploadJobModelTests
 
 The `UploadJobModelTests` class contains unit tests for the `UploadJob` model validation and processing logic. It verifies that upload job state management works correctly including retry logic, progress tracking, completion status, and error handling. This test suite validates the core business rules for upload jobs including retry limits, progress calculations, and state transitions throughout the upload lifecycle.
