@@ -154,6 +154,96 @@ Console.WriteLine($"Event ID: {webhookPublisher.Id}");
 Console.WriteLine($"Timestamp: {webhookPublisher.Timestamp:u}");
 ```
 
+## IFFmpegWrapper
+
+The `IFFmpegWrapper` interface provides a standardized abstraction for FFmpeg operations, enabling video format conversion, metadata extraction, and thumbnail generation. It encapsulates the complexities of FFmpeg command-line execution while providing a clean, async API for common video processing tasks.
+
+**Key Features:**
+- Convert videos between different formats and quality profiles
+- Extract comprehensive video metadata including dimensions, duration, and codec information
+- Generate thumbnails from specific video frames with configurable timing
+- Handle error cases gracefully with detailed logging
+
+
+**Public Members:**
+- `ConvertVideoAsync()` - Converts a video file to a different format/quality using specified encoding profile
+- `GetVideoMetadataAsync()` - Extracts metadata from a video file including dimensions, duration, frame rate, and codec information
+- `ExtractThumbnailAsync()` - Extracts a thumbnail image from a video at a specific timestamp
+
+**Properties (via VideoMetadata return type):**
+- `FilePath` - The absolute path to the video file
+- `FileSize` - The size of the file in bytes
+- `Width` - The video width in pixels
+- `Height` - The video height in pixels
+- `DurationSeconds` - The video duration in seconds
+- `FrameRate` - The video frame rate in frames per second
+- `Codec` - The video codec used (e.g., "h264")
+- `ExtractedAtUtc` - The UTC timestamp when metadata was extracted
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortsAutomator.Integration;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+// Example 1: Create FFmpeg wrapper instance (typically via dependency injection)
+var ffmpegWrapper = new FFmpegWrapper(logger, configuration);
+
+// Example 2: Convert video to high-quality profile
+bool conversionSuccess = await ffmpegWrapper.ConvertVideoAsync(
+    inputPath: "/videos/input.mp4",
+    outputPath: "/videos/output_hq.mp4",
+    profile: "hq" // Available profiles: "hq", "standard", "mobile"
+);
+
+Console.WriteLine($"Video conversion completed: {conversionSuccess}");
+
+// Example 3: Extract video metadata
+var metadata = await ffmpegWrapper.GetVideoMetadataAsync("/videos/input.mp4");
+
+if (metadata != null)
+{
+    Console.WriteLine($"Video Metadata:");
+    Console.WriteLine($"- Resolution: {metadata.Width}x{metadata.Height}");
+    Console.WriteLine($"- Duration: {metadata.DurationSeconds:F2} seconds");
+    Console.WriteLine($"- Frame Rate: {metadata.FrameRate} fps");
+    Console.WriteLine($"- Codec: {metadata.Codec}");
+    Console.WriteLine($"- File Size: {metadata.FileSize:N0} bytes");
+    Console.WriteLine($"- File Path: {metadata.FilePath}");
+    Console.WriteLine($"- Extracted At: {metadata.ExtractedAtUtc:u}");
+}
+
+// Example 4: Extract thumbnail from video
+bool thumbnailSuccess = await ffmpegWrapper.ExtractThumbnailAsync(
+    videoPath: "/videos/tutorial.mp4",
+    outputPath: "/thumbnails/tutorial.jpg",
+    secondsOffset: 5 // Extract thumbnail at 5 seconds into the video
+);
+
+Console.WriteLine($"Thumbnail extraction completed: {thumbnailSuccess}");
+
+// Example 5: Process video with error handling
+try
+{
+    var result = await ffmpegWrapper.ConvertVideoAsync(
+        inputPath: "/videos/presentation.mp4",
+        outputPath: "/videos/presentation_converted.mp4",
+        profile: "mobile" // Optimized for mobile devices
+    );
+    
+    if (!result)
+    {
+        Console.WriteLine("Video conversion failed. Check logs for details.");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error processing video: {ex.Message}");
+}
+```
+
 ## JobOrchestrationService
 
 The `JobOrchestrationService` class orchestrates the complete video processing and upload pipeline for YouTube Shorts automation. It coordinates between video processing, upload scheduling, analytics tracking, and error recovery, providing a centralized service for managing the entire video lifecycle from validation to scheduled upload.
