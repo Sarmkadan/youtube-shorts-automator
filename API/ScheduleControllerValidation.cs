@@ -6,7 +6,7 @@
 // Provides validation, IsValid, and EnsureValid methods for schedule-related data models
 // =============================================================================
 
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace YouTubeShortsAutomator.API;
 
@@ -16,12 +16,12 @@ namespace YouTubeShortsAutomator.API;
 public static class ScheduleControllerValidation
 {
     /// <summary>
-    /// Validates a CreateScheduleRequest instance and returns a list of human-readable validation problems
+    /// Validates a <see cref="CreateScheduleRequest"/> instance and returns a list of human-readable validation problems.
     /// </summary>
-    /// <param name="request">The request to validate</param>
-    /// <returns>An empty list if valid, otherwise a list of validation error messages</returns>
-    /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
-    public static IReadOnlyList<string> Validate(this CreateScheduleRequest request)
+    /// <param name="request">The request to validate.</param>
+    /// <returns>An empty list if valid, otherwise a list of validation error messages.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is null.</exception>
+    public static IReadOnlyList<string> Validate([NotNull] this CreateScheduleRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -63,22 +63,19 @@ public static class ScheduleControllerValidation
     }
 
     /// <summary>
-    /// Determines whether the specified CreateScheduleRequest instance is valid
+    /// Determines whether the specified <see cref="CreateScheduleRequest"/> instance is valid.
     /// </summary>
-    /// <param name="request">The request to check</param>
-    /// <returns>True if valid; otherwise, false</returns>
-    public static bool IsValid(this CreateScheduleRequest request)
-    {
-        return Validate(request).Count == 0;
-    }
+    /// <param name="request">The request to check.</param>
+    /// <returns>True if valid; otherwise, false.</returns>
+    public static bool IsValid([NotNullWhen(true)] this CreateScheduleRequest? request) => request?.Validate().Count == 0;
 
     /// <summary>
-    /// Ensures that the specified CreateScheduleRequest instance is valid, throwing an exception if not
+    /// Ensures that the specified <see cref="CreateScheduleRequest"/> instance is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="request">The request to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
-    /// <exception cref="ArgumentException">Thrown when validation fails, containing a list of error messages</exception>
-    public static void EnsureValid(this CreateScheduleRequest request)
+    /// <param name="request">The request to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when validation fails, containing a list of error messages.</exception>
+    public static void EnsureValid([NotNull] this CreateScheduleRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -91,12 +88,12 @@ public static class ScheduleControllerValidation
     }
 
     /// <summary>
-    /// Validates an UpdateScheduleRequest instance
+    /// Validates an <see cref="UpdateScheduleRequest"/> instance.
     /// </summary>
-    /// <param name="request">The request to validate</param>
-    /// <returns>An empty list if valid, otherwise a list of validation error messages</returns>
-    /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
-    public static IReadOnlyList<string> Validate(this UpdateScheduleRequest request)
+    /// <param name="request">The request to validate.</param>
+    /// <returns>An empty list if valid, otherwise a list of validation error messages.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is null.</exception>
+    public static IReadOnlyList<string> Validate([NotNull] this UpdateScheduleRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -130,22 +127,19 @@ public static class ScheduleControllerValidation
     }
 
     /// <summary>
-    /// Determines whether the specified UpdateScheduleRequest instance is valid
+    /// Determines whether the specified <see cref="UpdateScheduleRequest"/> instance is valid.
     /// </summary>
-    /// <param name="request">The request to check</param>
-    /// <returns>True if valid; otherwise, false</returns>
-    public static bool IsValid(this UpdateScheduleRequest request)
-    {
-        return Validate(request).Count == 0;
-    }
+    /// <param name="request">The request to check.</param>
+    /// <returns>True if valid; otherwise, false.</returns>
+    public static bool IsValid([NotNullWhen(true)] this UpdateScheduleRequest? request) => request?.Validate().Count == 0;
 
     /// <summary>
-    /// Ensures that the specified UpdateScheduleRequest instance is valid, throwing an exception if not
+    /// Ensures that the specified <see cref="UpdateScheduleRequest"/> instance is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="request">The request to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
-    /// <exception cref="ArgumentException">Thrown when validation fails, containing a list of error messages</exception>
-    public static void EnsureValid(this UpdateScheduleRequest request)
+    /// <param name="request">The request to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when validation fails, containing a list of error messages.</exception>
+    public static void EnsureValid([NotNull] this UpdateScheduleRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -158,12 +152,12 @@ public static class ScheduleControllerValidation
     }
 
     /// <summary>
-    /// Validates a ScheduledUpload instance
+    /// Validates a <see cref="ScheduledUpload"/> instance.
     /// </summary>
-    /// <param name="upload">The scheduled upload to validate</param>
-    /// <returns>An empty list if valid, otherwise a list of validation error messages</returns>
-    /// <exception cref="ArgumentNullException">Thrown when upload is null</exception>
-    public static IReadOnlyList<string> Validate(this ScheduledUpload upload)
+    /// <param name="upload">The scheduled upload to validate.</param>
+    /// <returns>An empty list if valid, otherwise a list of validation error messages.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="upload"/> is null.</exception>
+    public static IReadOnlyList<string> Validate([NotNull] this ScheduledUpload upload)
     {
         ArgumentNullException.ThrowIfNull(upload);
 
@@ -221,22 +215,19 @@ public static class ScheduleControllerValidation
     }
 
     /// <summary>
-    /// Determines whether the specified ScheduledUpload instance is valid
+    /// Determines whether the specified <see cref="ScheduledUpload"/> instance is valid.
     /// </summary>
-    /// <param name="upload">The scheduled upload to check</param>
-    /// <returns>True if valid; otherwise, false</returns>
-    public static bool IsValid(this ScheduledUpload upload)
-    {
-        return Validate(upload).Count == 0;
-    }
+    /// <param name="upload">The scheduled upload to check.</param>
+    /// <returns>True if valid; otherwise, false.</returns>
+    public static bool IsValid([NotNullWhen(true)] this ScheduledUpload? upload) => upload?.Validate().Count == 0;
 
     /// <summary>
-    /// Ensures that the specified ScheduledUpload instance is valid, throwing an exception if not
+    /// Ensures that the specified <see cref="ScheduledUpload"/> instance is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="upload">The scheduled upload to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown when upload is null</exception>
-    /// <exception cref="ArgumentException">Thrown when validation fails, containing a list of error messages</exception>
-    public static void EnsureValid(this ScheduledUpload upload)
+    /// <param name="upload">The scheduled upload to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="upload"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when validation fails, containing a list of error messages.</exception>
+    public static void EnsureValid([NotNull] this ScheduledUpload upload)
     {
         ArgumentNullException.ThrowIfNull(upload);
 
