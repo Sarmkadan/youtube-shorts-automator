@@ -989,6 +989,91 @@ var queuedCount = await schedulingServiceTests.GetQueuedJobCountAsync_ReturnsCou
 Console.WriteLine($"Queued jobs: {queuedCount}");
 ```
 
+## TitleOptimizationEngineTests
+
+The `TitleOptimizationEngineTests` class contains unit tests for the `TitleOptimizationEngine` that validate title scoring, keyword extraction, optimization suggestions, and posting time recommendations. It tests various scenarios including edge cases, validation, and ensures the title optimization system works correctly across different title formats and content types.
+
+This test suite validates the complete title optimization workflow including scoring algorithms, keyword extraction logic, optimization suggestion generation, hashtag recommendations, and posting time predictions with comprehensive error handling and boundary condition testing.
+
+**Public Members:**
+- `ScoreTitle_EmptyString_ReturnsZero` - Validates that empty strings return zero score
+- `ScoreTitle_NullInput_ReturnsZero` - Validates that null inputs return zero score
+- `ScoreTitle_ShortTitle_ReturnsLowerScoreThanOptimal` - Tests scoring for titles that are too short
+- `ScoreTitle_TitleWithPowerWord_ReceivesBoost` - Validates that titles with power words receive score boosts
+- `ScoreTitle_TitleWithQuestion_ReceivesBoost` - Validates that question-format titles receive score boosts
+- `ScoreTitle_TitleWithNumber_ReceivesBoost` - Validates that titles with numbers receive score boosts
+- `ScoreTitle_ReturnValueIsClamped` - Tests that score values are properly clamped between 0 and 1
+- `ExtractKeywords_ExtractsNonTrivialWords` - Validates keyword extraction for meaningful words
+- `ExtractKeywords_FiltersStopWords` - Tests that stop words are properly filtered out
+- `ExtractKeywords_ReturnsAtMostTenKeywords` - Validates that maximum of 10 keywords are returned
+- `ExtractKeywords_EmptyInputs_ReturnsEmptyArray` - Tests behavior with empty inputs
+- `ExtractKeywords_ReturnsLowercaseWords` - Validates that extracted keywords are lowercase
+- `OptimizeAsync_WithValidInput_ReturnsSuggestions` - Tests successful optimization with valid input
+- `OptimizeAsync_SuggestionsHavePositiveConfidenceScore` - Validates that suggestions have positive confidence scores
+- `OptimizeAsync_BestSuggestionIsHighestConfidence` - Tests that the best suggestion has the highest confidence
+- `OptimizeAsync_RecommendedHashtagsIncludeShortsTag` - Validates that recommended hashtags include #shorts
+- `OptimizeAsync_NullOrWhitespaceTitle_ThrowsArgumentException` - Tests error handling for null/whitespace titles
+- `OptimizeAsync_OptimalPostingHourIsWithinValidRange` - Validates that optimal posting hours are within valid range
+- `RecommendPostingTimesAsync_ReturnsRequestedCount` - Tests that the requested number of posting times are returned
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using Microsoft.Extensions.Logging;
+using Xunit;
+
+// Initialize test service with mock logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<TitleOptimizationEngineTests>();
+var titleOptimizationEngineTests = new TitleOptimizationEngineTests(logger);
+
+// Example 1: Test title scoring with various formats
+var emptyScore = titleOptimizationEngineTests.ScoreTitle_EmptyString_ReturnsZero();
+Assert.Equal(0, emptyScore);
+
+var powerWordScore = titleOptimizationEngineTests.ScoreTitle_TitleWithPowerWord_ReceivesBoost();
+Assert.True(powerWordScore > 0.5);
+
+var questionScore = titleOptimizationEngineTests.ScoreTitle_TitleWithQuestion_ReceivesBoost();
+Assert.True(questionScore > 0.6);
+
+var numberScore = titleOptimizationEngineTests.ScoreTitle_TitleWithNumber_ReceivesBoost();
+Assert.True(numberScore > 0.5);
+
+// Example 2: Test keyword extraction
+var keywords = titleOptimizationEngineTests.ExtractKeywords_ExtractsNonTrivialWords();
+Assert.NotEmpty(keywords);
+Assert.All(keywords, word => Assert.True(word.Length > 2)); // Filter out short words
+
+// Example 3: Test optimization with valid input
+var optimizationResult = await titleOptimizationEngineTests.OptimizeAsync_WithValidInput_ReturnsSuggestions();
+Assert.NotNull(optimizationResult);
+Assert.NotEmpty(optimizationResult.Suggestions);
+Assert.All(optimizationResult.Suggestions, suggestion => Assert.True(suggestion.ConfidenceScore > 0));
+
+// Example 4: Test posting time recommendations
+var postingTimes = await titleOptimizationEngineTests.RecommendPostingTimesAsync_ReturnsRequestedCount();
+Assert.Equal(5, postingTimes.Count);
+Assert.All(postingTimes, time => Assert.InRange(time.Hour, 0, 23)); // Valid UTC hours
+
+// Example 5: Test error handling - null title
+Assert.Throws<ArgumentException>(() => titleOptimizationEngineTests.OptimizeAsync_NullOrWhitespaceTitle_ThrowsArgumentException());
+
+// Example 6: Test score clamping
+var clampedScore = titleOptimizationEngineTests.ScoreTitle_ReturnValueIsClamped();
+Assert.InRange(clampedScore, 0, 1);
+
+// Example 7: Test hashtag recommendations
+var hashtags = optimizationResult.RecommendedHashtags;
+Assert.Contains("#shorts", hashtags);
+Assert.True(hashtags.Count > 0);
+
+// Example 8: Test optimal posting hour range
+var optimalHour = optimizationResult.OptimalPostingHour;
+Assert.InRange(optimalHour, 0, 23);
+```
+
 ## ThumbnailGeneratorServiceTests
 
 The `ThumbnailGeneratorServiceTests` class contains unit tests for the `ThumbnailGeneratorService` that validate thumbnail generation functionality including frame extraction, aspect ratio handling, text overlay rendering, output format generation, and batch processing operations. It tests various scenarios including successful operations, error handling, validation edge cases, and ensures the thumbnail generation pipeline works correctly across different video formats and configurations.
