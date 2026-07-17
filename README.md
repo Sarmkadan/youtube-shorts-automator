@@ -146,3 +146,50 @@ var conflictResult = ApiResult<VideoData>.Conflict("Video with this title alread
 Console.WriteLine($"Conflict detected: {conflictResult.IsSuccess}, Code: {conflictResult.ErrorCode}");
 ```
 
+## ProcessingJobRequest
+
+`ProcessingJobRequest` represents a request for video processing, encapsulating details such as the video file path, title, description, tags, and processing options. It provides a structured way to define the requirements for video processing operations.
+
+### Usage Example
+
+```csharp
+var processingJobRequest = new ProcessingJobRequest
+{
+    RequestId = Guid.NewGuid(),
+    VideoFilePath = "./videos/my-short.mp4",
+    Title = "My Awesome Short Video",
+    Description = "Check out this amazing short video!",
+    Tags = new[] { "shorts", "funny", "entertainment" },
+    ProcessingProfile = "standard",
+    Options = new ProcessingOptions
+    {
+        EnableWatermark = true,
+        WatermarkImagePath = "./watermark.png",
+        AutoGenerateThumbnail = true,
+        OptimizeForMobile = true,
+        MaxWidth = 1920,
+        MaxHeight = 1080,
+        BitrateKbps = 4000,
+        EnableAudioNormalization = true
+    },
+    CreatedAtUtc = DateTime.UtcNow,
+    RequestedBy = "John Doe"
+};
+
+Console.WriteLine($"Request ID: {processingJobRequest.RequestId}");
+Console.WriteLine($"Video file path: {processingJobRequest.VideoFilePath}");
+Console.WriteLine($"Title: {processingJobRequest.Title}");
+Console.WriteLine($"Description: {processingJobRequest.Description}");
+Console.WriteLine($"Tags: {string.Join(", ", processingJobRequest.Tags)}");
+Console.WriteLine($"Processing profile: {processingJobRequest.ProcessingProfile}");
+Console.WriteLine($"Enable watermark: {processingJobRequest.Options.EnableWatermark}");
+Console.WriteLine($"Watermark image path: {processingJobRequest.Options.WatermarkImagePath}");
+Console.WriteLine($"Auto generate thumbnail: {processingJobRequest.Options.AutoGenerateThumbnail}");
+Console.WriteLine($"Optimize for mobile: {processingJobRequest.Options.OptimizeForMobile}");
+Console.WriteLine($"Max width: {processingJobRequest.Options.MaxWidth}");
+Console.WriteLine($"Max height: {processingJobRequest.Options.MaxHeight}");
+Console.WriteLine($"Bitrate (kbps): {processingJobRequest.Options.BitrateKbps}");
+Console.WriteLine($"Enable audio normalization: {processingJobRequest.Options.EnableAudioNormalization}");
+Console.WriteLine($"Requested by: {processingJobRequest.RequestedBy}");
+Console.WriteLine($"Created at UTC: {processingJobRequest.CreatedAtUtc}");
+```
