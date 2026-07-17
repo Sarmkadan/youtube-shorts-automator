@@ -1,0 +1,7 @@
+
+## Notes
+
+- **Null handling:** The validation methods treat `null` or missing required fields as validation failures and include appropriate messages in the returned list. `EnsureValid` will consequently throw.
+- **Thread safety:** All members are static and stateless; they do not modify shared mutable state. Consequently, they are safe to call concurrently from multiple threads.
+- **Extensibility:** If additional validation rules are required (e.g., format checks for API keys), they should be added inside the implementation of these methods so that `Validate`, `IsValid`, and `EnsureValid` remain consistent.
+- **Performance:** The methods perform only lightweight checks (e.g., string emptiness, length constraints). They are intended to be called before expensive operations such as database writes or external API calls.
