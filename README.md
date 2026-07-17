@@ -80,3 +80,69 @@ var channels = await googleApiClient.ListChannelsAsync();
 Console.WriteLine($"Available channels: {string.Join(", ", channels)}");
 ```
 
+## ApiResult
+
+`ApiResult` is a generic wrapper class for API operations that encapsulates success/failure state with optional data and error details. It provides a consistent way to handle API responses throughout the application, supporting both simple operations and operations that return data.
+
+### Members
+
+- `IsSuccess` - Indicates whether the operation was successful
+- `Message` - Human-readable status message
+- `ErrorCode` - Optional error code for programmatic error handling
+- `Errors` - Dictionary of validation errors (when applicable)
+
+- Static factory methods: `Success()`, `Failure()`, `ValidationFailure()`
+
+### Usage Examples
+
+#### Basic ApiResult (non-generic)
+
+```csharp
+// Successful operation
+var successResult = ApiResult.Success("Video uploaded successfully");
+Console.WriteLine($"Success: {successResult.IsSuccess}, Message: {successResult.Message}");
+
+// Failed operation
+var failureResult = ApiResult.Failure("Failed to process video", "VIDEO_PROCESSING_ERROR");
+Console.WriteLine($"Success: {failureResult.IsSuccess}, Error: {failureResult.Message}, Code: {failureResult.ErrorCode}");
+
+// Validation failure
+var validationErrors = new Dictionary<string, string>
+{
+    { "title", "Title is required" },
+    { "description", "Description must be at least 50 characters" }
+};
+var validationResult = ApiResult.ValidationFailure(validationErrors);
+Console.WriteLine($"Validation failed with {validationResult.Errors?.Count} errors");
+```
+
+#### Generic ApiResult<T>
+
+```csharp
+// Successful operation with data
+var videoData = new { Id = "abc123", Title = "My Short Video" };
+var successWithData = ApiResult<VideoData>.Success(videoData, "Video retrieved successfully");
+
+if (successWithData.IsSuccess)
+{
+    Console.WriteLine($"Video ID: {successWithData.Data?.Id}, Title: {successWithData.Data?.Title}");
+}
+
+// Failed operation with data type
+var notFoundResult = ApiResult<VideoData>.NotFound("Video with ID xyz789 not found");
+Console.WriteLine($"Not found: {notFoundResult.IsSuccess}, Message: {notFoundResult.Message}");
+
+// Using Map to transform data
+var mappedResult = successWithData.Map(data => data?.Title?.ToUpper());
+Console.WriteLine($"Mapped title: {mappedResult}");
+
+// Async mapping
+var asyncMappedResult = await successWithData.MapAsync(async data => 
+    (await Task.FromResult(data?.Id)) ?? "unknown");
+Console.WriteLine($"Async mapped ID: {asyncMappedResult}");
+
+// Conflict scenario
+var conflictResult = ApiResult<VideoData>.Conflict("Video with this title already exists");
+Console.WriteLine($"Conflict detected: {conflictResult.IsSuccess}, Code: {conflictResult.ErrorCode}");
+```
+
