@@ -1188,6 +1188,96 @@ Assert.Throws<ArgumentException>(() =>
     thumbnailGeneratorServiceTests.GenerateWithTextOverlayAsync_EmptyText_ThrowsArgumentException());
 ```
 
+## UploadJobModelTests
+
+The `UploadJobModelTests` class contains unit tests for the `UploadJob` model validation and processing logic. It verifies that upload job state management works correctly including retry logic, progress tracking, completion status, and error handling. This test suite validates the core business rules for upload jobs including retry limits, progress calculations, and state transitions throughout the upload lifecycle.
+
+**Public Members:**
+- `CanRetry_WhenFailedAndUnderRetryLimit_ReturnsTrue` - Validates that failed jobs can retry when under the maximum retry limit
+- `CanRetry_WhenAttemptCountMatchesMaxRetries_ReturnsFalse` - Validates that jobs cannot retry when attempt count equals max retries
+- `UpdateProgress_WithHalfTransferredBytes_CalculatesCorrectPercentage` - Tests progress calculation for partial uploads
+- `MarkAsCompleted_AssignsVideoIdAndSetsProgressToFull` - Validates successful upload completion with video ID assignment
+- `UploadedBytes_WhenSet_PreservesValueForResume` - Tests that uploaded byte count is preserved for resume operations
+
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Tests;
+using YouTubeShortAutomator.Domain.Models;
+using FluentAssertions;
+
+// Example 1: Test retry logic for failed job under retry limit
+var failedJob = new UploadJob
+{
+    VideoShortId = 42,
+    Status = UploadStatus.Failed,
+    AttemptCount = 1,
+    MaxRetries = 3,
+    ErrorMessage = "YouTube API rate limit exceeded"
+};
+
+var uploadJobModelTests = new UploadJobModelTests();
+bool canRetry = uploadJobModelTests.CanRetry_WhenFailedAndUnderRetryLimit_ReturnsTrue(failedJob);
+canRetry.Should().BeTrue();
+
+// Example 2: Test retry logic when max retries reached
+var exhaustedJob = new UploadJob
+{
+    VideoShortId = 43,
+    Status = UploadStatus.Failed,
+    AttemptCount = 3,
+    MaxRetries = 3,
+    ErrorMessage = "Failed after 3 attempts"
+};
+
+bool cannotRetry = uploadJobModelTests.CanRetry_WhenAttemptCountMatchesMaxRetries_ReturnsFalse(exhaustedJob);
+cannotRetry.Should().BeFalse();
+
+// Example 3: Test progress calculation for partial upload
+var partialUpload = new UploadJob
+{
+    VideoShortId = 44,
+    Status = UploadStatus.Uploading,
+    TotalBytes = 100000000, // 100 MB
+    UploadedBytes = 50000000,  // 50 MB
+    UploadProgressPercentage = 0
+};
+
+uploadJobModelTests.UpdateProgress_WithHalfTransferredBytes_CalculatesCorrectPercentage(partialUpload);
+partialUpload.UploadProgressPercentage.Should().Be(50.0);
+
+// Example 4: Test successful upload completion
+var completedUpload = new UploadJob
+{
+    VideoShortId = 45,
+    Status = UploadStatus.Completed,
+    UploadedBytes = 150000000, // 150 MB
+    TotalBytes = 150000000,
+    YouTubeVideoId = null,
+    UploadProgressPercentage = 0
+};
+
+uploadJobModelTests.MarkAsCompleted_AssignsVideoIdAndSetsProgressToFull(completedUpload, "dQw4w9WgXcQ");
+completedUpload.Status.Should().Be(UploadStatus.Completed);
+completedUpload.YouTubeVideoId.Should().Be("dQw4w9WgXcQ");
+completedUpload.UploadProgressPercentage.Should().Be(100.0);
+
+// Example 5: Test uploaded bytes preservation for resume
+var resumableUpload = new UploadJob
+{
+    VideoShortId = 46,
+    Status = UploadStatus.Paused,
+    TotalBytes = 200000000, // 200 MB
+    UploadedBytes = 75000000,  // 75 MB
+    UploadProgressPercentage = 37.5
+};
+
+uploadJobModelTests.UploadedBytes_WhenSet_PreservesValueForResume(resumableUpload, 125000000);
+resumableUpload.UploadedBytes.Should().Be(125000000);
+resumableUpload.UploadProgressPercentage.Should().Be(62.5);
+```
+
 ## UploadJobRepository
 
 The `UploadJobRepository` class provides data access operations for managing upload job entities in the YouTube Shorts automation system. It implements the `IRepository<UploadJob>` interface and offers specialized methods for querying upload jobs by status, retrieving jobs scheduled for upload, and finding retryable failed jobs. The repository handles all database operations for upload jobs including creation, retrieval, updating, and deletion, with support for tracking upload progress, retry attempts, and error messages.
