@@ -20,6 +20,7 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - [Configuration Guide](#configuration-guide)
 - [Usage Examples](#usage-examples)
 - [API Reference](#api-reference)
+- [IWebhookPublisher](#iwebhookpublisher)
 - [CLI Reference](#cli-reference)
 - [Troubleshooting](#troubleshooting)
 - [Performance](#performance)
@@ -74,6 +75,84 @@ An enterprise-grade solution for automating the entire YouTube Shorts lifecycle:
 - **Strategy Suggestions**: Produces up to three ranked `OptimizationSuggestion` records per call — power-word injection, question reformatting and keyword-alignment variants
 - **Hashtag Recommendations**: Appends configured trending hashtags (`#shorts`, `#fyp`, …) plus content-derived hashtags to every optimised description
 - **Posting-Time Prediction**: `RecommendPostingTimesAsync` derives optimal UTC upload slots from historical engagement patterns, skipping Sundays and enforcing a configurable minimum gap between slots
+
+## IWebhookPublisher
+
+The `IWebhookPublisher` interface provides a standardized mechanism for publishing webhook events to external systems, enabling real-time notifications for upload events, processing status changes, and analytics updates. It supports both single event publishing and bulk operations, making it suitable for high-volume scenarios where multiple events need to be dispatched efficiently.
+
+**Key Features:**
+- Publish individual events with strongly-typed payloads
+- Bulk publish multiple events in a single operation
+- Automatic event type detection and serialization
+- Timestamp tracking for event ordering and deduplication
+- Unique event identification for reliable webhook processing
+
+**Public Members:**
+- `PublishEventAsync<T>()` - Publishes a single event with payload of type T
+- `PublishBulkEventsAsync<T>()` - Publishes multiple events with payloads of type T
+- `EventType` - The type/category of the event being published
+- `Data` - The event payload data
+- `Timestamp` - The timestamp when the event was created
+- `Id` - A unique identifier for the event
+
+**Usage Example:**
+
+```csharp
+using YouTubeShortAutomator.Integration;
+using System;
+using System.Threading.Tasks;
+
+// Example 1: Create a webhook publisher instance
+var webhookPublisher = new WebhookPublisher("https://api.example.com/webhooks/youtube");
+
+// Example 2: Publish a single upload event
+var uploadEvent = new UploadEvent
+{
+    VideoId = "dQw4w9WgXcQ",
+    VideoTitle = "Learn C# in 30 Days - Complete Tutorial",
+    ChannelId = "UC1234567890",
+    Status = "Completed",
+    UploadedAt = DateTime.UtcNow,
+    Views = 1500,
+    Likes = 75
+};
+
+bool singleEventPublished = await webhookPublisher.PublishEventAsync<UploadEvent>(uploadEvent);
+Console.WriteLine($"Single event published: {singleEventPublished}");
+
+// Example 3: Publish multiple events in bulk
+var bulkEvents = new UploadEvent[]
+{
+    new UploadEvent
+    {
+        VideoId = "dQw4w9WgXcQ",
+        VideoTitle = "Learn C# in 30 Days",
+        ChannelId = "UC1234567890",
+        Status = "Completed",
+        UploadedAt = DateTime.UtcNow.AddMinutes(-30),
+        Views = 1500,
+        Likes = 75
+    },
+    new UploadEvent
+    {
+        VideoId = "AbCdEfGhIjK",
+        VideoTitle = "Master Python in 2024",
+        ChannelId = "UC1234567890",
+        Status = "Processing",
+        UploadedAt = DateTime.UtcNow.AddMinutes(-15),
+        Views = 0,
+        Likes = 0
+    }
+};
+
+bool bulkEventsPublished = await webhookPublisher.PublishBulkEventsAsync<UploadEvent>(bulkEvents);
+Console.WriteLine($"Bulk events published: {bulkEventsPublished}");
+
+// Example 4: Access event metadata
+Console.WriteLine($"Event Type: {webhookPublisher.EventType}");
+Console.WriteLine($"Event ID: {webhookPublisher.Id}");
+Console.WriteLine($"Timestamp: {webhookPublisher.Timestamp:u}");
+```
 
 ## JobOrchestrationService
 
