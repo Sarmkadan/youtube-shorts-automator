@@ -184,6 +184,79 @@ var webhookResponse = await webhookClient.PostAsync("https://webhook.example.com
 var analyticsResponse = await analyticsClient.GetAsync("https://analytics.example.com");
 ```
 
+## AnalyticsMetric
+
+`AnalyticsMetric` represents YouTube Shorts performance metrics collected over a specific period. It tracks key engagement indicators such as views, likes, comments, shares, subscriber changes, and demographic breakdowns. The class provides methods for calculating engagement scores, determining performance trends, and analyzing audience demographics to help identify successful content patterns.
+
+### Members
+
+- `Id` - Unique identifier for the analytics record
+- `VideoId` - Reference to the associated video
+- `Video` - Navigation property to the Video entity
+- `ViewCount` - Total number of views
+- `LikeCount` - Total number of likes
+- `CommentCount` - Total number of comments
+- `ShareCount` - Total number of shares
+- `SubscriberGainedCount` - Number of new subscribers gained
+- `SubscriberLostCount` - Number of subscribers lost
+- `AverageViewDurationSeconds` - Average duration viewers watched in seconds
+- `EngagementRatePercent` - Engagement rate percentage
+- `ClickThroughRatePercent` - Click-through rate percentage
+- `Period` - Time period the metrics cover (Hourly, Daily, Weekly, Monthly, Cumulative)
+- `CollectedAt` - When the metrics were collected
+- `UpdatedAt` - When the metrics were last updated
+- `TrafficSource` - Source of the traffic
+- `DeviceType` - Type of device used
+- `Demographics` - List of demographic metrics
+- `CalculateEngagementScore()` - Calculates engagement score (0-100)
+- `IsHighPerforming()` - Determines if metrics show strong performance
+
+### Usage Examples
+
+```csharp
+// Create analytics metrics for a video
+var analyticsMetric = new AnalyticsMetric
+{
+    Id = Guid.NewGuid(),
+    VideoId = video.Id,
+    ViewCount = 15000,
+    LikeCount = 1200,
+    CommentCount = 85,
+    ShareCount = 245,
+    SubscriberGainedCount = 450,
+    SubscriberLostCount = 25,
+    AverageViewDurationSeconds = 45.5,
+    EngagementRatePercent = 9.2,
+    ClickThroughRatePercent = 3.8,
+    Period = MetricsPeriod.Daily,
+    CollectedAt = DateTime.UtcNow,
+    TrafficSource = "YouTube Search",
+    DeviceType = "Mobile",
+    Demographics = new List<DemographicMetric>
+    {
+        new DemographicMetric { AgeGroup = "18-24", Gender = "Male", ViewCount = 6500 },
+        new DemographicMetric { AgeGroup = "25-34", Gender = "Female", ViewCount = 5200 },
+        new DemographicMetric { AgeGroup = "18-24", Gender = "Female", ViewCount = 3300 }
+    }
+};
+
+// Calculate engagement score
+var engagementScore = analyticsMetric.CalculateEngagementScore();
+Console.WriteLine($"Engagement score: {engagementScore:F2}");
+
+// Check if high performing
+var isHighPerforming = analyticsMetric.IsHighPerforming();
+Console.WriteLine($"High performing: {isHighPerforming}");
+
+// Calculate retention rate
+var retentionRate = analyticsMetric.CalculateRetentionRate();
+Console.WriteLine($"Retention rate: {retentionRate:F1}%");
+
+// Get primary demographic
+var primaryDemographic = analyticsMetric.GetPrimaryDemographic();
+Console.WriteLine($"Primary demographic: {primaryDemographic?.AgeGroup} {primaryDemographic?.Gender}");
+```
+
 ## IGoogleApiClient
 
 `IGoogleApiClient` is an interface for interacting with the YouTube API, providing methods for uploading videos, retrieving video analytics, updating video metadata, and listing available YouTube channels. It abstracts YouTube-specific operations and provides strongly-typed models for video analytics data.
