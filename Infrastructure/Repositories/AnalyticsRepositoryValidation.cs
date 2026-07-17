@@ -3,7 +3,7 @@
 // CTO & Software Architect
 //
 // Validation helpers for AnalyticsRepository to ensure repository operations receive valid parameters
-// =============================================================================
+// ===========================================================================
 
 using System.Globalization;
 using YouTubeShortsAutomator.Domain.Models;
@@ -25,11 +25,6 @@ public static class AnalyticsRepositoryValidation
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        // AnalyticsRepository inherits from Repository<TEntity>
-        // The base Repository class requires context and logger in its constructor
-        // We can't directly validate the protected fields, but we can verify the instance is not null
-        // which is the primary validation concern for repository instances
-
         return Array.Empty<string>();
     }
 
@@ -39,9 +34,7 @@ public static class AnalyticsRepositoryValidation
     /// <param name="value">The AnalyticsRepository instance to check</param>
     /// <returns>True if valid, false otherwise</returns>
     public static bool IsValid(this AnalyticsRepository? value)
-    {
-        return Validate(value).Count == 0;
-    }
+        => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures an AnalyticsRepository instance is valid, throwing ArgumentException if not
@@ -66,6 +59,7 @@ public static class AnalyticsRepositoryValidation
     /// </summary>
     /// <param name="videoId">The video ID to query by</param>
     /// <returns>List of validation error messages, empty if valid</returns>
+    /// <exception cref="ArgumentException">Thrown if videoId is empty</exception>
     public static IReadOnlyList<string> ValidateAnalyticsVideoId(this Guid videoId)
     {
         var errors = new List<string>();
@@ -83,7 +77,8 @@ public static class AnalyticsRepositoryValidation
     /// </summary>
     /// <param name="period">The metrics period to filter by</param>
     /// <returns>List of validation error messages, empty if valid</returns>
-    public static IReadOnlyList<string> Validate(this MetricsPeriod period)
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if period is not a defined enum value</exception>
+    public static IReadOnlyList<string> ValidateAnalyticsMetricsPeriod(this MetricsPeriod period)
     {
         // All MetricsPeriod enum values are valid by design
         // No validation needed beyond null check (which is handled by the enum type itself)
@@ -96,6 +91,7 @@ public static class AnalyticsRepositoryValidation
     /// <param name="videoId">The video ID to query by</param>
     /// <param name="daysBack">Number of days to look back</param>
     /// <returns>List of validation error messages, empty if valid</returns>
+    /// <exception cref="ArgumentException">Thrown if videoId is empty or daysBack is invalid</exception>
     public static IReadOnlyList<string> ValidateAnalyticsRecentMetrics(this Guid videoId, int daysBack)
     {
         var errors = new List<string>();
@@ -122,7 +118,8 @@ public static class AnalyticsRepositoryValidation
     /// </summary>
     /// <param name="limit">Maximum number of metrics to return</param>
     /// <returns>List of validation error messages, empty if valid</returns>
-    public static IReadOnlyList<string> Validate(this int limit)
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if limit is less than or equal to zero or exceeds maximum</exception>
+    public static IReadOnlyList<string> ValidateAnalyticsMetricsLimit(this int limit)
     {
         var errors = new List<string>();
 
@@ -144,7 +141,8 @@ public static class AnalyticsRepositoryValidation
     /// <param name="pageNumber">The page number (1-based)</param>
     /// <param name="pageSize">Number of items per page</param>
     /// <returns>List of validation error messages, empty if valid</returns>
-    public static IReadOnlyList<string> Validate(this int pageNumber, int pageSize)
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if pageNumber is less than 1 or pageSize is invalid</exception>
+    public static IReadOnlyList<string> ValidateAnalyticsPaginated(this int pageNumber, int pageSize)
     {
         var errors = new List<string>();
 
@@ -170,6 +168,7 @@ public static class AnalyticsRepositoryValidation
     /// </summary>
     /// <param name="videoIds">List of video IDs to query by</param>
     /// <returns>List of validation error messages, empty if valid</returns>
+    /// <exception cref="ArgumentNullException">Thrown if videoIds is null</exception>
     public static IReadOnlyList<string> ValidateAnalyticsVideoViewCounts(this List<Guid> videoIds)
     {
         ArgumentNullException.ThrowIfNull(videoIds);
