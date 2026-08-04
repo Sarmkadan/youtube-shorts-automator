@@ -5,6 +5,10 @@
          their restore and build artifacts collide in a shared obj\/bin\ folder. -->
     <BaseIntermediateOutputPath>obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <BaseOutputPath>bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <!-- The SDK's default item excludes only cover the default bin\/obj\ roots.
+         With per-project output paths each project's globs would pick up the
+         sibling project's artifacts as content, snowballing bin\ on every build. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
