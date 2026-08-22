@@ -43,36 +43,28 @@ public static class AnalyticsControllerJsonExtensions
     /// Deserializes a JSON string to an AnalyticsController instance
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
-    /// <returns>An AnalyticsController instance, or null if deserialization fails</returns>
-    /// <exception cref="ArgumentException">Thrown when json is null or empty</exception>
+    /// <returns>An AnalyticsController instance, or null if the JSON represents a null value</returns>
+    /// <exception cref="ArgumentException">Thrown when json is null, empty, or consists only of white-space characters</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized to AnalyticsController</exception>
     public static AnalyticsController? FromJson(string json)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentException.ThrowIfNullOrWhiteSpace(json);
 
-        try
-        {
-            return JsonSerializer.Deserialize<AnalyticsController>(json, _jsonSerializerOptions);
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
+        return JsonSerializer.Deserialize<AnalyticsController>(json, _jsonSerializerOptions);
     }
 
     /// <summary>
     /// Attempts to deserialize a JSON string to an AnalyticsController instance
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
-    /// <param name="value">Receives the deserialized AnalyticsController instance if successful</param>
+    /// <param name="value">Receives the deserialized AnalyticsController instance if successful; otherwise, null</param>
     /// <returns>True if deserialization succeeds; otherwise, false</returns>
-    /// <exception cref="ArgumentException">Thrown when json is null or empty</exception>
+    /// <exception cref="ArgumentException">Thrown when json is null, empty, or consists only of white-space characters</exception>
     public static bool TryFromJson(string json, out AnalyticsController? value)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
-
         try
         {
-            value = JsonSerializer.Deserialize<AnalyticsController>(json, _jsonSerializerOptions);
+            value = FromJson(json);
             return true;
         }
         catch (JsonException)

@@ -88,6 +88,7 @@ public class AnalyticsController : ControllerBase
         try
         {
             if (days < 1 || days > 365)
+            return BadRequest("Days must be between 1 and 365");
                 return BadRequest("Days must be between 1 and 365");
 
             var cachedData = _cacheService.Get<AnalyticsSummaryResponse>($"analytics:summary:{days}days");
