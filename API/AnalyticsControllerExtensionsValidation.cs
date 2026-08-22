@@ -44,7 +44,7 @@ public static class AnalyticsControllerExtensionsValidation
     public static bool IsValid(this AnalyticsController value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return true; // AnalyticsController has no public properties to validate
+        return Validate(value).Count == 0;
     }
 
     /// <summary>
@@ -56,6 +56,13 @@ public static class AnalyticsControllerExtensionsValidation
     public static void EnsureValid(this AnalyticsController value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        // AnalyticsController has no public properties to validate
+
+        var problems = Validate(value);
+        if (problems.Count > 0)
+        {
+            throw new ArgumentException(
+                $"AnalyticsController is invalid: {string.Join("; ", problems)}",
+                nameof(value));
+        }
     }
 }
