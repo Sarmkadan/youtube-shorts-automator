@@ -471,8 +471,6 @@ public static class MetricsControllerValidation
     /// <exception cref="ArgumentException">Thrown when validation fails with a list of problems</exception>
     public static void EnsureValid(this SystemMetricsResponse value)
     {
-        ArgumentNullException.ThrowIfNull(value);
-
         var problems = Validate(value);
         if (problems.Count > 0)
         {
