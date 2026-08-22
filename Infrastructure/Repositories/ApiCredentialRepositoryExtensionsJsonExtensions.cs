@@ -31,13 +31,13 @@ public static class JsonExtensions
     /// <returns>A JSON string representation of the object.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
     public static string ToJson(this object? value, bool indented = false) =>
-        value is null
-            ? throw new ArgumentNullException(nameof(value))
-            : JsonSerializer.Serialize(
-                value,
-                indented
-                    ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
-                    : _jsonSerializerOptions);
+    value is null
+        ? throw new ArgumentNullException(nameof(value))
+        : JsonSerializer.Serialize(
+            value,
+            indented
+                ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
+                : _jsonSerializerOptions);
 
     /// <summary>
     /// Deserializes a JSON string to an object.
