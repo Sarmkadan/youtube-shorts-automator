@@ -193,13 +193,10 @@ public static class ProcessingControllerValidation
         string name,
         string code,
         string resolution,
-        string bitrate)
-    {
-        return Validate(
+        string bitrate) => Validate(
             file, title, description, processingProfile, processingId,
             status, message, progress, createdAtUtc, name, code, resolution, bitrate
         ).Count == 0;
-    }
 
     /// <summary>
     /// Ensures that the processing controller data is valid, throwing an exception if not
@@ -248,8 +245,8 @@ public static class ProcessingControllerValidation
     /// <summary>
     /// Checks if a status string is valid
     /// </summary>
-    private static bool IsValidStatus(string status)
-    {
-        return status is "Queued" or "Processing" or "Completed" or "Failed" or "Cancelled";
-    }
+    /// <param name="status">The status string to validate</param>
+    /// <returns>True if the status is valid; otherwise, false</returns>
+    private static bool IsValidStatus(string status) =>
+        status is "Queued" or "Processing" or "Completed" or "Failed" or "Cancelled";
 }
