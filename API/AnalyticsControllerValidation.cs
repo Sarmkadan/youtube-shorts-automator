@@ -29,7 +29,7 @@ public static class AnalyticsControllerValidation
         var problems = new List<string>();
 
         // Validate VideoId
-        if (value.VideoId == Guid.Empty)
+        if (value.VideoId == Guid.Empty || value.VideoId == null)
         {
             problems.Add("VideoId must be a non-empty GUID.");
         }
@@ -207,7 +207,7 @@ public static class AnalyticsControllerValidation
         var problems = new List<string>();
 
         // Validate VideoId
-        if (value.VideoId == Guid.Empty)
+        if (value.VideoId == Guid.Empty || value.VideoId == null)
         {
             problems.Add("VideoId must be a non-empty GUID.");
         }
