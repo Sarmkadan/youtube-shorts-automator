@@ -129,10 +129,7 @@ public static class SystemControllerValidation
     /// </summary>
     /// <param name="response">The response to check</param>
     /// <returns>True if valid; otherwise, false</returns>
-    public static bool IsValid(this HealthCheckResponse response)
-    {
-        return Validate(response).Count == 0;
-    }
+    public static bool IsValid(this HealthCheckResponse response) => Validate(response).Count == 0;
 
     /// <summary>
     /// Ensures that the specified HealthCheckResponse instance is valid, throwing an exception if not
