@@ -45,7 +45,7 @@ public static class JobStatusControllerJsonExtensions
     /// Note: This creates a new instance rather than modifying an existing one.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A JobStatusController instance populated from the JSON data.</returns>
+    /// <returns>A JobStatusController instance populated from the JSON data, or null if deserialization fails.</returns>
     /// <exception cref="ArgumentNullException">Thrown when json is null.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static JobStatusController? FromJson(string json)
