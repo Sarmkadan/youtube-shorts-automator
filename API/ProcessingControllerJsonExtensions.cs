@@ -25,7 +25,7 @@ public static class ProcessingControllerJsonExtensions
     /// Serializes a ProcessingController instance to JSON string
     /// </summary>
     /// <param name="value">The ProcessingController instance to serialize</param>
-    /// <param name="indented">Whether to format the JSON with indentation for readability</param>
+    /// <param name="indented">If true, formats the JSON with indentation for readability; otherwise uses compact format</param>
     /// <returns>A JSON string representation of the ProcessingController</returns>
     /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
     public static string ToJson(this ProcessingController value, bool indented = false)
