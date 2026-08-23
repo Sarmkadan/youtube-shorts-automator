@@ -91,7 +91,11 @@ public static class VideoUploadStartedEventExtensions
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        return Path.GetFileName(@event.FileName);
+        if (string.IsNullOrEmpty(@event.FileName))
+{
+    return string.Empty;
+}
+return Path.GetFileName(@event.FileName);
     }
 
     private static string FormatFileSize(long bytes)
