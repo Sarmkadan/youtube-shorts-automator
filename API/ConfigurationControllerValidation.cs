@@ -283,7 +283,7 @@ public static class ConfigurationControllerValidation
         {
             problems.Add("Uptime cannot be null or whitespace.");
         }
-        else if (!TimeSpan.TryParseExact(value.Uptime, (@"hh\:mm\:ss"), CultureInfo.InvariantCulture, out _))
+        else if (!TimeSpan.TryParseExact(value.Uptime, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out _))
         {
             problems.Add("Uptime must be in the format hh:mm:ss.");
         }
