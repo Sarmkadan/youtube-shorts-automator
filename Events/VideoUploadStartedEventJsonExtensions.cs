@@ -53,6 +53,12 @@ public static class VideoUploadStartedEventJsonExtensions
     /// <returns><see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.</returns>
     public static bool TryFromJson(string json, out VideoUploadStartedEvent? value)
     {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            value = null;
+            return false;
+        }
+
         try
         {
             value = FromJson(json);
