@@ -21,6 +21,11 @@ public static class VideoUploadStartedEventHandlerJsonExtensions
         PropertyNameCaseInsensitive = true,
     };
 
+    private static readonly JsonSerializerOptions _indentedJsonSerializerOptions = new(_jsonSerializerOptions)
+    {
+        WriteIndented = true
+    };
+
     /// <summary>
     /// Serializes the VideoUploadStartedEventHandler instance to a JSON string
     /// </summary>
@@ -31,12 +36,7 @@ public static class VideoUploadStartedEventHandlerJsonExtensions
     public static string ToJson(this VideoUploadStartedEventHandler value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
-
-        var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
-            : _jsonSerializerOptions;
-
-        return JsonSerializer.Serialize(value, options);
+        return JsonSerializer.Serialize(value, indented ? _indentedJsonSerializerOptions : _jsonSerializerOptions);
     }
 
     /// <summary>
