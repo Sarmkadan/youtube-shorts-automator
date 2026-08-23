@@ -11,6 +11,8 @@ namespace YouTubeShortsAutomator.Benchmarks;
 /// <summary>
 /// Provides JSON serialization/deserialization helpers for <see cref="CacheServiceBenchmarks"/>.
 /// </summary>
+/// <seealso cref="CacheServiceBenchmarks"/>
+
 public static class CacheServiceBenchmarksJsonExtensions
 {
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
