@@ -23,12 +23,9 @@ namespace YouTubeShortsAutomator.API
         public static string ToJson(this ConfigurationController value, bool indented = false)
         {
             ArgumentNullException.ThrowIfNull(value);
-
-            var options = indented
+            return JsonSerializer.Serialize(value, indented
                 ? new JsonSerializerOptions(JsonOptions) { WriteIndented = true }
-                : JsonOptions;
-
-            return JsonSerializer.Serialize(value, options);
+                : JsonOptions);
         }
 
         /// <summary>
@@ -41,7 +38,6 @@ namespace YouTubeShortsAutomator.API
         public static ConfigurationController? FromJson(string json)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(json);
-
             return JsonSerializer.Deserialize<ConfigurationController>(json, JsonOptions);
         }
 
@@ -59,6 +55,11 @@ namespace YouTubeShortsAutomator.API
                 return true;
             }
             catch (JsonException)
+            {
+                value = null;
+                return false;
+            }
+            catch (ArgumentException)
             {
                 value = null;
                 return false;
