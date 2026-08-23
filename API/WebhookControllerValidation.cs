@@ -177,30 +177,24 @@ public static class WebhookControllerValidation
     /// </summary>
     /// <param name="value">The webhook registration to check</param>
     /// <returns>True if valid; otherwise false</returns>
-    public static bool IsValid(this WebhookRegistration value)
-    {
-        return value.Validate().Count == 0;
-    }
+    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    public static bool IsValid(this WebhookRegistration value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Determines whether a WebhookDetails instance is valid
     /// </summary>
     /// <param name="value">The webhook details to check</param>
     /// <returns>True if valid; otherwise false</returns>
-    public static bool IsValid(this WebhookDetails value)
-    {
-        return value.Validate().Count == 0;
-    }
+    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    public static bool IsValid(this WebhookDetails value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Determines whether a WebhookListItem instance is valid
     /// </summary>
     /// <param name="value">The webhook list item to check</param>
     /// <returns>True if valid; otherwise false</returns>
-    public static bool IsValid(this WebhookListItem value)
-    {
-        return value.Validate().Count == 0;
-    }
+    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    public static bool IsValid(this WebhookListItem value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that a WebhookRegistration instance is valid, throwing an exception if not
