@@ -157,7 +157,7 @@ public static class EncodingUtilityBenchmarksValidation
 
     /// <summary>
     /// Determines whether the specified <see cref="EncodingUtilityBenchmarks"/> instance is valid.
-    /// </nsummary>
+    /// </summary>
     /// <param name="value">The benchmark instance to check.</param>
     /// <returns>True if valid; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
