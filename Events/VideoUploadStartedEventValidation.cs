@@ -74,10 +74,7 @@ public static class VideoUploadStartedEventValidation
     /// <param name="value">The event to check.</param>
     /// <returns>True if the event is valid; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static bool IsValid(this VideoUploadStartedEvent value)
-    {
-        return value.Validate().Count == 0;
-    }
+    public static bool IsValid(this VideoUploadStartedEvent value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the specified <see cref="VideoUploadStartedEvent"/> is valid.
