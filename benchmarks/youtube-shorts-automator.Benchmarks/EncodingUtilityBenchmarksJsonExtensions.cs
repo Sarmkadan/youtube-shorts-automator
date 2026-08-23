@@ -56,7 +56,8 @@ public static class EncodingUtilityBenchmarksJsonExtensions
     /// Deserializes a JSON string into a <see cref="EncodingUtilityBenchmarks"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized benchmark instance, or null if the JSON is empty.</returns>
+    /// <returns>The deserialized benchmark instance.</returns>
+/// <remarks>The input JSON string must not be null or empty - see <see cref="ArgumentException"/> thrown by <c>ArgumentException.ThrowIfNullOrEmpty</c>.</remarks>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static EncodingUtilityBenchmarks? FromJson(string json)
@@ -72,6 +73,7 @@ public static class EncodingUtilityBenchmarksJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized benchmark instance if successful.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
     public static bool TryFromJson(string json, out EncodingUtilityBenchmarks? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
