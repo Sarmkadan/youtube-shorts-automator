@@ -33,12 +33,8 @@ public static class ValidationUtilityBenchmarksJsonExtensions
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the benchmark instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
-    public static string ToJson(this ValidationUtilityBenchmarks value, bool indented = false)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        return JsonSerializer.Serialize(value, indented ? _jsonOptionsIndented : _jsonOptions);
-    }
+    public static string ToJson(this ValidationUtilityBenchmarks value, bool indented = false) =>
+        JsonSerializer.Serialize(value, indented ? _jsonOptionsIndented : _jsonOptions);
 
     /// <summary>
     /// Deserializes a JSON string into a <see cref="ValidationUtilityBenchmarks"/> instance.
@@ -66,7 +62,7 @@ public static class ValidationUtilityBenchmarksJsonExtensions
         try
         {
             value = JsonSerializer.Deserialize<ValidationUtilityBenchmarks>(json, _jsonOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
         {
