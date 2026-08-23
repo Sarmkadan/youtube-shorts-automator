@@ -19,20 +19,15 @@ public static class VideoUploadStartedEventHandlerValidation
 {
     /// <summary>
     /// Validates the specified <see cref="VideoUploadStartedEventHandler"/> instance.
+    /// Since the handler is a stateless service with injected dependencies, validation only checks for null.
     /// </summary>
     /// <param name="value">The handler instance to validate.</param>
-    /// <returns>A list of validation problems; empty if the handler is valid.</returns>
+    /// <returns>An empty list if the handler is valid (non-null).</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static IReadOnlyList<string> Validate(this VideoUploadStartedEventHandler value)
     {
         ArgumentNullException.ThrowIfNull(value);
-
-        var problems = new List<string>();
-
-        // VideoUploadStartedEventHandler is a stateless service with injected dependencies
-        // No additional validation needed beyond null check
-
-        return problems.AsReadOnly();
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -41,10 +36,7 @@ public static class VideoUploadStartedEventHandlerValidation
     /// <param name="value">The handler instance to check.</param>
     /// <returns>True if the handler is valid; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static bool IsValid(this VideoUploadStartedEventHandler value)
-    {
-        return value.Validate().Count == 0;
-    }
+    public static bool IsValid(this VideoUploadStartedEventHandler value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the specified <see cref="VideoUploadStartedEventHandler"/> is valid.
