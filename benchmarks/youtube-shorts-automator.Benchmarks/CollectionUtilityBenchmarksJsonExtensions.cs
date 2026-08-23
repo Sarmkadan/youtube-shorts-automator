@@ -40,7 +40,8 @@ public static class CollectionUtilityBenchmarksJsonExtensions
     /// Deserializes a JSON string to a <see cref="CollectionUtilityBenchmarks"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized benchmark instance, or null if the JSON is empty or whitespace.</returns>
+    /// <returns>The deserialized benchmark instance, or null if <paramref name="json"/> is whitespace.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static CollectionUtilityBenchmarks? FromJson(string json)
     {
@@ -58,13 +59,19 @@ public static class CollectionUtilityBenchmarksJsonExtensions
     /// Attempts to deserialize a JSON string to a <see cref="CollectionUtilityBenchmarks"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized benchmark instance if successful.</param>
+    /// <param name="value">Receives the deserialized benchmark instance if successful; otherwise, null.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
     public static bool TryFromJson(string json, out CollectionUtilityBenchmarks? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
 
         value = null;
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return false;
+        }
 
         try
         {
