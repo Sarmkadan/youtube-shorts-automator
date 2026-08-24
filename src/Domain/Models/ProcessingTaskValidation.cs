@@ -55,7 +55,7 @@ public static class ProcessingTaskValidation
         }
 
         // Validate StartedAt (must not be default DateTime)
-        if (value.StartedAt == default)
+        if (value.StartedAt == default(DateTime))
         {
             errors.Add("StartedAt cannot be the default DateTime value.");
         }
@@ -194,7 +194,7 @@ public static class ProcessingTaskValidation
         // Validate that if Status is Processing, StartedAt should be set
         if (value.Status == ProcessingStatus.Processing)
         {
-            if (value.StartedAt == default)
+            if (value.StartedAt == default(DateTime))
             {
                 errors.Add("Processing tasks must have StartedAt set.");
             }
