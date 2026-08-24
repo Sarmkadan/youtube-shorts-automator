@@ -41,7 +41,7 @@ public static class OptimizationSuggestionJsonExtensions
     /// Deserializes a JSON string to an <see cref="OptimizationSuggestion"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>An <see cref="OptimizationSuggestion"/> instance, or <c>null</c> if the JSON is empty.</returns>
+    /// <returns>An <see cref="OptimizationSuggestion"/> instance, or <c>null</c> if the JSON is null or empty.</returns>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static OptimizationSuggestion? FromJson(string json)
     {
