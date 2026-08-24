@@ -35,7 +35,7 @@ public static class VideoShortJsonExtensions
     /// Deserializes a JSON string to a <see cref="VideoShort"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized <see cref="VideoShort"/> instance, or null if the JSON is empty.</returns>
+    /// <returns>The deserialized <see cref="VideoShort"/> instance, or null if the JSON is empty or contains only whitespace.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static VideoShort? FromJson(string json)
