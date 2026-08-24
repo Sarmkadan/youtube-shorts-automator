@@ -33,12 +33,8 @@ public static class CollectionUtilityBenchmarksExtensionsJsonExtensions
     /// <param name="indented">Whether to format the JSON with indentation.</param>
     /// <returns>A JSON string representation of the instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
-    public static string ToJson(this CollectionUtilityBenchmarksExtensions value, bool indented = false)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        return JsonSerializer.Serialize(value, indented ? _jsonOptionsIndented : _jsonOptions);
-    }
+    public static string ToJson(this CollectionUtilityBenchmarksExtensions value, bool indented = false) =>
+        value is null ? throw new ArgumentNullException(nameof(value)) : JsonSerializer.Serialize(value, indented ? _jsonOptionsIndented : _jsonOptions);
 
     /// <summary>
     /// Deserializes a JSON string to a <see cref="CollectionUtilityBenchmarksExtensions"/> instance.
