@@ -27,6 +27,7 @@ public static class YouTubeApiExceptionJsonExtensions
     /// <param name="indented">Whether to format the JSON with indentation.</param>
     /// <returns>A JSON string representation of the exception.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    /// <exception cref="JsonException">Thrown if serialization fails.</exception>
     public static string ToJson(this YouTubeApiException value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -42,13 +43,14 @@ public static class YouTubeApiExceptionJsonExtensions
     /// Deserializes a <see cref="YouTubeApiException"/> from a JSON string.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized exception, or null if the JSON is null or empty.</returns>
+    /// <returns>The deserialized exception, or null if the JSON is empty.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+    /// <exception cref="JsonException">Thrown if deserialization fails.</exception>
     public static YouTubeApiException? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
 
-        if (string.IsNullOrEmpty(json))
+        if (json.Length == 0)
         {
             return null;
         }
@@ -61,7 +63,7 @@ public static class YouTubeApiExceptionJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized exception if successful.</param>
-    /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <returns>True if deserialization succeeded; otherwise, false. Returns true and sets value to null if the JSON is empty.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out YouTubeApiException? value)
     {
@@ -69,7 +71,7 @@ public static class YouTubeApiExceptionJsonExtensions
 
         value = null;
 
-        if (string.IsNullOrEmpty(json))
+        if (json.Length == 0)
         {
             return true;
         }
