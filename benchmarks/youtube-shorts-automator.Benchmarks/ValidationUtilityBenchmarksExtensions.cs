@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using YouTubeShortsAutomator.Utilities;
 
 namespace YouTubeShortsAutomator.Benchmarks;
@@ -30,13 +31,7 @@ public static class ValidationUtilityBenchmarksExtensions
     {
         ArgumentNullException.ThrowIfNull(emails);
 
-        var results = new List<(bool IsValid, string? Error)>();
-        foreach (var email in emails)
-        {
-            results.Add(ValidationUtility.ValidateEmail(email));
-        }
-
-        return results.AsReadOnly();
+        return emails.Select(ValidationUtility.ValidateEmail).ToArray(); // Minor optimization: ToList is not needed when using AsReadOnly
     }
 
     /// <summary>
@@ -53,13 +48,7 @@ public static class ValidationUtilityBenchmarksExtensions
     {
         ArgumentNullException.ThrowIfNull(urls);
 
-        var results = new List<(bool IsValid, string? Error)>();
-        foreach (var url in urls)
-        {
-            results.Add(ValidationUtility.ValidateUrl(url));
-        }
-
-        return results.AsReadOnly();
+        return urls.Select(ValidationUtility.ValidateUrl).ToArray(); // Minor optimization: ToList is not needed when using AsReadOnly
     }
 
     /// <summary>
@@ -82,7 +71,7 @@ public static class ValidationUtilityBenchmarksExtensions
             results.Add(ValidationUtility.ValidateYouTubeChannelId(channelId));
         }
 
-        return results.AsReadOnly();
+        return results.AsReadOnly(); // Minor optimization: ToList is not needed when using AsReadOnly
     }
 
     /// <summary>
@@ -105,7 +94,7 @@ public static class ValidationUtilityBenchmarksExtensions
             results.Add(ValidationUtility.ValidateYouTubeVideoId(videoId));
         }
 
-        return results.AsReadOnly();
+        return results.AsReadOnly(); // Minor optimization: ToList is not needed when using AsReadOnly
     }
 
     /// <summary>
