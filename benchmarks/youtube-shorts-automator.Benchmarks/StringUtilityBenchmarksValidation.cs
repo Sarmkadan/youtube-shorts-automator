@@ -26,6 +26,7 @@ public static class StringUtilityBenchmarksValidation
     /// <param name="removeWhitespaceResult">The result of the RemoveWhitespace benchmark.</param>
     /// <param name="normalizeWhitespaceResult">The result of the NormalizeWhitespace benchmark.</param>
     /// <returns>A list of human-readable validation problems; empty if all results are valid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="truncateResult"/>, <paramref name="toCamelCaseResult"/>, <paramref name="toPascalCaseResult"/>, <paramref name="toSlugResult"/>, <paramref name="splitByLengthResult"/>, <paramref name="removeWhitespaceResult"/>, or <paramref name="normalizeWhitespaceResult"/> is <see langword="null"/>.</exception>
     public static IReadOnlyList<string> Validate(
         string truncateResult,
         string toCamelCaseResult,
@@ -35,24 +36,24 @@ public static class StringUtilityBenchmarksValidation
         string removeWhitespaceResult,
         string normalizeWhitespaceResult)
     {
+        ArgumentNullException.ThrowIfNull(truncateResult);
+        ArgumentNullException.ThrowIfNull(toCamelCaseResult);
+        ArgumentNullException.ThrowIfNull(toPascalCaseResult);
+        ArgumentNullException.ThrowIfNull(toSlugResult);
+        ArgumentNullException.ThrowIfNull(splitByLengthResult);
+        ArgumentNullException.ThrowIfNull(removeWhitespaceResult);
+        ArgumentNullException.ThrowIfNull(normalizeWhitespaceResult);
+
         var problems = new List<string>();
 
         // Validate Truncate result
-        if (truncateResult is null)
-        {
-            problems.Add("Truncate returned null");
-        }
-        else if (truncateResult.Length > 30)
+        if (truncateResult.Length > 30)
         {
             problems.Add("Truncate returned a string longer than 30 characters");
         }
 
         // Validate ToCamelCase result
-        if (toCamelCaseResult is null)
-        {
-            problems.Add("ToCamelCase returned null");
-        }
-        else if (toCamelCaseResult.Length == 0)
+        if (toCamelCaseResult.Length == 0)
         {
             problems.Add("ToCamelCase returned empty string");
         }
@@ -62,11 +63,7 @@ public static class StringUtilityBenchmarksValidation
         }
 
         // Validate ToPascalCase result
-        if (toPascalCaseResult is null)
-        {
-            problems.Add("ToPascalCase returned null");
-        }
-        else if (toPascalCaseResult.Length == 0)
+        if (toPascalCaseResult.Length == 0)
         {
             problems.Add("ToPascalCase returned empty string");
         }
@@ -76,11 +73,7 @@ public static class StringUtilityBenchmarksValidation
         }
 
         // Validate ToSlug result
-        if (toSlugResult is null)
-        {
-            problems.Add("ToSlug returned null");
-        }
-        else if (toSlugResult.Length == 0)
+        if (toSlugResult.Length == 0)
         {
             problems.Add("ToSlug returned empty string");
         }
@@ -90,11 +83,7 @@ public static class StringUtilityBenchmarksValidation
         }
 
         // Validate SplitByLength result
-        if (splitByLengthResult is null)
-        {
-            problems.Add("SplitByLength returned null");
-        }
-        else if (splitByLengthResult.Length == 0)
+        if (splitByLengthResult.Length == 0)
         {
             problems.Add("SplitByLength returned empty array");
         }
@@ -111,27 +100,27 @@ public static class StringUtilityBenchmarksValidation
         }
 
         // Validate RemoveWhitespace result
-        if (removeWhitespaceResult is null)
+        if (removeWhitespaceResult.Any(char.IsWhiteSpace))
         {
-            problems.Add("RemoveWhitespace returned null");
-        }
-        else if (removeWhitespaceResult.Contains(' '))
-        {
-            problems.Add("RemoveWhitespace result still contains spaces");
+            problems.Add("RemoveWhitespace result still contains whitespace");
         }
 
         // Validate NormalizeWhitespace result
-        if (normalizeWhitespaceResult is null)
-        {
-            problems.Add("NormalizeWhitespace returned null");
-        }
-        else if (normalizeWhitespaceResult.Length == 0)
+        if (normalizeWhitespaceResult.Length == 0)
         {
             problems.Add("NormalizeWhitespace returned empty string");
         }
-        else if (normalizeWhitespaceResult.Contains("  "))
+        else
         {
-            problems.Add("NormalizeWhitespace result contains consecutive spaces");
+            for (int i = 0; i < normalizeWhitespaceResult.Length - 1; i++)
+            {
+                if (char.IsWhiteSpace(normalizeWhitespaceResult[i]) &&
+                    char.IsWhiteSpace(normalizeWhitespaceResult[i + 1]))
+                {
+                    problems.Add("NormalizeWhitespace result contains consecutive whitespace");
+                    break;
+                }
+            }
         }
 
         return problems.AsReadOnly();
@@ -155,9 +144,8 @@ public static class StringUtilityBenchmarksValidation
         string toSlugResult,
         string[] splitByLengthResult,
         string removeWhitespaceResult,
-        string normalizeWhitespaceResult)
-    {
-        return Validate(
+        string normalizeWhitespaceResult) =>
+        Validate(
             truncateResult,
             toCamelCaseResult,
             toPascalCaseResult,
@@ -165,7 +153,6 @@ public static class StringUtilityBenchmarksValidation
             splitByLengthResult,
             removeWhitespaceResult,
             normalizeWhitespaceResult).Count == 0;
-    }
 
     /// <summary>
     /// Ensures that the benchmark results are valid.
@@ -177,6 +164,7 @@ public static class StringUtilityBenchmarksValidation
     /// <param name="splitByLengthResult">The result of the SplitByLength benchmark.</param>
     /// <param name="removeWhitespaceResult">The result of the RemoveWhitespace benchmark.</param>
     /// <param name="normalizeWhitespaceResult">The result of the NormalizeWhitespace benchmark.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="truncateResult"/>, <paramref name="toCamelCaseResult"/>, <paramref name="toPascalCaseResult"/>, <paramref name="toSlugResult"/>, <paramref name="splitByLengthResult"/>, <paramref name="removeWhitespaceResult"/>, or <paramref name="normalizeWhitespaceResult"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown if any result is invalid, containing a list of problems.</exception>
     public static void EnsureValid(
         string truncateResult,
@@ -187,6 +175,7 @@ public static class StringUtilityBenchmarksValidation
         string removeWhitespaceResult,
         string normalizeWhitespaceResult)
     {
+        // Validate will throw ArgumentNullException for null inputs
         var problems = Validate(
             truncateResult,
             toCamelCaseResult,
