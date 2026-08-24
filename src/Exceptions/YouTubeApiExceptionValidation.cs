@@ -30,7 +30,7 @@ public static class YouTubeApiExceptionValidation
             problems.Add("ChannelId is out of range.");
         }
 
-        if (string.IsNullOrEmpty(value.ApiErrorCode))
+        if (string.IsNullOrWhiteSpace(value.ApiErrorCode))
         {
             problems.Add("ApiErrorCode is null or empty.");
         }
