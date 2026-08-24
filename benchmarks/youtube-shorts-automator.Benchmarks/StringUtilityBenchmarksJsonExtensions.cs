@@ -27,6 +27,7 @@ public static class StringUtilityBenchmarksJsonExtensions
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="JsonException">Thrown if there is an error during serialization.</exception>
     public static string ToJson(this StringUtilityBenchmarks value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -43,7 +44,7 @@ public static class StringUtilityBenchmarksJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>The deserialized instance, or <see langword="null"/> if the JSON is empty or whitespace.</returns>
-    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is not empty or whitespace and is invalid or cannot be deserialized.</exception>
     public static StringUtilityBenchmarks? FromJson(string json)
     {
         if (string.IsNullOrWhiteSpace(json))
