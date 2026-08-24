@@ -61,16 +61,18 @@ public static class UploadExceptionJsonExtensions
 
         if (string.IsNullOrEmpty(json))
         {
-            return true;
+            value = null;
+            return false;
         }
 
         try
         {
             value = JsonSerializer.Deserialize<UploadException>(json, _jsonOptions);
-            return true;
+            return value != null;
         }
         catch (JsonException)
         {
+            value = null;
             return false;
         }
     }
