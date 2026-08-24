@@ -22,14 +22,14 @@ public static class VideoProcessingExceptionValidation
 
         var issues = new List<string>();
 
-        if (value.ProcessingTaskId is not null && string.IsNullOrEmpty(value.ProcessingTaskId))
+        if (value.ProcessingTaskId is not null && string.IsNullOrWhiteSpace(value.ProcessingTaskId))
         {
-            issues.Add("ProcessingTaskId must not be empty when provided.");
+            issues.Add("ProcessingTaskId must not be empty or whitespace when provided.");
         }
 
-        if (value.ErrorCode is not null && string.IsNullOrEmpty(value.ErrorCode))
+        if (value.ErrorCode is not null && string.IsNullOrWhiteSpace(value.ErrorCode))
         {
-            issues.Add("ErrorCode must not be empty when provided.");
+            issues.Add("ErrorCode must not be empty or whitespace when provided.");
         }
 
         return issues;
