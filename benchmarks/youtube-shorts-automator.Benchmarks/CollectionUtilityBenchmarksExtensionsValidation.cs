@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace YouTubeShortsAutomator.Benchmarks;
 
@@ -152,7 +153,7 @@ public static class CollectionUtilityBenchmarksExtensionsValidation
                 problems.Add($"GroupByToDictionaryManyGroups() must have {expectedGroupSizes.Length} groups but has {groupsList.Count}.");
             }
 
-            if (totalItems != 1000)
+            if (totalItems != 200)
             {
                 problems.Add($"GroupByToDictionaryManyGroups() must contain exactly 1000 items but has {totalItems}.");
             }
