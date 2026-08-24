@@ -26,12 +26,12 @@ namespace YouTubeShortAutomator.Exceptions
                 problems.Add("Message cannot be null or empty.");
 
             // UploadJobId must be positive if specified.
-            if (value.UploadJobId.HasValue && value.UploadJobId <= 0)
-                problems.Add($"UploadJobId must be greater than zero. Actual: {value.UploadJobId}.");
+            if (value.UploadJobId is { } jobId && jobId <= 0)
+                problems.Add($"UploadJobId must be greater than zero. Actual: {jobId}.");
 
             // VideoShortId must be positive if specified.
-            if (value.VideoShortId.HasValue && value.VideoShortId <= 0)
-                problems.Add($"VideoShortId must be greater than zero. Actual: {value.VideoShortId}.");
+            if (value.VideoShortId is { } videoId && videoId <= 0)
+                problems.Add($"VideoShortId must be greater than zero. Actual: {videoId}.");
 
             return problems;
         }
