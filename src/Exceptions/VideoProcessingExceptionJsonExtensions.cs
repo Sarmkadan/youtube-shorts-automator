@@ -24,18 +24,11 @@ public static class VideoProcessingExceptionJsonExtensions
     /// <param name="indented">If set to <c>true</c>, the JSON output will be indented.</param>
     /// <returns>A JSON representation of the exception.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <c>null</c>.</exception>
+    /// <exception cref="JsonException">Thrown when serialization fails due to invalid data.</exception>
     public static string ToJson(this VideoProcessingException value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = _options.PropertyNamingPolicy,
-            WriteIndented = indented
-        };
-        foreach (var converter in _options.Converters)
-        {
-            options.Converters.Add(converter);
-        }
+        var options = new JsonSerializerOptions(_options) { WriteIndented = indented };
         return JsonSerializer.Serialize(value, options);
     }
 
