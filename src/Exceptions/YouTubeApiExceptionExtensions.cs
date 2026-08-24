@@ -32,9 +32,9 @@ namespace YouTubeShortAutomator.Exceptions
         /// <returns>A formatted error description.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="exception"/> is <c>null</c>.</exception>
         public static string ToDetailedMessage(this YouTubeApiException exception) =>
-            $"YouTube API error (ChannelId: {exception.ChannelId?.ToString(CultureInfo.InvariantCulture) ?? "N/A"}, " +
+            $"YouTube API error (ChannelId: {(exception.ChannelId.HasValue ? exception.ChannelId.Value.ToString(CultureInfo.InvariantCulture) : "N/A")}, " +
             $"ApiErrorCode: {exception.ApiErrorCode ?? "N/A"}, " +
-            $"HttpStatusCode: {exception.HttpStatusCode?.ToString(CultureInfo.InvariantCulture) ?? "N/A"}): " +
+            $"HttpStatusCode: {(exception.HttpStatusCode.HasValue ? ((int)exception.HttpStatusCode.Value).ToString(CultureInfo.InvariantCulture) : "N/A")}): " +
             $"{exception.Message}";
 
         /// <summary>
