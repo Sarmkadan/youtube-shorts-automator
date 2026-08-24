@@ -13,7 +13,7 @@ public static class ValidationExceptionValidation
 
         var problems = new List<string>();
 
-        if (string.IsNullOrEmpty(value.FieldName))
+        if (string.IsNullOrWhiteSpace(value.FieldName))
         {
             problems.Add("Field name is null or empty.");
         }
