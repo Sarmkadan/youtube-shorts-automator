@@ -22,7 +22,7 @@ public static class ValidationExceptionJsonExtensions
     /// <param name="indented">Whether to indent the JSON output.</param>
     /// <returns>The JSON string representation of the ValidationException.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
-    public static string ToJson(this ValidationException value, bool indented = false)
+    public static string ToJson(this ValidationException value, bool indented = false, bool serializeNullValues = false)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -35,7 +35,7 @@ public static class ValidationExceptionJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>The deserialized ValidationException, or null if deserialization fails.</returns>
-    public static ValidationException? FromJson(string json)
+    public static ValidationException? FromJson(string json, JsonSerializerOptions? options = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
 
@@ -55,7 +55,7 @@ public static class ValidationExceptionJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">The deserialized ValidationException, or null if deserialization fails.</param>
     /// <returns>True if deserialization succeeds, false otherwise.</returns>
-    public static bool TryFromJson(string json, out ValidationException? value)
+    public static bool TryFromJson(string json, out ValidationException? value, JsonSerializerOptions? options = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
 
