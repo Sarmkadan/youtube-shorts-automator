@@ -41,14 +41,9 @@ public static class YoutubeShortsAutomatorExceptionJsonExtensions
     /// <returns>The deserialized exception, or null if the JSON is null or empty.</returns>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static YoutubeShortsAutomatorException? FromJson(string json)
-    {
-        if (string.IsNullOrEmpty(json))
-        {
-            return null;
-        }
-
-        return JsonSerializer.Deserialize<YoutubeShortsAutomatorException>(json, _jsonOptions);
-    }
+        => string.IsNullOrEmpty(json)
+            ? null
+            : JsonSerializer.Deserialize<YoutubeShortsAutomatorException>(json, _jsonOptions);
 
     /// <summary>
     /// Attempts to deserialize a JSON string to a <see cref="YoutubeShortsAutomatorException"/>.
