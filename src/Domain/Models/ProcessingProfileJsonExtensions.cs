@@ -21,6 +21,15 @@ public static class ProcessingProfileJsonExtensions
     };
 
     /// <summary>
+    /// Cached <see cref="JsonSerializerOptions"/> configured for camelCase property naming and indented output.
+    /// </summary>
+    private static readonly JsonSerializerOptions _indentedOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
+
+    /// <summary>
     /// Serializes the specified <see cref="ProcessingProfile"/> to a JSON string.
     /// </summary>
     /// <param name="value">The processing profile to serialize.</param>
@@ -30,8 +39,7 @@ public static class ProcessingProfileJsonExtensions
     public static string ToJson(this ProcessingProfile value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
-        _options.WriteIndented = indented;
-        return JsonSerializer.Serialize(value, _options);
+        return JsonSerializer.Serialize(value, indented ? _indentedOptions : _options);
     }
 
     /// <summary>
