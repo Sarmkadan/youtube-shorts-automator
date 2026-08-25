@@ -23,74 +23,37 @@ public static class ProcessingProfileValidation
         var errors = new List<string>();
 
         // Validate Name
-        if (string.IsNullOrWhiteSpace(value.Name))
-        {
-            errors.Add("Name cannot be null or whitespace.");
-        }
-        else if (value.Name.Length > 100)
-        {
-            errors.Add("Name length must not exceed 100 characters.");
-        }
+        ValidateString(value.Name, nameof(value.Name), 100, errors);
 
         // Validate Description (optional, no specific constraints)
-        if (value.Description is not null && value.Description.Length > 500)
-        {
-            errors.Add("Description length must not exceed 500 characters.");
-        }
+        ValidateString(value.Description, nameof(value.Description), 500, errors);
 
         // Validate VideoWidth
-        if (value.VideoWidth < 360 || value.VideoWidth > 1920)
-        {
-            errors.Add("VideoWidth must be between 360 and 1920 pixels inclusive.");
-        }
+        ValidateRange(value.VideoWidth, nameof(value.VideoWidth), 360, 1920, errors);
 
         // Validate VideoHeight
-        if (value.VideoHeight < 640 || value.VideoHeight > 1920)
-        {
-            errors.Add("VideoHeight must be between 640 and 1920 pixels inclusive.");
-        }
+        ValidateRange(value.VideoHeight, nameof(value.VideoHeight), 640, 1920, errors);
 
         // Validate VideoBitrate
-        if (value.VideoBitrate < 500 || value.VideoBitrate > 20000)
-        {
-            errors.Add("VideoBitrate must be between 500 and 20000 kbps inclusive.");
-        }
+        ValidateRange(value.VideoBitrate, nameof(value.VideoBitrate), 500, 20000, errors);
 
         // Validate AudioBitrate
-        if (value.AudioBitrate < 64 || value.AudioBitrate > 320)
-        {
-            errors.Add("AudioBitrate must be between 64 and 320 kbps inclusive.");
-        }
+        ValidateRange(value.AudioBitrate, nameof(value.AudioBitrate), 64, 320, errors);
 
         // Validate FrameRate
-        if (value.FrameRate < 24 || value.FrameRate > 60)
-        {
-            errors.Add("FrameRate must be between 24 and 60 frames per second inclusive.");
-        }
+        ValidateRange(value.FrameRate, nameof(value.FrameRate), 24, 60, errors);
 
         // Validate VideoCodec
-        if (string.IsNullOrWhiteSpace(value.VideoCodec))
-        {
-            errors.Add("VideoCodec cannot be null or whitespace.");
-        }
+        ValidateString(value.VideoCodec, nameof(value.VideoCodec), null, errors);
 
         // Validate AudioCodec
-        if (string.IsNullOrWhiteSpace(value.AudioCodec))
-        {
-            errors.Add("AudioCodec cannot be null or whitespace.");
-        }
+        ValidateString(value.AudioCodec, nameof(value.AudioCodec), null, errors);
 
         // Validate Container
-        if (string.IsNullOrWhiteSpace(value.Container))
-        {
-            errors.Add("Container cannot be null or whitespace.");
-        }
+        ValidateString(value.Container, nameof(value.Container), null, errors);
 
         // Validate CompressionLevel
-        if (value.CompressionLevel < 0 || value.CompressionLevel > 10)
-        {
-            errors.Add("CompressionLevel must be between 0 and 10 inclusive.");
-        }
+        ValidateRange(value.CompressionLevel, nameof(value.CompressionLevel), 0, 10, errors);
 
         // Validate CreatedAt (must not be default)
         if (value.CreatedAt == default)
@@ -147,6 +110,26 @@ public static class ProcessingProfileValidation
             throw new ArgumentException(
                 $"ProcessingProfile is invalid. Errors: {string.Join(" ", errors)}",
                 nameof(value));
+        }
+    }
+
+    private static void ValidateString(string? value, string paramName, int? maxLength, List<string> errors)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            errors.Add($"{paramName} cannot be null or whitespace.");
+        }
+        else if (maxLength.HasValue && value.Length > maxLength.Value)
+        {
+            errors.Add($"{paramName} length must not exceed {maxLength.Value} characters.");
+        }
+    }
+
+    private static void ValidateRange(int value, string paramName, int min, int max, List<string> errors)
+    {
+        if (value < min || value > max)
+        {
+            errors.Add($"{paramName} must be between {min} and {max} inclusive.");
         }
     }
 }
