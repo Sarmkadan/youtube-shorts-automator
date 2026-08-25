@@ -88,7 +88,7 @@ public static class UploadJobExtensions
     /// Gets the estimated completion time based on current progress and upload speed.
     /// </summary>
     /// <param name="job">The upload job.</param>
-    /// <returns>The estimated completion time, or null if the upload hasn't started or speed cannot be determined.</returns>
+    /// <returns>The estimated completion time, or null if the upload hasn't started, is already completed, or speed cannot be determined.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="job"/> is null.</exception>
     public static DateTime? GetEstimatedCompletionTime(this UploadJob job)
     {
