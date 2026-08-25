@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace YouTubeShortAutomator.Domain.Models;
 
 /// <summary>
-/// Provides System.Text.Json serialization extensions for <see cref="ProcessingTaskExtensions"/> type marker.
+/// Provides System.Text.Json serialization extensions for objects.
 /// </summary>
 public static class ProcessingTaskExtensionsJsonExtensions
 {
