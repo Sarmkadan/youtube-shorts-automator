@@ -98,10 +98,7 @@ public static class UploadHistoryEntryValidation
     /// <param name="value">The upload history entry to check.</param>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static bool IsValid(this UploadHistoryEntry value)
-    {
-        return value.Validate().Count == 0;
-    }
+    public static bool IsValid(this UploadHistoryEntry value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the specified <see cref="UploadHistoryEntry"/> value is valid, throwing an <see cref="ArgumentException"/> if not.
@@ -121,30 +118,13 @@ public static class UploadHistoryEntryValidation
         }
     }
 
-    private static bool IsValidYouTubeVideoId(string videoId)
-    {
-        if (videoId.Length != 11)
-        {
-            return false;
-        }
+    private static bool IsValidYouTubeVideoId(string videoId) =>
+        videoId.Length == 11 && videoId.All(IsValidYouTubeVideoIdChar);
 
-        foreach (var c in videoId)
-        {
-            if (!IsValidYouTubeVideoIdChar(c))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static bool IsValidYouTubeVideoIdChar(char c)
-    {
-        return (c >= 'A' && c <= 'Z') ||
-               (c >= 'a' && c <= 'z') ||
-               (c >= '0' && c <= '9') ||
-               c == '_' ||
-               c == '-';
-    }
+    private static bool IsValidYouTubeVideoIdChar(char c) =>
+        (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z') ||
+        (c >= '0' && c <= '9') ||
+        c == '_' ||
+        c == '-';
 }
