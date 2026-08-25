@@ -135,3 +135,41 @@ string durationText = DateTimeUtility.FormatDuration(elapsed);
 var components = DateTimeUtility.FormatDurationComponents(elapsed);
 Console.WriteLine($"{components.Days}d {components.Hours}h {components.Minutes}m {components.Seconds}s");
 ```
+
+## ValidationUtility
+
+`ValidationUtility` provides a comprehensive set of static helper methods for validating common data types and formats, including emails, URLs, YouTube identifiers, video metadata, file paths, time spans, JSON strings, and schedule times. It simplifies input validation by returning structured results with clear success/failure indicators and optional error messages.
+
+### Usage Example
+
+```csharp
+// Validate contact and link information
+var (emailValid, emailError) = ValidationUtility.ValidateEmail("creator@example.com");
+var (urlValid, urlError) = ValidationUtility.ValidateUrl("https://youtube.com/channel/UCxxxxx");
+
+// Validate YouTube-specific identifiers
+var (channelIdValid, channelIdError) = ValidationUtility.ValidateYouTubeChannelId("UCxxxxxxxxxxxxxxxxxxxx");
+var (videoIdValid, videoIdError) = ValidationUtility.ValidateYouTubeVideoId("dQw4w9WgXcQ");
+
+// Validate video metadata
+var (titleValid, titleError) = ValidationUtility.ValidateVideoTitle("My Awesome Video");
+var (descValid, descError) = ValidationUtility.ValidateVideoDescription("A detailed description of the video...");
+var (tagsValid, tagsError) = ValidationUtility.ValidateVideoTags("vlog, tech, tutorial");
+
+// Validate video file path
+var (fileValid, fileError) = ValidationUtility.ValidateVideoFile("./videos/clip.mp4");
+
+// Check utility formats
+bool validTimeSpan = ValidationUtility.IsValidTimeSpan("00:30:00");
+bool validJson = ValidationUtility.IsValidJsonString("{\"key\": \"value\"}");
+
+// Validate a schedule time
+var (scheduleValid, scheduleError) = ValidationUtility.ValidateScheduleTime("14:30");
+```
+
+## Notes
+
+- **Null handling:** The validation methods treat `null` or missing required fields as validation failures and include appropriate messages in the returned list. `EnsureValid` will consequently throw.
+- **Thread safety:** All members are static and stateless; they do not modify shared mutable state. Consequently, they are safe to call concurrently from multiple threads.
+- **Extensibility:** If additional validation rules are required (e.g., format checks for API keys), they should be added inside the implementation of these methods so that `Validate`, `IsValid`, and `EnsureValid` remain consistent.
+- **Performance:** The methods perform only lightweight checks (e.g., string emptiness, length constraints). They are intended to be called before expensive operations such as database writes or external API calls.
