@@ -238,6 +238,54 @@ public class ContentCalendarApiExample
 }
 ```
 
+## VideoController
+
+`VideoController` is an ASP.NET Core Web API controller that exposes REST endpoints for managing videos throughout their lifecycle. It covers listing a user's videos, retrieving a single video, triggering processing, uploading new videos, reading analytics, checking background job status, and publishing finished videos. Every action returns a standard `IActionResult` response, delegating persistence and business rules to the injected services.
+
+### Usage Example
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using YouTubeShortsAutomator.Controllers;
+
+public class VideoApiExample
+{
+    private readonly VideoController _videoApi;
+
+    // In production MVC activates the controller via dependency injection;
+    // here it is resolved from a service provider so its actions can be called directly.
+    public VideoApiExample(IServiceProvider services)
+    {
+        _videoApi = services.GetRequiredService<VideoController>();
+    }
+
+    public async Task RunAsync()
+    {
+        // List all videos belonging to a user
+        IActionResult userVideos = await _videoApi.GetUserVideos(1);
+
+        // Read a single video back
+        IActionResult video = await _videoApi.GetVideo(42);
+
+        // Trigger processing for a video
+        IActionResult processed = await _videoApi.ProcessVideo(42);
+
+        // Upload a new video
+        IActionResult uploaded = await _videoApi.UploadVideo("./videos/clip.mp4");
+
+        // Read analytics for a video
+        IActionResult analytics = await _videoApi.GetAnalytics(42);
+
+        // Check the status of a background job
+        IActionResult jobStatus = await _videoApi.GetJobStatus(7);
+
+        // Publish the video once processing has completed
+        IActionResult published = await _videoApi.PublishVideo(42);
+    }
+}
+```
+
 ## Notes
 
 - **Null handling:** The validation methods treat `null` or missing required fields as validation failures and include appropriate messages in the returned list. `EnsureValid` will consequently throw.
