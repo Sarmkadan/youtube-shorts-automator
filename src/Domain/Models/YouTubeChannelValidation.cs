@@ -152,6 +152,7 @@ public static class YouTubeChannelValidation
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this YouTubeChannel value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return value.Validate().Count == 0;
     }
 
