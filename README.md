@@ -540,3 +540,56 @@ Console.WriteLine($"Enable audio normalization: {processingJobRequest.Options.En
 Console.WriteLine($"Requested by: {processingJobRequest.RequestedBy}");
 Console.WriteLine($"Created at UTC: {processingJobRequest.CreatedAtUtc}");
 ```
+
+## UploadSchedule
+
+`UploadSchedule` represents a recurring publishing plan that determines when videos should automatically be uploaded to YouTube. It supports daily, weekly, and monthly frequencies with an optional day-of-week or day-of-month target, a specific time of day, and a time zone identifier so uploads fire at the correct local time. The class tracks execution history through `LastExecutedAt`, `NextScheduledTime`, and `TotalExecutions`, and provides helpers to calculate the next occurrence, check whether the schedule is currently due, validate its configuration, record executions, and deactivate the schedule.
+
+### Usage Example
+
+```csharp
+// Create a weekly schedule that publishes every Monday at 09:00 Eastern Time
+var schedule = new UploadSchedule
+{
+    Id = Guid.NewGuid(),
+    UserId = Guid.Parse("123e4567-e89b-12d3-a456-426614174000"),
+    ScheduleName = "Monday Morning Shorts",
+    Frequency = ScheduleFrequency.Weekly,
+    DayOfWeek = DayOfWeek.Monday,
+    ScheduledTime = new TimeOnly(9, 0),
+    TimeZoneId = "America/New_York",
+    IsActive = true,
+    CreatedAt = DateTime.UtcNow,
+    TotalExecutions = 0,
+    ScheduledUploads = new List<ScheduledUpload>()
+};
+
+// Calculate and store when this schedule will next fire
+schedule.NextScheduledTime = schedule.CalculateNextScheduledTime();
+Console.WriteLine($"Next upload scheduled for: {schedule.NextScheduledTime:u}");
+
+// Check whether the schedule is due right now and execute it if so
+if (schedule.IsDueForExecution())
+{
+    Console.WriteLine(
+        $"Executing '{schedule.ScheduleName}' with {schedule.ScheduledUploads.Count} pending upload(s)");
+
+    schedule.RecordExecution();
+    schedule.NextScheduledTime = schedule.CalculateNextScheduledTime();
+}
+
+// Validate the schedule configuration
+var (isValid, errors) = schedule.Validate();
+if (!isValid)
+{
+    Console.WriteLine("Schedule validation failed:");
+    foreach (var error in errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Deactivate the schedule once it is no longer needed
+schedule.Deactivate();
+Console.WriteLine($"Schedule active: {schedule.IsActive}");
+```
