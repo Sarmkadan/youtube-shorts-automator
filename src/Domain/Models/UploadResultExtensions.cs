@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System.Globalization;
+
 namespace YouTubeShortAutomator.Domain.Models;
 
 /// <summary>
@@ -29,7 +31,7 @@ public static class UploadResultExtensions
     }
 
     /// <summary>
-    /// Determines whether the upload was completed within the expected time based on file size and average speed.
+    /// Determines whether the upload completed at or above the expected minimum upload speed.
     /// </summary>
     /// <param name="uploadResult">The upload result to check.</param>
     /// <param name="expectedSpeedMbPerSecond">The expected minimum upload speed in MB/s.</param>
@@ -91,7 +93,7 @@ public static class UploadResultExtensions
             report.AppendLine($"Video URL: {uploadResult.VideoUrl}");
             report.AppendLine($"File Size: {FormatFileSize(uploadResult.TotalBytes)}");
             report.AppendLine($"Uploaded: {FormatFileSize(uploadResult.UploadedBytes)}");
-            report.AppendLine($"Completion: {uploadResult.GetCompletionPercentage():F2}%");
+            report.AppendLine($"Completion: {uploadResult.GetCompletionPercentage().ToString("F2", CultureInfo.InvariantCulture)}%");
             report.AppendLine($"Duration: {uploadResult.GetDurationFormatted()}");
             report.AppendLine($"Average Speed: {uploadResult.GetUploadSpeedFormatted()}");
 
@@ -123,6 +125,6 @@ public static class UploadResultExtensions
             len /= 1024;
         }
 
-        return $"{len:F2} {sizes[order]}";
+        return $"{len.ToString("F2", CultureInfo.InvariantCulture)} {sizes[order]}";
     }
 }
