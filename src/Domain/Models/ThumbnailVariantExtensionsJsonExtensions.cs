@@ -40,9 +40,9 @@ public static class ThumbnailVariantExtensionsJsonExtensions
     /// Deserializes a JSON string to a <see cref="ThumbnailVariant"/> value.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized value, or null if the JSON is null or empty.</returns>
+    /// <returns>The deserialized value.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null.</exception>
-    /// <exception cref="JsonException">Thrown if the JSON is invalid or cannot be deserialized.</exception>
+    /// <exception cref="JsonException">Thrown if the JSON is empty or invalid.</exception>
     public static ThumbnailVariant? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
