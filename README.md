@@ -94,3 +94,44 @@ Guid secureId = EncodingUtility.GenerateSecureGuid();
 string safeHtml = EncodingUtility.HtmlEncode("<script>alert('x')</script>");
 string rawHtml = EncodingUtility.HtmlDecode(safeHtml);
 ```
+
+## DateTimeUtility
+
+`DateTimeUtility` provides static helpers for everyday date and time work, including UTC conversions, timestamp formatting (UTC, ISO 8601, and relative), and duration calculation and formatting. It also makes it easy to compute calendar boundaries such as the start and end of a day, week, or month, and to answer quick questions like whether a moment falls within business hours or whether a year is a leap year.
+
+### Usage Example
+
+```csharp
+var now = DateTime.Now;
+
+// Format dates
+string formatted = DateTimeUtility.FormatUtcDateTime(now);
+string iso = DateTimeUtility.FormatIsoDateTime(now);
+string relative = DateTimeUtility.FormatRelativeTime(now.AddMinutes(-10));
+
+// Convert between local time and UTC
+DateTime utc = DateTimeUtility.ConvertToUtc(now);
+DateTime local = DateTimeUtility.ConvertFromUtc(utc);
+
+// Business hours and calendar lookups
+bool duringBusinessHours = DateTimeUtility.IsWithinBusinessHours(now);
+int dayOfYear = DateTimeUtility.GetDayOfYear(now);
+int weekOfYear = DateTimeUtility.GetWeekOfYear(now);
+
+// Calendar boundaries
+DateTime dayStart = DateTimeUtility.GetStartOfDay(now);
+DateTime dayEnd = DateTimeUtility.GetEndOfDay(now);
+DateTime weekStart = DateTimeUtility.GetStartOfWeek(now);
+DateTime weekEnd = DateTimeUtility.GetEndOfWeek(now);
+DateTime monthStart = DateTimeUtility.GetStartOfMonth(now);
+DateTime monthEnd = DateTimeUtility.GetEndOfMonth(now);
+
+// Leap year check
+bool leapYear = DateTimeUtility.IsLeapYear(now.Year);
+
+// Durations
+TimeSpan elapsed = DateTimeUtility.CalculateDuration(dayStart, now);
+string durationText = DateTimeUtility.FormatDuration(elapsed);
+var components = DateTimeUtility.FormatDurationComponents(elapsed);
+Console.WriteLine($"{components.Days}d {components.Hours}h {components.Minutes}m {components.Seconds}s");
+```
