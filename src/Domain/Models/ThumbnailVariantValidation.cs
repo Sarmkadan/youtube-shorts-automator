@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace YouTubeShortAutomator.Domain.Models;
 
 /// <summary>
@@ -19,7 +17,7 @@ public static class ThumbnailVariantValidation
 
         var errors = new List<string>();
 
-        // Validate Id (must be positive for a valid entity)
+        // Validate Id (must be non-negative for a valid entity)
         if (value.Id < 0)
         {
             errors.Add("Id must be a non-negative integer.");
@@ -57,7 +55,7 @@ public static class ThumbnailVariantValidation
             errors.Add("ImpressionCount cannot be negative.");
         }
 
-        // Validate ClickCount (must not be negative, cannot exceed ImpressionCount)
+        // Validate ClickCount (must not be negative and cannot exceed ImpressionCount)
         if (value.ClickCount < 0)
         {
             errors.Add("ClickCount cannot be negative.");
@@ -72,9 +70,6 @@ public static class ThumbnailVariantValidation
         {
             errors.Add("ViewRate must be between 0 and 100 inclusive.");
         }
-
-        // Validate IsActive (no specific validation needed, just a boolean flag)
-        // Validate IsWinner (no specific validation needed, just a boolean flag)
 
         // Validate CreatedAt (must not be default DateTime)
         if (value.CreatedAt == default)
@@ -97,10 +92,7 @@ public static class ThumbnailVariantValidation
     /// <param name="value">The thumbnail variant to check.</param>
     /// <returns><see langword="true"/> if the thumbnail variant is valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
-    public static bool IsValid(this ThumbnailVariant value)
-    {
-        return value.Validate().Count == 0;
-    }
+    public static bool IsValid(this ThumbnailVariant value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the specified thumbnail variant is valid, throwing an <see cref="ArgumentException"/> if it is not.
