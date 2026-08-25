@@ -35,7 +35,8 @@ public static class VideoShortExtensions
     {
         ArgumentNullException.ThrowIfNull(videoShort);
 
-        return $"{videoShort.Duration.TotalMinutes:0}:{videoShort.Duration.Seconds:00}";
+        var totalSeconds = (int)videoShort.Duration.TotalSeconds;
+return $"{totalSeconds / 60:00}:{totalSeconds % 60:00}";
     }
 
     /// <summary>
@@ -131,7 +132,8 @@ public static class VideoShortExtensions
 
         // Base processing time is duration * 2 (real-time processing)
         // Add additional time based on file size (1 second per 5MB)
-        var baseTime = (int)Math.Ceiling(videoShort.Duration.TotalSeconds * 2);
+        const int RealTimeProcessingMultiplier = 2;
+var baseTime = (int)Math.Ceiling(videoShort.Duration.TotalSeconds * RealTimeProcessingMultiplier);
         var sizeFactor = videoShort.FileSizeBytes / (5.0 * 1024 * 1024);
         var totalTime = baseTime + (int)Math.Ceiling(sizeFactor);
 
