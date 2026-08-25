@@ -593,3 +593,80 @@ if (!isValid)
 schedule.Deactivate();
 Console.WriteLine($"Schedule active: {schedule.IsActive}");
 ```
+
+## ApiCredentialService
+
+`ApiCredentialService` manages the full lifecycle of OAuth and API credentials used to authenticate with external services such as the YouTube API. It provides asynchronous operations to retrieve the active credential for a user, create and update credentials, refresh expiring access tokens, validate credentials, and revoke them when access is no longer needed. Refresh failures are surfaced through domain exceptions such as `OAuthTokenExpiredException` and `CredentialException`, making it easy for callers to trigger re-authorization flows.
+
+### Members
+
+- `GetActiveCredentialAsync(userId)` - Returns the user's active, valid credential, refreshing it first if needed
+- `CreateCredentialAsync(userId, credential)` - Validates and persists a new credential for the user
+- `UpdateCredentialAsync(credential)` - Updates an existing credential's secrets and token data
+- `RefreshAccessTokenAsync(credentialId)` - Exchanges the refresh token for a new access token
+- `ValidateCredentialAsync(credentialId)` - Checks whether a credential is currently usable
+- `RevokeCredentialAsync(credentialId)` - Invalidates and revokes a credential
+- `GetByIdAsync(credentialId)` - Fetches a single credential by its identifier
+- `GetUserCredentialsAsync(userId)` - Lists all credentials registered for a user
+
+### Usage Example
+
+```csharp
+// Resolve the service from the application's dependency injection container
+var credentialService = serviceProvider.GetRequiredService<ApiCredentialService>();
+
+Guid userId = Guid.Parse("123e4567-e89b-12d3-a456-426614174000");
+
+// List every credential registered for the user
+List<ApiCredential> credentials = await credentialService.GetUserCredentialsAsync(userId);
+
+// Get the credential currently used for API calls
+ApiCredential? activeCredential = await credentialService.GetActiveCredentialAsync(userId);
+
+if (activeCredential is null)
+{
+    // No active credential yet - create one for the user's Google OAuth account
+    var newCredential = new ApiCredential
+    {
+        Id = Guid.NewGuid(),
+        UserId = userId,
+        CredentialType = ApiCredentialType.GoogleOAuth,
+        ClientId = "your-client-id.apps.googleusercontent.com",
+        ClientSecret = "your-client-secret",
+        AccessToken = "ya29.a0Ae4...",
+        RefreshToken = "1//09j8...",
+        AccessTokenExpiresAt = DateTime.UtcNow.AddHours(1),
+        Scope = "https://www.googleapis.com/auth/youtube.upload",
+        Status = CredentialStatus.Active,
+        IsValid = true,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+
+    activeCredential = await credentialService.CreateCredentialAsync(userId, newCredential);
+}
+else if (activeCredential.NeedsRefresh())
+{
+    // Refresh the access token before it expires
+    bool refreshed = await credentialService.RefreshAccessTokenAsync(activeCredential.Id);
+    Console.WriteLine($"Access token refreshed: {refreshed}");
+}
+
+// Verify the credential is still valid before performing API operations
+bool isValid = await credentialService.ValidateCredentialAsync(activeCredential.Id);
+Console.WriteLine($"Credential valid: {isValid}");
+
+// Persist rotated token values on the existing credential
+activeCredential.UpdateAccessToken("ya29.newToken...", DateTime.UtcNow.AddHours(1));
+ApiCredential updatedCredential = await credentialService.UpdateCredentialAsync(activeCredential);
+
+// Look up a credential directly by its identifier
+ApiCredential? fetchedCredential = await credentialService.GetByIdAsync(updatedCredential.Id);
+
+if (fetchedCredential is not null)
+{
+    // Disconnect the account by revoking the credential
+    bool revoked = await credentialService.RevokeCredentialAsync(fetchedCredential.Id);
+    Console.WriteLine($"Credential revoked: {revoked}");
+}
+```
