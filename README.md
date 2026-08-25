@@ -670,3 +670,29 @@ if (fetchedCredential is not null)
     Console.WriteLine($"Credential revoked: {revoked}");
 }
 ```
+
+## RateLimitingMiddleware
+
+`RateLimitingMiddleware` is an ASP.NET Core middleware component that throttles incoming HTTP requests using a fixed-window rate limiting strategy. It is configured through `RateLimitingOptions`, whose `RequestsPerWindow` and `WindowSizeSeconds` properties define how many requests are permitted per time window, while `RateLimitBucket` tracks the request count for the active window and exposes `AllowRequest()` to decide whether a request may proceed. When the limit for the current window is exhausted, the middleware's `InvokeAsync` entry point short-circuits the pipeline so excess requests never reach the downstream endpoints.
+
+### Usage Example
+
+```csharp
+// Program.cs - configure the rate limit and register the middleware
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton(new RateLimitingOptions
+{
+    RequestsPerWindow = 100, // maximum number of requests allowed...
+    WindowSizeSeconds = 60   // ...per 60 second window
+});
+
+var app = builder.Build();
+
+// Evaluate every incoming request against the rate limit bucket
+app.UseMiddleware<RateLimitingMiddleware>();
+
+app.MapGet("/api/videos", () => Results.Ok("list of videos"));
+
+app.Run();
+```
