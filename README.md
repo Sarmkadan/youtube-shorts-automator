@@ -167,6 +167,77 @@ bool validJson = ValidationUtility.IsValidJsonString("{\"key\": \"value\"}");
 var (scheduleValid, scheduleError) = ValidationUtility.ValidateScheduleTime("14:30");
 ```
 
+## ContentCalendarController
+
+`ContentCalendarController` is an ASP.NET Core Web API controller that exposes REST endpoints under `api/content-calendar` for managing the video publishing calendar. It covers the full entry lifecycle — creating, reading (by id, upcoming window, or UTC date range), updating, and deleting entries — as well as running the title/description optimisation engine, applying suggestions, scheduling entries for upload, and recommending high-engagement posting slots per channel. Every action delegates persistence and business rules to `IContentCalendarService` and returns a consistent JSON envelope (`success`, `data`/`message`).
+
+### Usage Example
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using YouTubeShortsAutomator.Controllers;
+using YouTubeShortAutomator.Domain.Models;
+using YouTubeShortAutomator.Services;
+
+public class ContentCalendarApiExample
+{
+    private readonly ContentCalendarController _calendarApi;
+
+    // In production MVC activates the controller via dependency injection;
+    // here it is constructed manually so its actions can be called directly.
+    public ContentCalendarApiExample(IContentCalendarService calendarService, ILogger<ContentCalendarController> logger)
+    {
+        _calendarApi = new ContentCalendarController(calendarService, logger);
+    }
+
+    public async Task RunAsync()
+    {
+        // Create a new calendar entry
+        IActionResult created = await _calendarApi.CreateEntry(new CreateCalendarEntryRequest
+        {
+            Title              = "Weekly dev vlog",
+            Description        = "Behind the scenes of our sprint demo.",
+            Tags               = ["devlog", "vlog"],
+            Category           = ContentCategory.Other,
+            ScheduledPublishAt = DateTime.UtcNow.AddDays(3),
+            YouTubeChannelId   = 1,
+            Notes              = "Confirm the thumbnail before publishing.",
+            Keywords           = ["dotnet", "shorts"]
+        });
+
+        // Read entries back
+        IActionResult entry    = await _calendarApi.GetEntry(entryId: 1);
+        IActionResult upcoming = await _calendarApi.GetUpcoming(daysAhead: 14);
+        IActionResult inRange  = await _calendarApi.GetInRange(
+            from: DateTime.UtcNow.AddDays(-7),
+            to:   DateTime.UtcNow.AddDays(7));
+
+        // Update metadata
+        IActionResult updated = await _calendarApi.UpdateEntry(entryId: 1, new UpdateCalendarEntryRequest
+        {
+            Title = "Weekly dev vlog — episode 2",
+            Tags  = ["devlog", "vlog", "dotnet"]
+        });
+
+        // Optimise title/description, then apply the best suggestion
+        await _calendarApi.OptimizeEntry(entryId: 1);
+        IActionResult optimised = await _calendarApi.ApplyOptimization(entryId: 1, suggestionIndex: 0);
+
+        // Schedule the entry for upload
+        IActionResult scheduled = await _calendarApi.ScheduleEntry(
+            entryId: 1,
+            new ScheduleEntryRequest { ScheduledAt = DateTime.UtcNow.AddDays(3) });
+
+        // Recommended posting slots for the channel
+        IActionResult slots = await _calendarApi.GetRecommendedSlots(channelId: 1, count: 5);
+
+        // Delete the entry when it is no longer needed
+        IActionResult deleted = await _calendarApi.DeleteEntry(entryId: 1);
+    }
+}
+```
+
 ## Notes
 
 - **Null handling:** The validation methods treat `null` or missing required fields as validation failures and include appropriate messages in the returned list. `EnsureValid` will consequently throw.
