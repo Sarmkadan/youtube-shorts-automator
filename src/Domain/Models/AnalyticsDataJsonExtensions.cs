@@ -27,7 +27,7 @@ public static class AnalyticsDataJsonExtensions
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the analytics data.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
-    public static string ToJson(this AnalyticsData value, bool indented = false)
+    public static string ToJson(this AnalyticsData value, bool indented = false, bool throwOnNull = true)
     {
         ArgumentNullException.ThrowIfNull(value);
 
