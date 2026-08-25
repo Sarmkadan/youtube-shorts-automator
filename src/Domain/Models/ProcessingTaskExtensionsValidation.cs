@@ -31,7 +31,7 @@ public static class ProcessingTaskExtensionsValidation
 
         // Validate GetCompletionPercentage result (must be in range [0, 100])
         var completionPercentage = value.GetCompletionPercentage();
-        if (completionPercentage < 0 || completionPercentage > 100)
+        if (completionPercentage < 0 || completionPercentage > 100 || double.IsNaN(completionPercentage) || double.IsInfinity(completionPercentage))
         {
             errors.Add($"GetCompletionPercentage returned {completionPercentage}, which is outside the valid range [0, 100].");
         }
@@ -65,6 +65,7 @@ public static class ProcessingTaskExtensionsValidation
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static bool IsValidExtension(this ProcessingTask value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return value.ValidateExtension().Count == 0;
     }
 
