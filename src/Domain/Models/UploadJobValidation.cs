@@ -154,10 +154,7 @@ public static class UploadJobValidation
     /// <param name="value">The upload job to check.</param>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static bool IsValid(this UploadJob value)
-    {
-        return value.Validate().Count == 0;
-    }
+    public static bool IsValid(this UploadJob value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the specified <see cref="UploadJob"/> instance is valid.
