@@ -122,7 +122,8 @@ public static class AnalyticsDataValidation
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this AnalyticsData value)
     {
-        return value.Validate().Count == 0;
+        ArgumentNullException.ThrowIfNull(value);
+        return !value.Validate().Any();
     }
 
     /// <summary>
