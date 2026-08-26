@@ -286,6 +286,53 @@ public class VideoApiExample
 }
 ```
 
+## HealthController
+
+`HealthController` is an ASP.NET Core Web API controller that exposes REST endpoints for monitoring the application's health and system status. It provides endpoints for checking overall status, system information, readiness, and liveness, returning detailed health data including database connectivity, configuration state, and version information.
+
+### Usage Example
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using YouTubeShortsAutomator.Controllers;
+
+public class HealthApiExample
+{
+    private readonly HealthController _healthApi;
+
+    public HealthApiExample(IServiceProvider services)
+    {
+        _healthApi = services.GetRequiredService<HealthController>();
+    }
+
+    public async Task RunAsync()
+    {
+        // Check overall health status
+        IActionResult status = await _healthApi.GetStatus();
+
+        // Retrieve detailed system information
+        IActionResult systemInfo = _healthApi.GetSystemInfo();
+
+        // Check application readiness
+        IActionResult readiness = await _healthApi.GetReadiness();
+
+        // Check application liveness
+        IActionResult liveness = _healthApi.GetLiveness();
+
+        // Access health data properties
+        string statusText = _healthApi.Status;
+        string dbStatus = _healthApi.Database;
+        string configStatus = _healthApi.Configuration;
+        List<string>? configErrors = _healthApi.ConfigurationErrors;
+        DateTime timestamp = _healthApi.Timestamp;
+        string version = _healthApi.Version;
+    }
+}
+```
+
 ## Notes
 
 - **Null handling:** The validation methods treat `null` or missing required fields as validation failures and include appropriate messages in the returned list. `EnsureValid` will consequently throw.
