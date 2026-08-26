@@ -333,6 +333,57 @@ public class HealthApiExample
 }
 ```
 
+## CsvExportFormatter
+
+`CsvExportFormatter` turns in-memory collections into CSV documents returned as encoded bytes, ready to be written to disk or streamed back from a Web API download endpoint. It can export selected or all properties of strongly-typed rows as well as raw dictionary rows, automatically escaping delimiters, quotes, and line breaks so values never corrupt the output. Lower-level helpers (`EscapeCsvField`, `BuildCsvHeaderRow`, `BuildCsvDataRow`) are also exposed for composing custom CSV documents field by field.
+
+### Usage Example
+
+```csharp
+using System.Collections.Generic;
+using YouTubeShortsAutomator.Formatters;
+
+public class CsvExportExample
+{
+    private sealed class VideoStat
+    {
+        public string Title { get; set; } = "";
+        public string Channel { get; set; } = "";
+        public int Views { get; set; }
+    }
+
+    public void Run()
+    {
+        var formatter = new CsvExportFormatter(); // defaults: ',' delimiter, UTF-8
+
+        var stats = new List<VideoStat>
+        {
+            new() { Title = "Sprint 42 demo", Channel = "devlog", Views = 12400 },
+            new() { Title = "Release notes, \"part 2\"", Channel = "devlog", Views = 8150 }
+        };
+
+        // Export only the columns you care about
+        byte[] summary = formatter.ExportToCsv(stats, new[] { nameof(VideoStat.Title), nameof(VideoStat.Views) });
+
+        // Or export every property of each row
+        byte[] full = formatter.ExportToCsvWithAllProperties(stats);
+
+        // Export untyped rows straight from a dynamic query result
+        var rows = new List<Dictionary<string, object>>
+        {
+            new() { ["Title"] = "Q&A shorts", ["Views"] = 450 },
+            new() { ["Title"] = "Behind the scenes", ["Views"] = 1205 }
+        };
+        byte[] dictionaryCsv = formatter.ExportDictionariesToCsv(rows, new[] { "Title", "Views" });
+
+        // Compose a CSV document manually with the low-level helpers
+        string header = formatter.BuildCsvHeaderRow(new[] { "Title", "Channel" });
+        string safeTitle = formatter.EscapeCsvField("Live coding, \"part 3\"");
+        string dataRow = formatter.BuildCsvDataRow(new object[] { safeTitle, "devlog" });
+    }
+}
+```
+
 ## Notes
 
 - **Null handling:** The validation methods treat `null` or missing required fields as validation failures and include appropriate messages in the returned list. `EnsureValid` will consequently throw.
