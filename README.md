@@ -384,6 +384,55 @@ public class CsvExportExample
 }
 ```
 
+## JsonResponseFormatter
+
+`JsonResponseFormatter` builds the consistent JSON envelopes returned by the API: success responses wrapping a typed payload with a message, structured error responses carrying an error code plus optional details, and paginated responses pairing a page of results with its `PaginationInfo` metadata. Beyond the envelopes, it also covers everyday JSON plumbing — serializing objects, deserializing them back into strongly-typed instances, and pretty-printing indented JSON for logs or debugging.
+
+### Usage Example
+
+```csharp
+using System.Collections.Generic;
+using YouTubeShortsAutomator.Formatters;
+
+public class JsonResponseExample
+{
+    private sealed class VideoSummary
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public int Views { get; set; }
+    }
+
+    public void Run()
+    {
+        var formatter = new JsonResponseFormatter();
+
+        var video = new VideoSummary { Id = 42, Title = "Sprint 42 demo", Views = 12400 };
+
+        // Wrap a payload in the standard success envelope
+        string success = formatter.FormatSuccessResponse(video, "Video loaded successfully");
+
+        // Return a structured error envelope
+        string error = formatter.FormatErrorResponse("VIDEO_NOT_FOUND", "No video exists with id 99");
+
+        // Wrap a page of results together with its pagination metadata
+        var videos = new List<VideoSummary>
+        {
+            new() { Id = 1, Title = "Q&A shorts", Views = 450 },
+            new() { Id = 2, Title = "Behind the scenes", Views = 1205 }
+        };
+        string paginated = formatter.FormatPaginatedResponse(videos, new PaginationInfo());
+
+        // Round-trip objects through JSON
+        string json = formatter.SerializeToJson(video);
+        VideoSummary? restored = formatter.DeserializeJson<VideoSummary>(json);
+
+        // Pretty-print JSON for humans
+        string indented = formatter.FormatIndentedJson(video);
+    }
+}
+```
+
 ## Notes
 
 - **Null handling:** The validation methods treat `null` or missing required fields as validation failures and include appropriate messages in the returned list. `EnsureValid` will consequently throw.
