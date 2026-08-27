@@ -440,6 +440,65 @@ public class JsonResponseExample
 - **Extensibility:** If additional validation rules are required (e.g., format checks for API keys), they should be added inside the implementation of these methods so that `Validate`, `IsValid`, and `EnsureValid` remain consistent.
 - **Performance:** The methods perform only lightweight checks (e.g., string emptiness, length constraints). They are intended to be called before expensive operations such as database writes or external API calls.
 
+## ICacheService
+
+`ICacheService` provides an in-memory caching mechanism with support for setting, getting, and removing cache entries, including pattern-based removal and expiration handling.
+
+### Usage Example
+
+```csharp
+using YouTubeShortsAutomator.Caching;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
+
+public class CacheExample
+{
+    private class UserDto
+    {
+        public string Name { get; set; } = "";
+        public int Age { get; set; }
+    }
+
+    private readonly ICacheService _cacheService;
+
+    public CacheExample(IServiceProvider services)
+    {
+        _cacheService = services.GetRequiredService<ICacheService>();
+    }
+
+    public async Task RunAsync()
+    {
+        // Set a value in the cache with a 30-second expiration
+        _cacheService.Set("user:123", new UserDto { Name = "John", Age = 30 }, TimeSpan.FromSeconds(30));
+
+        // Retrieve the value synchronously
+        var user = _cacheService.Get<UserDto>("user:123");
+        Console.WriteLine($"User: {user?.Name}, Age: {user?.Age}");
+
+        // Asynchronously retrieve the same value
+        var userAsync = await _cacheService.GetAsync<UserDto>("user:123");
+        Console.WriteLine($"Async User: {userAsync?.Name}");
+
+        // Check if a key exists
+        if (_cacheService.Exists("user:123"))
+        {
+            Console.WriteLine("Key exists in cache.");
+        }
+
+        // Remove a specific key
+        _cacheService.Remove("user:123");
+
+        // Remove all keys matching a pattern (e.g., all user keys)
+        _cacheService.Set("user:456", new UserDto { Name = "Jane" }, TimeSpan.FromMinutes(10));
+        _cacheService.Set("user:789", new UserDto { Name = "Bob" }, TimeSpan.FromMinutes(10));
+        _cacheService.RemoveByPattern("user:"); // Removes both user:456 and user:789
+
+        // Asynchronous removal
+        await _cacheService.RemoveAsync("user:999"); // Safe even if key doesn't exist
+    }
+}
+```
+
 ## ProcessingError
 
 `ProcessingError` represents an error that occurred during a video processing job, capturing details such as the error type, message, severity, and retry information. It is used to track and manage errors in the processing pipeline, including marking errors as resolved and tracking retry attempts.
