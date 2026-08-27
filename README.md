@@ -561,3 +561,47 @@ job.Complete();
 // Check final job status
 Console.WriteLine($"Job {job.Id} finished with status: {job.Status}");
 ```
+
+## Video
+
+`Video` represents a YouTube video in the automation system, containing metadata, processing status, and relationships to users, analytics, and upload results. It provides validation methods and state transition helpers for the video lifecycle.
+
+### Usage Example
+
+```csharp
+using YouTubeShortsAutomator.Domain.Models;
+using System;
+
+// Create a new video
+var video = new Video
+{
+    Id = Guid.NewGuid(),
+    Title = "My Awesome Short",
+    Description = "This is an amazing YouTube short about programming",
+    FilePath = "./videos/my-short.mp4",
+    Tags = new[] { "shorts", "programming", "tutorial" },
+    ThumbnailPath = "./thumbnails/my-short.jpg",
+    FileSizeBytes = 15_728_640, // 15MB
+    DurationSeconds = 58,
+    UserId = Guid.NewGuid(),
+    CreatedAt = DateTime.UtcNow
+};
+
+// Validate the video before processing
+var (isValid, errors) = video.Validate();
+if (!isValid)
+{
+    Console.WriteLine("Validation errors: " + string.Join(", ", errors));
+    return;
+}
+
+// Process the video
+video.MarkAsProcessed();
+
+// Upload the video
+video.MarkAsUploaded("dQw4w9WgXcQ");
+
+// Check final status
+Console.WriteLine($"Video status: {video.Status}");
+Console.WriteLine($"YouTube ID: {video.YouTubeVideoId}");
+```
