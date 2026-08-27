@@ -439,3 +439,54 @@ public class JsonResponseExample
 - **Thread safety:** All members are static and stateless; they do not modify shared mutable state. Consequently, they are safe to call concurrently from multiple threads.
 - **Extensibility:** If additional validation rules are required (e.g., format checks for API keys), they should be added inside the implementation of these methods so that `Validate`, `IsValid`, and `EnsureValid` remain consistent.
 - **Performance:** The methods perform only lightweight checks (e.g., string emptiness, length constraints). They are intended to be called before expensive operations such as database writes or external API calls.
+
+## User
+
+`User` represents a YouTube Shorts Automator account, storing profile information, subscription details, storage usage, and associated videos. It provides methods to validate user data, manage storage quota, and check subscription and upload eligibility.
+
+### Usage Example
+
+```csharp
+using YouTubeShortsAutomator.Domain.Models;
+
+// Create a new user
+var user = new User
+{
+    Id = Guid.NewGuid(),
+    Email = "creator@example.com",
+    DisplayName = "Awesome Creator",
+    ChannelId = "UCxxxxxxxxxxxxxxxxxxxx",
+    StorageQuotaBytes = 10L * 1024 * 1024 * 1024, // 10 GB
+    SubscriptionTier = UserSubscriptionTier.Pro,
+    SubscriptionExpiresAt = DateTime.UtcNow.AddDays(30),
+    CreatedAt = DateTime.UtcNow,
+    IsActive = true
+};
+
+// Validate user data
+var (isValid, errors) = user.Validate();
+if (!isValid)
+{
+    Console.WriteLine("Validation errors: " + string.Join(", ", errors));
+    return;
+}
+
+// Check storage and add usage
+if (!user.IsStorageFull())
+{
+    user.AddStorageUsage(50 * 1024 * 1024); // Add 50 MB
+}
+
+// Update last activity
+user.UpdateLastActivity();
+
+// Check if user can upload a new video
+if (user.CanUploadNewVideo())
+{
+    Console.WriteLine("User can upload a new video.");
+}
+else
+{
+    Console.WriteLine("User cannot upload a new video due to limits.");
+}
+```
