@@ -852,3 +852,28 @@ public class MetricsExample
     }
 }
 ```
+
+## ConversionUtility
+
+`ConversionUtility` provides static methods for safe type conversion with fallback defaults, handling nullable types and culture-aware parsing for common data types including numbers, booleans, dates, GUIDs, enums, and JSON serialization.
+
+### Usage Example
+
+```csharp
+// Convert string to int with default value
+int count = ConversionUtility.ToInt("42"); // returns 42
+int safeCount = ConversionUtility.ToInt("invalid", -1); // returns -1
+
+// Convert to boolean
+bool isEnabled = ConversionUtility.ToBoolean("true"); // returns true
+bool isActive = ConversionUtility.ToBoolean("0"); // returns false
+
+// Parse JSON
+string json = "{\"name\":\"test\",\"value\":123}";
+var data = ConversionUtility.JsonDeserialize<MyData>(json);
+
+// Convert object to dictionary
+var user = new { Name = "John", Age = 30 };
+var dict = ConversionUtility.ObjectToDictionary(user);
+// dict contains {"Name": "John", "Age": 30}
+```
