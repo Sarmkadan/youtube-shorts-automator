@@ -562,6 +562,53 @@ job.Complete();
 Console.WriteLine($"Job {job.Id} finished with status: {job.Status}");
 ```
 
+## ConfigurationService
+
+`ConfigurationService` manages application configuration and settings, providing typed access to configuration values, YouTube API settings, connection strings, and feature flags. It includes caching for performance and validation methods to ensure required settings are present.
+
+### Usage Example
+
+```csharp
+using YouTubeShortsAutomator.Application.Services;
+using Microsoft.Extensions.DependencyInjection;
+
+// Example usage with dependency injection
+public class ConfigurationExample
+{
+    private readonly ConfigurationService _configService;
+    
+    public ConfigurationExample(IServiceProvider services)
+    {
+        _configService = services.GetRequiredService<ConfigurationService>();
+    }
+    
+    public void Run()
+    {
+        // Get YouTube API configuration
+        var youtubeConfig = _configService.GetYouTubeApiConfig();
+        
+        // Get individual settings with defaults
+        var maxFileSize = _configService.GetMaxFileSize();
+        var processingTimeout = _configService.GetProcessingTimeout();
+        var defaultTimeZone = _configService.GetDefaultTimeZone();
+        
+        // Check feature flags
+        bool isUploadEnabled = _configService.IsFeatureEnabled("VideoUpload");
+        var enabledFeatures = _configService.GetEnabledFeatures();
+        
+        // Validate configuration
+        var (isValid, errors) = _configService.ValidateConfiguration();
+        if (!isValid)
+        {
+            Console.WriteLine("Configuration errors: " + string.Join(", ", errors));
+        }
+        
+        // Clear cache when needed (e.g., after configuration changes)
+        _configService.ClearCache();
+    }
+}
+```
+
 ## Video
 
 `Video` represents a YouTube video in the automation system, containing metadata, processing status, and relationships to users, analytics, and upload results. It provides validation methods and state transition helpers for the video lifecycle.
