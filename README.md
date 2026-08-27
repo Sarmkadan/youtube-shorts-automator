@@ -652,3 +652,30 @@ video.MarkAsUploaded("dQw4w9WgXcQ");
 Console.WriteLine($"Video status: {video.Status}");
 Console.WriteLine($"YouTube ID: {video.YouTubeVideoId}");
 ```
+
+## ErrorHandlingMiddleware
+
+`ErrorHandlingMiddleware` is an ASP.NET Core middleware component that catches all unhandled exceptions in the application pipeline and returns consistent JSON error responses to clients. It logs the full exception details while providing sanitized error messages with appropriate HTTP status codes based on exception type.
+
+### Usage Example
+
+```csharp
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Logging;
+using YouTubeShortsAutomator.Middleware;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add middleware to the pipeline (typically in Program.cs)
+var app = builder.Build();
+app.UseMiddleware<ErrorHandlingMiddleware>();
+app.Logger.LogError("Error handling middleware configured");
+
+// The middleware automatically handles exceptions and returns responses like:
+// {
+//   "message": "Required parameter is missing",
+//   "errorCode": "INVALID_PARAMETER",
+//   "details": "parameterName",
+//   "timestamp": "2026-08-27T10:30:00Z"
+// }
+```
