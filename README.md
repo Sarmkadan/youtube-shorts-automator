@@ -528,3 +528,36 @@ else
     Console.WriteLine("User cannot upload a new video due to limits.");
 }
 ```
+
+## ProcessingJob
+
+`ProcessingJob` represents a video processing job in the YouTube Shorts Automator system, tracking the job's status, progress, steps, and errors throughout the processing pipeline.
+
+### Usage Example
+
+```csharp
+using YouTubeShortsAutomator.Domain.Models;
+using System;
+
+// Create a new processing job for video encoding
+var job = new ProcessingJob
+{
+    Id = Guid.NewGuid(),
+    VideoId = Guid.NewGuid(),
+    JobType = ProcessingJobType.Encoding,
+    OutputPath = "./processed/video.mp4",
+    CreatedAt = DateTime.UtcNow
+};
+
+// Start the job
+job.Start();
+
+// Update progress as processing advances
+job.ProgressPercentage = 45f;
+
+// Complete the job successfully
+job.Complete();
+
+// Check final job status
+Console.WriteLine($"Job {job.Id} finished with status: {job.Status}");
+```
