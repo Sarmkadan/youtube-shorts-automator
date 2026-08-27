@@ -679,3 +679,61 @@ app.Logger.LogError("Error handling middleware configured");
 //   "timestamp": "2026-08-27T10:30:00Z"
 // }
 ```
+
+## CliArgumentParser
+
+`CliArgumentParser` parses command-line arguments for CLI operations, supporting flags, options, and positional arguments with validation. Commands are registered with a description, required and optional options, and an async handler, then `TryParseArguments` routes the raw arguments to the matching command and produces a `ParsedCliArguments` result with typed accessors for reading option values.
+
+### Usage Example
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using YouTubeShortsAutomator.CLI;
+
+public class CliExample
+{
+    public static async Task<int> RunAsync(string[] args)
+    {
+        var parser = new CliArgumentParser();
+
+        // Register a command with its description, options, and handler
+        parser.RegisterCommand("process", new CliCommand
+        {
+            Description = "Process a video file",
+            RequiredOptions = new List<string> { "input" },
+            OptionalOptions = new List<string> { "output", "fast" },
+            Handler = async parsed =>
+            {
+                string input = parsed.GetOption("input");
+                string output = parsed.GetOption("output", "./output.mp4");
+                bool fast = parsed.GetBoolOption("fast");
+
+                Console.WriteLine($"Processing {input} -> {output} (fast: {fast})");
+                await Task.Delay(100);
+                return 0;
+            }
+        });
+
+        // Parse the raw command-line arguments
+        if (!parser.TryParseArguments(args, out ParsedCliArguments result))
+        {
+            return 1;
+        }
+
+        Console.WriteLine($"Command: {result.Command}");
+        foreach (var positional in result.PositionalArguments)
+        {
+            Console.WriteLine($"Positional: {positional}");
+        }
+
+        if (result.TryGetOption("input", out string input))
+        {
+            Console.WriteLine($"Input option: {input}");
+        }
+
+        return result.Handler is null ? 0 : await result.Handler(result);
+    }
+}
+```
