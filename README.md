@@ -737,3 +737,59 @@ public class CliExample
     }
 }
 ```
+
+## IMetricsCollector
+
+`IMetricsCollector` is the contract for collecting application metrics and performance data, tracking processing durations, upload outcomes, error rates, and outbound API calls. The concrete `MetricsCollector` implementation aggregates these records in memory and exposes them through a `MetricsSnapshot` (with `CapturedAtUtc`, `ProcessingMetrics`, `ErrorCounts`, `ApiCallMetrics`, and `TotalApiCalls`) that can be surfaced by a health or monitoring endpoint. It is thread-safe and intended to be registered as a singleton and injected wherever telemetry is recorded.
+
+### Usage Example
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using YouTubeShortsAutomator.Metrics;
+
+public class MetricsExample
+{
+    private readonly IMetricsCollector _metrics;
+
+    // In production the collector is resolved via dependency injection.
+    public MetricsExample(ILogger<MetricsCollector> logger)
+    {
+        _metrics = new MetricsCollector(logger);
+    }
+
+    public async Task RunAsync()
+    {
+        // Record how long a processing step took
+        _metrics.RecordProcessingDuration("encoding", TimeSpan.FromSeconds(12.5));
+
+        // Record a successful upload, including the file size
+        _metrics.RecordUploadSuccess(fileSizeBytes: 15_728_640, TimeSpan.FromSeconds(3.2));
+
+        // Record an upload failure with its error code
+        _metrics.RecordUploadFailure("UPLOAD_TIMEOUT");
+
+        // Record an outbound API call with its endpoint and status code
+        _metrics.RecordApiCall("/api/videos", statusCode: 200, TimeSpan.FromMilliseconds(240));
+
+        // Retrieve a snapshot of all recorded metrics
+        MetricsSnapshot snapshot = await _metrics.GetMetricsAsync();
+
+        Console.WriteLine($"Captured at: {snapshot.CapturedAtUtc}");
+        Console.WriteLine($"Total API calls: {snapshot.TotalApiCalls}");
+
+        foreach (ProcessingMetric metric in snapshot.ProcessingMetrics)
+        {
+            Console.WriteLine($"{metric.ProcessType}: count={metric.Count}, " +
+                              $"avg={metric.AverageDurationMs:F1}ms, total={metric.TotalDurationMs:F1}ms");
+        }
+
+        foreach (var error in snapshot.ErrorCounts)
+        {
+            Console.WriteLine($"Error {error.Key}: {error.Value} occurrence(s)");
+        }
+    }
+}
+```
