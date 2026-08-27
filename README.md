@@ -349,7 +349,7 @@ public class CsvExportExample
     {
         public string Title { get; set; } = "";
         public string Channel { get; set; } = "";
-        public int Views { get; set; }
+        public int Views { get; set; } = 0;
     }
 
     public void Run()
@@ -400,7 +400,7 @@ public class JsonResponseExample
     {
         public int Id { get; set; }
         public string Title { get; set; } = "";
-        public int Views { get; set; }
+        public int Views { get; set; } = 0;
     }
 
     public void Run()
@@ -439,6 +439,44 @@ public class JsonResponseExample
 - **Thread safety:** All members are static and stateless; they do not modify shared mutable state. Consequently, they are safe to call concurrently from multiple threads.
 - **Extensibility:** If additional validation rules are required (e.g., format checks for API keys), they should be added inside the implementation of these methods so that `Validate`, `IsValid`, and `EnsureValid` remain consistent.
 - **Performance:** The methods perform only lightweight checks (e.g., string emptiness, length constraints). They are intended to be called before expensive operations such as database writes or external API calls.
+
+## ProcessingError
+
+`ProcessingError` represents an error that occurred during a video processing job, capturing details such as the error type, message, severity, and retry information. It is used to track and manage errors in the processing pipeline, including marking errors as resolved and tracking retry attempts.
+
+### Usage Example
+
+```csharp
+using YouTubeShortsAutomator.Domain.Models;
+using System;
+
+// Example: Creating and handling a processing error
+var error = new ProcessingError
+{
+    Id = Guid.NewGuid(),
+    JobId = Guid.NewGuid(),
+    ErrorType = ProcessingErrorType.VideoEncodingFailed,
+    ErrorMessage = "Failed to encode video due to unsupported codec.",
+    Severity = ErrorSeverity.High,
+    OccurredAt = DateTime.UtcNow
+};
+
+// Check if the error is critical or retryable
+if (error.IsCritical)
+{
+    Console.WriteLine("Critical error requiring immediate attention.");
+}
+
+if (error.IsRetryable)
+{
+    error.RecordRetryAttempt();
+    Console.WriteLine($"Retry attempt {error.RetryAttemptCount} recorded.");
+}
+
+// After resolving the error
+error.MarkAsResolved("Fixed by updating the codec pack.");
+Console.WriteLine($"Error resolved at {error.ResolvedAt}");
+```
 
 ## User
 
