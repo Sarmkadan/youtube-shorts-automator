@@ -853,6 +853,55 @@ public class MetricsExample
 }
 ```
 
+## LoggingUtility
+
+`LoggingUtility` provides static methods for structured logging of operations, validation errors, API calls, and database operations. It also includes an `OperationLogger` class for tracking operation execution time and automatically logging success or failure.
+
+### Usage Example
+
+```csharp
+using Microsoft.Extensions.Logging;
+using YouTubeShortsAutomator.Utilities;
+
+public class LoggingExample
+{
+    private readonly ILogger _logger;
+
+    public LoggingExample(ILogger<LoggingExample> logger)
+    {
+        _logger = logger;
+    }
+
+    public void Run()
+    {
+        // Log the start of an operation
+        LoggingUtility.LogOperationStart(_logger, "ProcessVideo", new { VideoId = 123 });
+
+        // Using OperationLogger to automatically log success or failure
+        using var operationLogger = LoggingUtility.CreateOperationLogger(_logger, "ProcessVideo");
+        try
+        {
+            // ... operation logic ...
+            var result = new { Status = "Processed" };
+            operationLogger.LogSuccess(result);
+        }
+        catch (Exception ex)
+        {
+            operationLogger.LogFailure(ex);
+        }
+
+        // Log a validation error
+        LoggingUtility.LogValidationError(_logger, "Title", "Title cannot be empty");
+
+        // Log an API call
+        LoggingUtility.LogApiCall(_logger, "GET", "/api/videos/123", 200, 150);
+
+        // Log a database operation
+        LoggingUtility.LogDatabaseOperation(_logger, "INSERT", "Videos", 1, 45);
+    }
+}
+```
+
 ## ConversionUtility
 
 `ConversionUtility` provides static methods for safe type conversion with fallback defaults, handling nullable types and culture-aware parsing for common data types including numbers, booleans, dates, GUIDs, enums, and JSON serialization.
