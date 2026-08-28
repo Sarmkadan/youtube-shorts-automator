@@ -877,3 +877,42 @@ var user = new { Name = "John", Age = 30 };
 var dict = ConversionUtility.ObjectToDictionary(user);
 // dict contains {"Name": "John", "Age": 30}
 ```
+
+## HttpClientUtility
+
+`HttpClientUtility` provides static helpers for creating and using HttpClient with common patterns: configuring timeouts, adding auth headers, making JSON requests, and interpreting status codes.
+
+### Usage Example
+
+```csharp
+// Create a client with a 20-second timeout and custom User-Agent
+var client = HttpClientUtility.CreateConfiguredClient(
+    timeoutSeconds: 20,
+    userAgent: "YouTubeShortsAutomator/1.0");
+
+// Add an API key header
+HttpClientUtility.AddApiKeyHeader(client, "your-api-key-here");
+
+try
+{
+    // GET and deserialize JSON response (throws on failure)
+    var data = await HttpClientUtility.GetAsJsonAsync<Dictionary<string, object>>(client, "https://api.example.com/data");
+    Console.WriteLine($"Received keys: {string.Join(", ", data.Keys)}");
+}
+catch (YoutubeShortsAutomatorException ex)
+{
+    Console.Error.WriteLine($"Request failed: {ex.Message}");
+}
+
+// POST JSON content and check status code manually
+var newPost = new { title = "My Short", description = "A quick update" };
+var postResponse = await HttpClientUtility.PostAsJsonAsync(client, "https://api.example.com/posts", newPost);
+if (HttpClientUtility.IsSuccessStatusCode((int)postResponse.StatusCode))
+{
+    Console.WriteLine("Post created successfully");
+}
+else
+{
+    Console.Error.WriteLine($"Post failed: {HttpClientUtility.GetStatusCodeDescription((int)postResponse.StatusCode)}");
+}
+```
