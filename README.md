@@ -902,6 +902,94 @@ public class LoggingExample
 }
 ```
 
+## CollectionUtility
+
+`CollectionUtility` provides static methods for safe collection manipulation and transformation, offering null-safe operations on IEnumerable types with helpful batch processing capabilities.
+
+### Usage Example
+
+```csharp
+using YouTubeShortsAutomator.Utilities;
+using System.Collections.Generic;
+using System.Linq;
+
+public class CollectionUtilityExample
+{
+    public void Run()
+    {
+        // Sample data - some might be null
+        List<string>? tags = null;
+        List<string> videoTitles = new List<string> 
+        { 
+            "Hello World", 
+            "Dotnet Tutorial", 
+            "Hello World", // duplicate
+            "Advanced C#",
+            "Dotnet Tutorial" // duplicate
+        };
+        List<int> viewCounts = new List<int> { 100, 250, 100, 500, 250 };
+
+        // Safe conversion (handles null)
+        List<string> safeTags = CollectionUtility.ToSafeList(tags); // Returns empty list
+        string[] safeTitlesArray = CollectionUtility.ToSafeArray(videoTitles);
+
+        // Check if collections have elements
+        bool tagsHasElements = CollectionUtility.HasElements(tags); // false
+        bool titlesHasElements = CollectionUtility.HasElements(videoTitles); // true
+
+        // Safe transformation with null handling
+        List<int> titleLengths = CollectionUtility.SelectSafe(
+            videoTitles, 
+            title => title.Length
+        ); // Returns [11, 14, 11, 13, 14]
+
+        // Safe filtering
+        List<string> longTitles = CollectionUtility.WhereSafe(
+            videoTitles, 
+            title => title.Length > 12
+        ); // Returns ["Dotnet Tutorial", "Advanced C#", "Dotnet Tutorial"]
+
+        // Remove duplicates while preserving order
+        IEnumerable<string> distinctTitles = CollectionUtility.DistinctBy(
+            videoTitles, 
+            title => title.ToLower()
+        ); // Returns ["Hello World", "Dotnet Tutorial", "Advanced C#"]
+
+        // Group items by first letter
+        Dictionary<char, List<string>> titlesByInitial = CollectionUtility.GroupByToDictionary(
+            videoTitles.Where(t => !string.IsNullOrEmpty(t)),
+            title => char.ToUpper(title[0])
+        );
+        // Returns { H: ["Hello World", "Hello World"], D: ["Dotnet Tutorial", "Dotnet Tutorial"], A: ["Advanced C#"] }
+
+        // Split into chunks for batch processing
+        List<List<string>> titleChunks = CollectionUtility.ChunkBy(videoTitles, 2);
+        // Returns [["Hello World", "Dotnet Tutorial"], ["Hello World", "Advanced C#"], ["Dotnet Tutorial"]]
+
+        // Get first/last with defaults
+        string? firstTitle = CollectionUtility.FirstOrDefault(videoTitles, "No titles");
+        string? lastTitle = CollectionUtility.LastOrDefault(videoTitles, "No titles");
+        string? firstEmpty = CollectionUtility.FirstOrDefault(tags, "No tags"); // Returns "No tags"
+
+        // Check if collection contains specific values
+        bool hasDotnet = CollectionUtility.ContainsAny(videoTitles, "Dotnet Tutorial", "Java");
+        bool hasBoth = CollectionUtility.ContainsAll(videoTitles, "Hello World", "Dotnet Tutorial");
+
+        // Shuffle for random ordering
+        List<string> shuffledTitles = CollectionUtility.Shuffle(videoTitles);
+
+        // Take random sample
+        IEnumerable<string> randomSample = CollectionUtility.TakeRandom(videoTitles, 2);
+
+        // Calculate statistics
+        int totalViews = CollectionUtility.Sum(viewCounts); // 1200
+        decimal averageViews = CollectionUtility.Average(
+            viewCounts.Select(v => (decimal)v).ToList()
+        ); // 240
+    }
+}
+```
+
 ## StringUtility
 
 `StringUtility` provides static methods for string manipulation and formatting, including truncation, case conversion, validation, and text transformation operations.
