@@ -902,6 +902,52 @@ public class LoggingExample
 }
 ```
 
+## StringUtility
+
+`StringUtility` provides static methods for string manipulation and formatting, including truncation, case conversion, validation, and text transformation operations.
+
+### Usage Example
+
+```csharp
+using YouTubeShortsAutomator.Utilities;
+
+public class StringUtilityExample
+{
+    public void Run()
+    {
+        string text = "  Hello World! This is a TEST string  ";
+        
+        // Truncate text to 10 characters
+        string truncated = StringUtility.Truncate(text, 10); // "  Hello W..."
+        
+        // Convert to different cases
+        string camelCase = StringUtility.ToCamelCase(text); // "helloWorldThisIsATestString"
+        string pascalCase = StringUtility.ToPascalCase(text); // "HelloWorldThisIsATestString"
+        string snakeCase = StringUtility.ToSnakeCase(text); // "hello_world_this_is_a_test_string"
+        
+        // Create URL-friendly slug
+        string slug = StringUtility.ToSlug(text); // "hello-world-this-is-a-test-string"
+        
+        // Validate string content
+        bool isNumeric = StringUtility.IsNumeric("123"); // true
+        bool isAlphabetic = StringUtility.IsAlphabetic("abc"); // true
+        bool isAlphanumeric = StringUtility.IsAlphanumeric("abc123"); // true
+        
+        // Clean up whitespace and special characters
+        string noWhitespace = StringUtility.RemoveWhitespace(text); // "HelloWorld!Thisis aTESTstring"
+        string normalized = StringUtility.NormalizeWhitespace(text); // "Hello World! This is a TEST string"
+        string clean = StringUtility.RemoveSpecialCharacters(text); // "  Hello World This is a TEST string  "
+        
+        // Other utility methods
+        int count = StringUtility.CountOccurrences("hello world hello", "hello"); // 2
+        string[] chunks = StringUtility.SplitByLength(text, 5); // ["  Hel", "lo Wo", "rld! ", "Thi", "s i", "s a ", "TEST", " str", "ing  "]
+        string reversed = StringUtility.ReverseString(text); // "  tset  tset a si !dlroW olleH  "
+        bool containsAny = StringUtility.ContainsAny(text, "world", "test"); // true
+        bool containsAll = StringUtility.ContainsAll(text, "hello", "world"); // false
+    }
+}
+```
+
 ## ConversionUtility
 
 `ConversionUtility` provides static methods for safe type conversion with fallback defaults, handling nullable types and culture-aware parsing for common data types including numbers, booleans, dates, GUIDs, enums, and JSON serialization.
