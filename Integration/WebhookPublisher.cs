@@ -29,6 +29,10 @@ public class WebhookPublisher : IWebhookPublisher
         ILogger<WebhookPublisher> logger,
         IConfiguration configuration)
     {
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(configuration);
+
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         _webhookSecret = configuration.GetValue<string>("Webhook:Secret") ?? "default-secret";
@@ -36,6 +40,15 @@ public class WebhookPublisher : IWebhookPublisher
 
     public async Task<bool> PublishEventAsync<T>(string eventType, T data, string webhookUrl)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventType);
+        ArgumentNullException.ThrowIfNull(data);
+        ArgumentException.ThrowIfNullOrWhiteSpace(webhookUrl);
+
+        if (!Uri.TryCreate(webhookUrl, UriKind.Absolute, out _))
+        {
+            throw new ArgumentException("The webhook URL must be a valid absolute URL.", nameof(webhookUrl));
+        }
+
         try
         {
             var payload = new WebhookPayload<T>
@@ -77,6 +90,10 @@ public class WebhookPublisher : IWebhookPublisher
 
     public async Task<bool> PublishBulkEventsAsync<T>(string eventType, IEnumerable<T> data, IEnumerable<string> webhookUrls)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventType);
+        ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(webhookUrls);
+
         var tasks = webhookUrls.Select(url =>
             PublishEventAsync(eventType, data, url)
         );
