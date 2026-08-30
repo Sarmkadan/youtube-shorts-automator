@@ -17,9 +17,9 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console()
     .WriteTo.File(
-        path: "logs/application-.txt",
+        path: AppDefaults.LogFilePathTemplate,
         rollingInterval: RollingInterval.Day,
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+        outputTemplate: AppDefaults.LogOutputTemplate)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -41,8 +41,8 @@ try
 
     // Configure rate limiting
     builder.Services.AddRateLimitingOptions(
-        requestsPerWindow: builder.Configuration.GetValue<int>("RateLimit:RequestsPerWindow", 100),
-        windowSizeSeconds: builder.Configuration.GetValue<int>("RateLimit:WindowSizeSeconds", 60)
+        requestsPerWindow: builder.Configuration.GetValue<int>(AppDefaults.RateLimitRequestsKey, AppDefaults.DefaultRateLimitRequests),
+        windowSizeSeconds: builder.Configuration.GetValue<int>(AppDefaults.RateLimitWindowSizeKey, AppDefaults.DefaultRateLimitWindowSizeSeconds)
     );
 
     var app = builder.Build();
@@ -79,4 +79,14 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
+}
+
+static class AppDefaults
+{
+    public const string LogFilePathTemplate = "logs/application-.txt";
+    public const string LogOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}";
+    public const string RateLimitRequestsKey = "RateLimit:RequestsPerWindow";
+    public const int DefaultRateLimitRequests = 100;
+    public const string RateLimitWindowSizeKey = "RateLimit:WindowSizeSeconds";
+    public const int DefaultRateLimitWindowSizeSeconds = 60;
 }
