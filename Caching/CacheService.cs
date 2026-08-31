@@ -43,11 +43,16 @@ public class CacheService : ICacheService
     {
         try
         {
-            _memoryCache.TryGetValue(key, out T? value);
-            if (value != null)
+            var found = _memoryCache.TryGetValue(key, out T? value);
+            if (found)
             {
                 _logger.LogDebug("Cache hit for key: {Key}", key);
             }
+            else
+            {
+                _logger.LogDebug("Cache miss for key: {Key}", key);
+            }
+
             return value;
         }
         catch (Exception ex)
@@ -64,7 +69,22 @@ public class CacheService : ICacheService
     {
         try
         {
-            var cacheOptions = new MemoryCacheEntryOptions();
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .RegisterPostEvictionCallback((evictedKey, _, _, state) =>
+                {
+                    var cacheService = (CacheService)state;
+                    var keyToRemove = (string)evictedKey;
+
+                    lock (cacheService._lockObj)
+                    {
+                        // A replacement entry may already exist when the old entry's
+                        // callback runs, so keep the key tracked in that case.
+                        if (!cacheService._memoryCache.TryGetValue(keyToRemove, out _))
+                        {
+                            cacheService._cacheKeys.Remove(keyToRemove);
+                        }
+                    }
+                }, this);
 
             if (expiration.HasValue)
             {
@@ -76,10 +96,9 @@ public class CacheService : ICacheService
                 cacheOptions.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
             }
 
-            _memoryCache.Set(key, value, cacheOptions);
-
             lock (_lockObj)
             {
+                _memoryCache.Set(key, value, cacheOptions);
                 _cacheKeys.Add(key);
             }
 
@@ -102,9 +121,9 @@ public class CacheService : ICacheService
     {
         try
         {
-            _memoryCache.Remove(key);
             lock (_lockObj)
             {
+                _memoryCache.Remove(key);
                 _cacheKeys.Remove(key);
             }
             _logger.LogDebug("Cache entry removed for key: {Key}", key);
