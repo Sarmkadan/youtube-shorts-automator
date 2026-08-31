@@ -40,9 +40,15 @@ public class VideoController : ControllerBase
     [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetUserVideos(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
+        if (pageNumber < 1)
+            return BadRequest(new { success = false, message = "Page number must be at least 1." });
+
+        if (pageSize is < 1 or > 100)
+            return BadRequest(new { success = false, message = "Page size must be between 1 and 100." });
+
         try
         {
-            _logger.LogInformation($"Fetching videos for user {userId}");
+            _logger.LogInformation("Fetching videos for user {UserId}", userId);
             var (videos, total) = await _videoRepository.GetUserVideosPaginatedAsync(userId, pageNumber, pageSize);
 
             return Ok(new
@@ -55,7 +61,7 @@ public class VideoController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching user videos");
-            return StatusCode(500, new { success = false, message = ex.Message });
+            return StatusCode(500, new { success = false, message = "An internal error occurred." });
         }
     }
 
@@ -75,8 +81,8 @@ public class VideoController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error fetching video {videoId}");
-            return StatusCode(500, new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Error fetching video {VideoId}", videoId);
+            return StatusCode(500, new { success = false, message = "An internal error occurred." });
         }
     }
 
@@ -88,7 +94,7 @@ public class VideoController : ControllerBase
     {
         try
         {
-            _logger.LogInformation($"Starting video processing for {videoId}");
+            _logger.LogInformation("Starting video processing for {VideoId}", videoId);
 
             var job = await _processingService.CreateProcessingJobAsync(videoId, Domain.Models.ProcessingJobType.FullProcessing);
             var processedJob = await _processingService.ProcessVideoAsync(job);
@@ -97,16 +103,18 @@ public class VideoController : ControllerBase
         }
         catch (ResourceNotFoundException ex)
         {
-            return NotFound(new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Video resource not found while processing video {VideoId}", videoId);
+            return NotFound(new { success = false, message = "An internal error occurred." });
         }
         catch (VideoValidationException ex)
         {
-            return BadRequest(new { success = false, message = ex.Message, errors = ex.ValidationErrors });
+            _logger.LogError(ex, "Video validation failed while processing video {VideoId}", videoId);
+            return BadRequest(new { success = false, message = "An internal error occurred.", errors = ex.ValidationErrors });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error processing video {videoId}");
-            return StatusCode(500, new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Error processing video {VideoId}", videoId);
+            return StatusCode(500, new { success = false, message = "An internal error occurred." });
         }
     }
 
@@ -118,7 +126,7 @@ public class VideoController : ControllerBase
     {
         try
         {
-            _logger.LogInformation($"Uploading video {videoId} to YouTube");
+            _logger.LogInformation("Uploading video {VideoId} to YouTube", videoId);
 
             var uploadResult = await _uploadService.UploadVideoAsync(videoId, userId);
 
@@ -126,20 +134,23 @@ public class VideoController : ControllerBase
         }
         catch (ResourceNotFoundException ex)
         {
-            return NotFound(new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Video resource not found while uploading video {VideoId}", videoId);
+            return NotFound(new { success = false, message = "An internal error occurred." });
         }
         catch (CredentialException ex)
         {
-            return BadRequest(new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Credential error while uploading video {VideoId}", videoId);
+            return BadRequest(new { success = false, message = "An internal error occurred." });
         }
         catch (UploadException ex)
         {
-            return StatusCode(500, new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Upload error for video {VideoId}", videoId);
+            return StatusCode(500, new { success = false, message = "An internal error occurred." });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error uploading video {videoId}");
-            return StatusCode(500, new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Error uploading video {VideoId}", videoId);
+            return StatusCode(500, new { success = false, message = "An internal error occurred." });
         }
     }
 
@@ -151,7 +162,7 @@ public class VideoController : ControllerBase
     {
         try
         {
-            _logger.LogInformation($"Fetching analytics for video {videoId}");
+            _logger.LogInformation("Fetching analytics for video {VideoId}", videoId);
 
             var metric = await _analyticsService.GetVideoAnalyticsAsync(videoId, Domain.Models.MetricsPeriod.Daily);
 
@@ -162,8 +173,8 @@ public class VideoController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error fetching analytics for video {videoId}");
-            return StatusCode(500, new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Error fetching analytics for video {VideoId}", videoId);
+            return StatusCode(500, new { success = false, message = "An internal error occurred." });
         }
     }
 
@@ -180,12 +191,13 @@ public class VideoController : ControllerBase
         }
         catch (ResourceNotFoundException ex)
         {
-            return NotFound(new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Processing job {JobId} was not found", jobId);
+            return NotFound(new { success = false, message = "An internal error occurred." });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error getting job status {jobId}");
-            return StatusCode(500, new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Error getting job status {JobId}", jobId);
+            return StatusCode(500, new { success = false, message = "An internal error occurred." });
         }
     }
 
@@ -197,7 +209,7 @@ public class VideoController : ControllerBase
     {
         try
         {
-            _logger.LogInformation($"Publishing video {videoId}");
+            _logger.LogInformation("Publishing video {VideoId}", videoId);
 
             var video = await _videoRepository.GetByIdAsync(videoId);
             if (video?.UploadResult == null)
@@ -209,8 +221,8 @@ public class VideoController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error publishing video {videoId}");
-            return StatusCode(500, new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Error publishing video {VideoId}", videoId);
+            return StatusCode(500, new { success = false, message = "An internal error occurred." });
         }
     }
 }
