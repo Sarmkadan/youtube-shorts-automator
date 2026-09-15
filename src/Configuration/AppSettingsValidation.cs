@@ -93,12 +93,14 @@ public static class AppSettingsValidation
 
         if (settings.AnalyticsSyncIntervalHours <= 0)
         {
-            problems.Add($"AnalyticsSyncIntervalHours must be positive, but was {settings.AnalyticsSyncIntervalHours}.");
+            problems.Add(
+                $"AnalyticsSyncIntervalHours must be positive, but was {settings.AnalyticsSyncIntervalHours}.");
         }
 
         if (settings.ScheduleCheckIntervalSeconds <= 0)
         {
-            problems.Add($"ScheduleCheckIntervalSeconds must be positive, but was {settings.ScheduleCheckIntervalSeconds}.");
+            problems.Add(
+                $"ScheduleCheckIntervalSeconds must be positive, but was {settings.ScheduleCheckIntervalSeconds}.");
         }
 
         return problems.AsReadOnly();
@@ -120,7 +122,9 @@ public static class AppSettingsValidation
     /// </summary>
     /// <param name="settings">The configuration to validate.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="settings"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when the configuration is invalid, containing a list of problems.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the configuration is invalid, containing a list of problems.
+    /// </exception>
     public static void EnsureValid(this AppSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
