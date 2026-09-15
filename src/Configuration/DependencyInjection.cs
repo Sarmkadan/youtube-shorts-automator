@@ -3,11 +3,11 @@
 // CTO & Software Architect
 // =============================================================================
 
-using YouTubeShortAutomator.Data;
-using YouTubeShortAutomator.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Exceptions;
+using YouTubeShortAutomator.Services;
 
 namespace YouTubeShortAutomator.Configuration;
 
@@ -19,11 +19,17 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, AppSettings appSettings)
     {
-        if (services == null) throw new ArgumentNullException(nameof(services));
-        if (appSettings == null) throw new ArgumentNullException(nameof(appSettings));
+        if (services == null)
+        {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        if (appSettings == null)
+        {
+            throw new ArgumentNullException(nameof(appSettings));
+        }
 
         // Adds all application services to the dependency injection container
-
         // Configure database context
         services.AddSingleton(_ => new DatabaseContext(appSettings.ConnectionString));
 
@@ -34,50 +40,44 @@ public static class DependencyInjection
         services.AddScoped(sp => new UploadHistoryRepository(sp.GetRequiredService<DatabaseContext>()));
 
         // Register services
-        services.AddScoped((sp) => new VideoProcessingService(
+        services.AddScoped(sp => new VideoProcessingService(
             sp.GetRequiredService<VideoShortRepository>(),
-            sp.GetRequiredService<ILogger<VideoProcessingService>>()
-        ));
+            sp.GetRequiredService<ILogger<VideoProcessingService>>()));
 
-        services.AddScoped((sp) => new YouTubeUploadService(
+        services.AddScoped(sp => new YouTubeUploadService(
             sp.GetRequiredService<UploadJobRepository>(),
             sp.GetRequiredService<UploadHistoryRepository>(),
-            sp.GetRequiredService<ILogger<YouTubeUploadService>>()
-        ));
+            sp.GetRequiredService<ILogger<YouTubeUploadService>>()));
 
-        services.AddScoped((sp) => new SchedulingService(
+        services.AddScoped(sp => new SchedulingService(
             sp.GetRequiredService<UploadJobRepository>(),
-            sp.GetRequiredService<ILogger<SchedulingService>>()
-        ));
+            sp.GetRequiredService<ILogger<SchedulingService>>()));
 
-        services.AddScoped((sp) => new AnalyticsService(
+        services.AddScoped(sp => new AnalyticsService(
             sp.GetRequiredService<AnalyticsRepository>(),
             sp.GetRequiredService<VideoShortRepository>(),
-            sp.GetRequiredService<ILogger<AnalyticsService>>()
-        ));
+            sp.GetRequiredService<ILogger<AnalyticsService>>()));
 
         services.AddScoped(sp => new ThumbnailAbTestRepository(sp.GetRequiredService<DatabaseContext>()));
 
-        services.AddScoped((sp) => new ThumbnailAbTestService(
+        services.AddScoped(sp => new ThumbnailAbTestService(
             sp.GetRequiredService<ThumbnailAbTestRepository>(),
             sp.GetRequiredService<VideoShortRepository>(),
-            sp.GetRequiredService<ILogger<ThumbnailAbTestService>>()
-        ));
+            sp.GetRequiredService<ILogger<ThumbnailAbTestService>>()));
 
         services.AddScoped<IThumbnailGeneratorService>(sp =>
             new ThumbnailGeneratorService(
                 sp.GetRequiredService<IConfiguration>(),
                 sp.GetRequiredService<ILogger<ThumbnailGeneratorService>>()));
 
-        services.AddScoped((sp) => new JobOrchestrationService(
+        services.AddScoped(sp => new JobOrchestrationService(
             sp.GetRequiredService<VideoProcessingService>(),
             sp.GetRequiredService<YouTubeUploadService>(),
             sp.GetRequiredService<SchedulingService>(),
             sp.GetRequiredService<AnalyticsService>(),
             sp.GetRequiredService<VideoShortRepository>(),
             sp.GetRequiredService<UploadJobRepository>(),
-            sp.GetRequiredService<ILogger<JobOrchestrationService>>()
-        ));
+            sp.GetRequiredService<ILogger<JobOrchestrationService>>()));
 
         return services;
     }
@@ -93,7 +93,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         Action<ContentCalendarOptions>? configure = null)
     {
-        if (services == null) throw new ArgumentNullException(nameof(services));
+        if (services == null)
+        {
+            throw new ArgumentNullException(nameof(services));
+        }
 
         var options = new ContentCalendarOptions();
         configure?.Invoke(options);
@@ -124,8 +127,15 @@ public static class DependencyInjection
     /// <summary>Configures the application logging pipeline.</summary>
     public static IServiceCollection AddApplicationLogging(this IServiceCollection services, AppSettings appSettings)
     {
-        if (services == null) throw new ArgumentNullException(nameof(services));
-        if (appSettings == null) throw new ArgumentNullException(nameof(appSettings));
+        if (services == null)
+        {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        if (appSettings == null)
+        {
+            throw new ArgumentNullException(nameof(appSettings));
+        }
 
         // Configures logging
         services.AddLogging(builder =>
