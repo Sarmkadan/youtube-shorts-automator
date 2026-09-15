@@ -17,6 +17,9 @@ namespace YouTubeShortAutomator.Services;
 /// </summary>
 public class ThumbnailAbTestService
 {
+    private const string VariantALabel = "A";
+    private const string VariantBLabel = "B";
+
     private readonly ThumbnailAbTestRepository _repository;
     private readonly VideoShortRepository _videoRepository;
     private readonly ILogger<ThumbnailAbTestService> _logger;
@@ -72,7 +75,7 @@ public class ThumbnailAbTestService
         var variantA = await _repository.AddAsync(new ThumbnailVariant
         {
             VideoShortId = videoShortId,
-            Label        = "A",
+            Label        = VariantALabel,
             ThumbnailPath = thumbnailPathA,
             IsActive     = true,
             CreatedAt    = now,
@@ -82,7 +85,7 @@ public class ThumbnailAbTestService
         var variantB = await _repository.AddAsync(new ThumbnailVariant
         {
             VideoShortId = videoShortId,
-            Label        = "B",
+            Label        = VariantBLabel,
             ThumbnailPath = thumbnailPathB,
             IsActive     = true,
             CreatedAt    = now,
@@ -237,6 +240,8 @@ public class ThumbnailAbTestService
 /// <summary>Encapsulates a point-in-time snapshot of a thumbnail A/B test's results.</summary>
 public class ThumbnailAbTestResult
 {
+    private const int MinimumVariantsForComparison = 2;
+
     /// <summary>Gets or sets the video identifier this test belongs to.</summary>
     public int VideoShortId { get; set; }
 
@@ -275,7 +280,7 @@ public class ThumbnailAbTestResult
                 $"{v.ClickCount:N0} clicks, {v.ViewRate:F2}% view rate{winTag}");
         }
 
-        if (Variants.Count >= 2)
+        if (Variants.Count >= MinimumVariantsForComparison)
         {
             var ordered = Variants.OrderByDescending(v => v.ViewRate).ToList();
             var delta   = ordered[0].ViewRate - ordered[1].ViewRate;
