@@ -21,12 +21,16 @@ public interface IContentCalendarService
     /// <param name="entry">Populated entry to create. <see cref="ContentCalendarEntry.Title"/> is required.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The persisted entry with its assigned <see cref="ContentCalendarEntry.Id"/>.</returns>
-    Task<ContentCalendarEntry> CreateEntryAsync(ContentCalendarEntry entry, CancellationToken cancellationToken = default);
+    Task<ContentCalendarEntry> CreateEntryAsync(
+        ContentCalendarEntry entry,
+        CancellationToken cancellationToken = default);
 
     /// <summary>Retrieves a single calendar entry by its identifier, or <c>null</c> when not found.</summary>
     /// <param name="entryId">The entry identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<ContentCalendarEntry?> GetEntryAsync(int entryId, CancellationToken cancellationToken = default);
+    Task<ContentCalendarEntry?> GetEntryAsync(
+        int entryId,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns all entries whose <see cref="ContentCalendarEntry.ScheduledPublishAt"/> falls
@@ -36,7 +40,10 @@ public interface IContentCalendarService
     /// <param name="from">Range start (inclusive, UTC).</param>
     /// <param name="to">Range end (inclusive, UTC).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<IEnumerable<ContentCalendarEntry>> GetEntriesInRangeAsync(DateTime from, DateTime to, CancellationToken cancellationToken = default);
+    Task<IEnumerable<ContentCalendarEntry>> GetEntriesInRangeAsync(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns non-cancelled, non-archived entries scheduled within the next
@@ -44,18 +51,24 @@ public interface IContentCalendarService
     /// </summary>
     /// <param name="daysAhead">Number of days ahead to look. Must be positive. Defaults to 7.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<IEnumerable<ContentCalendarEntry>> GetUpcomingEntriesAsync(int daysAhead = 7, CancellationToken cancellationToken = default);
+    Task<IEnumerable<ContentCalendarEntry>> GetUpcomingEntriesAsync(
+        int daysAhead = 7,
+        CancellationToken cancellationToken = default);
 
     /// <summary>Validates and persists changes to an existing calendar entry.</summary>
     /// <param name="entry">Modified entry. The <see cref="ContentCalendarEntry.Id"/> must already exist.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<ContentCalendarEntry> UpdateEntryAsync(ContentCalendarEntry entry, CancellationToken cancellationToken = default);
+    Task<ContentCalendarEntry> UpdateEntryAsync(
+        ContentCalendarEntry entry,
+        CancellationToken cancellationToken = default);
 
     /// <summary>Permanently removes the specified calendar entry.</summary>
     /// <param name="entryId">Identifier of the entry to delete.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns><c>true</c> when deleted successfully; <c>false</c> when the entry was not found.</returns>
-    Task<bool> DeleteEntryAsync(int entryId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteEntryAsync(
+        int entryId,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Runs the optimisation engine against the entry's current title, description and tags,
@@ -64,7 +77,9 @@ public interface IContentCalendarService
     /// </summary>
     /// <param name="entryId">Identifier of the entry to optimise.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<TitleOptimizationResult> OptimizeEntryAsync(int entryId, CancellationToken cancellationToken = default);
+    Task<TitleOptimizationResult> OptimizeEntryAsync(
+        int entryId,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Applies the suggestion at position <paramref name="suggestionIndex"/> from the entry's
@@ -72,9 +87,15 @@ public interface IContentCalendarService
     /// Call <see cref="OptimizeEntryAsync"/> first if <c>LastOptimization</c> is <c>null</c>.
     /// </summary>
     /// <param name="entryId">Identifier of the entry to update.</param>
-    /// <param name="suggestionIndex">Zero-based index into <see cref="TitleOptimizationResult.Suggestions"/>. Defaults to 0 (highest confidence).</param>
+    /// <param name="suggestionIndex">
+    /// Zero-based index into <see cref="TitleOptimizationResult.Suggestions"/>.
+    /// Defaults to 0 (highest confidence).
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<ContentCalendarEntry> ApplyOptimizationAsync(int entryId, int suggestionIndex = 0, CancellationToken cancellationToken = default);
+    Task<ContentCalendarEntry> ApplyOptimizationAsync(
+        int entryId,
+        int suggestionIndex = 0,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns <paramref name="count"/> recommended UTC posting timestamps for the given channel,
@@ -83,7 +104,10 @@ public interface IContentCalendarService
     /// <param name="channelId">Target YouTube channel identifier.</param>
     /// <param name="count">Number of slot recommendations to return. Defaults to 5.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<IEnumerable<DateTime>> GetRecommendedSlotsAsync(int channelId, int count = 5, CancellationToken cancellationToken = default);
+    Task<IEnumerable<DateTime>> GetRecommendedSlotsAsync(
+        int channelId,
+        int count = 5,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Links the entry to a new <see cref="UploadJob"/> via the scheduling service,
@@ -94,7 +118,10 @@ public interface IContentCalendarService
     /// <param name="entryId">Identifier of the entry to schedule.</param>
     /// <param name="scheduledAt">UTC time at which the upload should be dispatched.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<ContentCalendarEntry> ScheduleEntryAsync(int entryId, DateTime scheduledAt, CancellationToken cancellationToken = default);
+    Task<ContentCalendarEntry> ScheduleEntryAsync(
+        int entryId,
+        DateTime scheduledAt,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -147,5 +174,7 @@ public interface ITitleOptimizationEngine
     /// </summary>
     /// <param name="title">Title text to analyse.</param>
     /// <param name="description">Description text to analyse.</param>
-    string[] ExtractKeywords(string title, string description);
+    string[] ExtractKeywords(
+        string title,
+        string description);
 }
