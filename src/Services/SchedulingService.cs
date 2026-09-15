@@ -38,6 +38,26 @@ public class SchedulingService
     /// </summary>
     private static readonly TimeSpan SchedulingTolerance = TimeSpan.FromSeconds(5);
 
+    /// <summary>
+    /// Buffer time added to calculated optimal upload time (in minutes).
+    /// </summary>
+    private const int OptimalUploadBufferMinutes = 5;
+
+    /// <summary>
+    /// Start hour for optimal upload window (inclusive, 24-hour format).
+    /// </summary>
+    private const int OptimalUploadStartHour = 9;
+
+    /// <summary>
+    /// End hour for optimal upload window (inclusive, 24-hour format).
+    /// </summary>
+    private const int OptimalUploadEndHour = 23;
+
+    /// <summary>
+    /// Default number of hours to look ahead for upcoming jobs.
+    /// </summary>
+    private const int DefaultLookaheadHours = 24;
+
     public virtual async Task<UploadJob> ScheduleUploadAsync(int videoShortId, DateTime scheduledTime,
         CancellationToken cancellationToken = default)
     {
@@ -74,7 +94,7 @@ public class SchedulingService
         }
     }
 
-    public virtual async Task<IEnumerable<UploadJob>> GetUpcomingJobsAsync(int hoursAhead = 24,
+    public virtual async Task<IEnumerable<UploadJob>> GetUpcomingJobsAsync(int hoursAhead = DefaultLookaheadHours,
         CancellationToken cancellationToken = default)
     {
         // Retrieves all scheduled jobs within the specified hours ahead
@@ -85,7 +105,7 @@ public class SchedulingService
             var cutoffTime = now.AddHours(hoursAhead);
 
             return allJobs
-                .Where(j => j.ScheduledAt >= now && j.ScheduledAt <= cutoffTime && 
+                .Where(j => j.ScheduledAt >= now && j.ScheduledAt <= cutoffTime &&
                            (j.Status == UploadStatus.Pending || j.Status == UploadStatus.Queued))
                 .OrderBy(j => j.ScheduledAt)
                 .ToList();
@@ -206,13 +226,13 @@ public class SchedulingService
         var processingDuration = TimeSpan.FromMinutes(estimatedProcessingMinutes);
         var uploadTime = videoCreatedAt.Add(processingDuration);
 
-        // Add a small buffer (5 minutes)
-        uploadTime = uploadTime.AddMinutes(5);
+        // Add a small buffer (OptimalUploadBufferMinutes minutes)
+        uploadTime = uploadTime.AddMinutes(OptimalUploadBufferMinutes);
 
         // Ensure it's not in the past
         if (uploadTime < now)
         {
-            uploadTime = now.AddMinutes(5);
+            uploadTime = now.AddMinutes(OptimalUploadBufferMinutes);
         }
 
         return uploadTime - now;
@@ -222,7 +242,7 @@ public class SchedulingService
     {
         // Checks if the scheduled time is within optimal upload hours (avoid off-peak times)
         var timeOfDay = scheduleTime.TimeOfDay;
-        // Optimal: 9:00 AM to 11:00 PM in user's timezone (inclusive of the 11 PM boundary itself)
-        return timeOfDay >= TimeSpan.FromHours(9) && timeOfDay <= TimeSpan.FromHours(23);
+        // Optimal: OptimalUploadStartHour:00 to OptimalUploadEndHour:00 in user's timezone (inclusive of the end hour boundary itself)
+        return timeOfDay >= TimeSpan.FromHours(OptimalUploadStartHour) && timeOfDay <= TimeSpan.FromHours(OptimalUploadEndHour);
     }
 }
