@@ -15,6 +15,9 @@ namespace YouTubeShortAutomator.Services;
 /// </summary>
 public class FileValidationService
 {
+    private const string InvalidFilePathMessage = "File path cannot be null or whitespace.";
+    private const int PlaceholderVideoDurationSeconds = 30;
+
     private readonly ILogger<FileValidationService> _logger;
     private readonly string[] _supportedFormats = Constants.Constants.SUPPORTED_INPUT_FORMATS.Split(',');
 
@@ -37,7 +40,7 @@ public class FileValidationService
         // Fix: Add validation for filePath to prevent null or empty paths.
         if (string.IsNullOrWhiteSpace(filePath))
         {
-            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
+            throw new ArgumentException(InvalidFilePathMessage, nameof(filePath));
         }
         // Validates a video file for processing
         try
@@ -108,7 +111,7 @@ public class FileValidationService
         // Fix: Add validation for filePath to prevent null or empty paths.
         if (string.IsNullOrWhiteSpace(filePath))
         {
-            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
+            throw new ArgumentException(InvalidFilePathMessage, nameof(filePath));
         }
         // Calculates SHA256 hash of file for integrity verification
         try
@@ -139,7 +142,7 @@ public class FileValidationService
         // Fix: Add validation for filePath to prevent null or empty paths.
         if (string.IsNullOrWhiteSpace(filePath))
         {
-            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
+            throw new ArgumentException(InvalidFilePathMessage, nameof(filePath));
         }
         // Attempts to get video duration (in production, would use FFprobe)
         try
@@ -151,7 +154,7 @@ public class FileValidationService
             _logger.LogInformation($"Retrieving duration for {filePath}");
             
             // In production, this would call FFprobe to get actual duration
-            return TimeSpan.FromSeconds(30); // Placeholder
+            return TimeSpan.FromSeconds(PlaceholderVideoDurationSeconds); // Placeholder
         }
         catch (Exception ex)
         {
@@ -169,7 +172,7 @@ public class FileValidationService
         // Fix: Add validation for filePath to prevent null or empty paths.
         if (string.IsNullOrWhiteSpace(filePath))
         {
-            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
+            throw new ArgumentException(InvalidFilePathMessage, nameof(filePath));
         }
         // Safely deletes a temporary file
         try
