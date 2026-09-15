@@ -17,6 +17,12 @@ namespace YouTubeShortAutomator.Services;
 /// </summary>
 public class JobOrchestrationService
 {
+	private const string FailedPipelineStatus = "Failed";
+	private const string SuccessfulPipelineStatus = "Success";
+	private const double ThumbnailTimestampSeconds = 2.0;
+	private const string MissingYouTubeVideoId = "";
+	private const int InitialSuccessfulUploadCount = 0;
+
 	private readonly VideoProcessingService _processingService;
 	private readonly YouTubeUploadService _uploadService;
 	private readonly SchedulingService _schedulingService;
@@ -79,7 +85,7 @@ public class JobOrchestrationService
 			var videoShort = await _videoRepository.GetByIdAsync(videoShortId, cancellationToken);
 			if (videoShort == null)
 			{
-				result.Status = "Failed";
+				result.Status = FailedPipelineStatus;
 				result.Error = "Video not found";
 				return result;
 			}
@@ -87,7 +93,7 @@ public class JobOrchestrationService
 			// Step 2: Validate video file
 			if (!await _processingService.ValidateVideoFileAsync(videoShort.FilePath, cancellationToken))
 			{
-				result.Status = "Failed";
+				result.Status = FailedPipelineStatus;
 				result.Error = "Video file validation failed";
 				return result;
 			}
@@ -102,14 +108,14 @@ public class JobOrchestrationService
 
 			if (!processingTask.IsCompleted())
 			{
-				result.Status = "Failed";
+				result.Status = FailedPipelineStatus;
 				result.Error = "Video processing failed";
 				return result;
 			}
 
 			// Step 4: Generate thumbnail
 			var thumbnailPath = await _processingService.GenerateThumbnailAsync(
-				videoShort.FilePath, 2.0, cancellationToken);
+				videoShort.FilePath, ThumbnailTimestampSeconds, cancellationToken);
 			videoShort.ThumbnailPath = thumbnailPath;
 
 			// Step 5: Apply enhancements if configured
@@ -139,7 +145,7 @@ public class JobOrchestrationService
 			result.UploadJobId = uploadJob.Id;
 			result.ScheduledUploadTime = scheduledUploadTime;
 
-			result.Status = "Success";
+			result.Status = SuccessfulPipelineStatus;
 			result.CompletedAt = DateTime.UtcNow;
 
 			_logger.LogInformation($"Pipeline completed successfully for video {videoShortId}");
@@ -147,7 +153,7 @@ public class JobOrchestrationService
 		}
 	catch (Exception ex)
 	{
-		result.Status = "Failed";
+		result.Status = FailedPipelineStatus;
 		result.Error = ex.Message;
 		_logger.LogError($"Pipeline failed for video {videoShortId}: {ex.Message}");
 		return result;
@@ -169,7 +175,7 @@ public class JobOrchestrationService
 			var readyJobs = await _uploadRepository.GetScheduledForUploadAsync(cancellationToken);
 			_logger.LogInformation($"Found {readyJobs.Count()} ready for upload");
 
-			var successCount = 0;
+			var successCount = InitialSuccessfulUploadCount;
 			foreach (var job in readyJobs.Take(Constants.Constants.MAX_CONCURRENT_UPLOADS))
 			{
 				try
@@ -192,7 +198,7 @@ public class JobOrchestrationService
 		}
 
 		_logger.LogInformation($"Successfully uploaded {successCount} videos");
-		return successCount > 0;
+		return successCount > InitialSuccessfulUploadCount;
 	}
 	catch (Exception ex)
 	{
@@ -265,7 +271,8 @@ public class JobOrchestrationService
 			{
 				try
 				{
-					await _analyticsService.SyncAnalyticsFromYouTubeAsync(video.Id, "", channel, cancellationToken);
+					await _analyticsService.SyncAnalyticsFromYouTubeAsync(
+						video.Id, MissingYouTubeVideoId, channel, cancellationToken);
 					result.SyncedCount++;
 				}
 				catch (Exception ex)
