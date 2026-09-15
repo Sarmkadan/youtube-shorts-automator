@@ -16,6 +16,8 @@ namespace YouTubeShortAutomator.Services;
 /// </summary>
 public class ChannelService
 {
+    private const string NullChannelMessage = "YouTube channel cannot be null.";
+
     private readonly ILogger<ChannelService> _logger;
 
     /// <summary>
@@ -55,7 +57,7 @@ public class ChannelService
         // Fix: Add null check for channel parameter.
         if (channel == null)
         {
-            throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
+            throw new ArgumentNullException(nameof(channel), NullChannelMessage);
         }
         // Checks if the token should be refreshed proactively
         return channel.NeedsTokenRefresh();
@@ -71,7 +73,7 @@ public class ChannelService
         // Fix: Add null check for channel parameter.
         if (channel == null)
         {
-            throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
+            throw new ArgumentNullException(nameof(channel), NullChannelMessage);
         }
         // Updates the active status of a channel
         if (isActive)
@@ -96,7 +98,7 @@ public class ChannelService
         // Fix: Add null check for channel parameter.
         if (channel == null)
         {
-            throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
+            throw new ArgumentNullException(nameof(channel), NullChannelMessage);
         }
         // Returns a human-readable summary of channel status
         var summary = $"Channel: {channel.ChannelName}\n";
@@ -121,7 +123,7 @@ public class ChannelService
         // Fix: Add null check for channel parameter.
         if (channel == null)
         {
-            throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
+            throw new ArgumentNullException(nameof(channel), NullChannelMessage);
         }
         // Validates that all required credentials are present
         if (!channel.IsValid())
