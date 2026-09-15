@@ -13,25 +13,6 @@ namespace YouTubeShortAutomator.Services;
 
 public class SchedulingService
 {
-    private readonly UploadJobRepository _uploadRepository;
-    private readonly ILogger<SchedulingService> _logger;
-
-    public SchedulingService(UploadJobRepository uploadRepository, ILogger<SchedulingService> logger)
-    {
-        _uploadRepository = uploadRepository ?? throw new ArgumentNullException(nameof(uploadRepository));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
-    /// <summary>
-    /// Protected parameterless constructor to allow test mocking frameworks to
-    /// generate a class proxy without requiring real dependencies.
-    /// </summary>
-    protected SchedulingService()
-    {
-        _uploadRepository = null!;
-        _logger = null!;
-    }
-
     /// <summary>
     /// Tolerance window for scheduling time validation. Allows scheduling for "now"
     /// without failing due to clock drift between caller and method evaluation.
@@ -58,6 +39,30 @@ public class SchedulingService
     /// </summary>
     private const int DefaultLookaheadHours = 24;
 
+    /// <summary>
+    /// Initial number of upload attempts for a newly scheduled job.
+    /// </summary>
+    private const int InitialAttemptCount = 0;
+
+    private readonly UploadJobRepository _uploadRepository;
+    private readonly ILogger<SchedulingService> _logger;
+
+    public SchedulingService(UploadJobRepository uploadRepository, ILogger<SchedulingService> logger)
+    {
+        _uploadRepository = uploadRepository ?? throw new ArgumentNullException(nameof(uploadRepository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// Protected parameterless constructor to allow test mocking frameworks to
+    /// generate a class proxy without requiring real dependencies.
+    /// </summary>
+    protected SchedulingService()
+    {
+        _uploadRepository = null!;
+        _logger = null!;
+    }
+
     public virtual async Task<UploadJob> ScheduleUploadAsync(int videoShortId, DateTime scheduledTime,
         CancellationToken cancellationToken = default)
     {
@@ -75,7 +80,7 @@ public class SchedulingService
                 VideoShortId = videoShortId,
                 Status = UploadStatus.Pending,
                 ScheduledAt = scheduledTime,
-                AttemptCount = 0,
+                AttemptCount = InitialAttemptCount,
                 MaxRetries = Constants.Constants.DEFAULT_RETRY_COUNT,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
