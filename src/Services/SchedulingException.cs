@@ -24,7 +24,10 @@ public class SchedulingException : Exception
     /// Initializes a new instance of the <see cref="SchedulingException"/> class.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
-    public SchedulingException(string message) : base(message) { }
+    public SchedulingException(string message)
+        : base(message)
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SchedulingException"/> class.
@@ -32,7 +35,9 @@ public class SchedulingException : Exception
     /// <param name="message">The message that describes the error.</param>
     /// <param name="innerException">The inner exception that caused this exception.</param>
     public SchedulingException(string message, Exception innerException)
-        : base(message, innerException) { }
+        : base(message, innerException)
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SchedulingException"/> class.
