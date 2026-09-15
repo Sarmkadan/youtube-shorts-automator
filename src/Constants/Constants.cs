@@ -56,7 +56,8 @@ public static class Constants
 
     // File validation
     public const long MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-    public const long MIN_FILE_SIZE_BYTES = 1024; // 1 KB minimum
+    // 1 KB minimum
+    public const long MIN_FILE_SIZE_BYTES = 1024;
 
     // Performance optimization
     public const int MAX_CONCURRENT_UPLOADS = 3;
