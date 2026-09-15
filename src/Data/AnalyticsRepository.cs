@@ -3,8 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
-using YouTubeShortAutomator.Domain.Models;
 using System.Data;
+using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Data;
 
@@ -67,7 +67,9 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
     /// <param name="videoShortId"> The unique identifier of the video short. </param>
     /// <param name="cancellationToken"> A token to cancel the operation. </param>
     /// <returns> The analytics data associated with the video, or null if not found. </returns>
-    public virtual async Task<AnalyticsData?> GetByVideoIdAsync(int videoShortId, CancellationToken cancellationToken = default)
+    public virtual async Task<AnalyticsData?> GetByVideoIdAsync(
+        int videoShortId,
+        CancellationToken cancellationToken = default)
     {
         // Retrieves analytics for a specific video
         var query = @"
@@ -85,7 +87,9 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
     /// <param name="limit"> The maximum number of records to return. </param>
     /// <param name="cancellationToken"> A token to cancel the operation. </param>
     /// <returns> A collection of top-performing <see cref="AnalyticsData"/> records. </returns>
-    public virtual async Task<IEnumerable<AnalyticsData>> GetTopPerformersAsync(int limit = 10, CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<AnalyticsData>> GetTopPerformersAsync(
+        int limit = 10,
+        CancellationToken cancellationToken = default)
     {
         // Retrieves top performing videos by engagement rate
         var query = @"
@@ -104,7 +108,9 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
     /// <param name="entity"> The analytics data to add. </param>
     /// <param name="cancellationToken"> A token to cancel the operation. </param>
     /// <returns> The added <see cref="AnalyticsData"/> entity. </returns>
-    public virtual async Task<AnalyticsData> AddAsync(AnalyticsData entity, CancellationToken cancellationToken = default)
+    public virtual async Task<AnalyticsData> AddAsync(
+        AnalyticsData entity,
+        CancellationToken cancellationToken = default)
     {
         // Inserts new analytics record
         var query = @"
@@ -133,7 +139,7 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
             { "@AudienceRetentionPercentage", entity.AudienceRetentionPercentage },
             { "@TrafficSources", entity.TrafficSources },
             { "@ImpressionCount", entity.ImpressionCount },
-            { "@UpdatedAt", DateTime.UtcNow }
+            { "@UpdatedAt", DateTime.UtcNow },
         };
 
         var id = await _context.ExecuteScalarAsync<int>(query, CommandType.Text, parameters);
@@ -145,7 +151,9 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
     /// <param name="entity"> The analytics data to update. </param>
     /// <param name="cancellationToken"> A token to cancel the operation. </param>
     /// <returns> The updated <see cref="AnalyticsData"/> entity. </returns>
-    public virtual async Task<AnalyticsData> UpdateAsync(AnalyticsData entity, CancellationToken cancellationToken = default)
+    public virtual async Task<AnalyticsData> UpdateAsync(
+        AnalyticsData entity,
+        CancellationToken cancellationToken = default)
     {
         // Updates existing analytics record
         var query = @"
@@ -173,7 +181,7 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
             { "@AudienceRetentionPercentage", entity.AudienceRetentionPercentage },
             { "@TrafficSources", entity.TrafficSources },
             { "@ImpressionCount", entity.ImpressionCount },
-            { "@UpdatedAt", DateTime.UtcNow }
+            { "@UpdatedAt", DateTime.UtcNow },
         };
 
         await _context.ExecuteCommandAsync(query, CommandType.Text, parameters);
@@ -243,7 +251,7 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
             AudienceRetentionPercentage = (double)row["AudienceRetentionPercentage"],
             TrafficSources = (int)row["TrafficSources"],
             ImpressionCount = (int)row["ImpressionCount"],
-            UpdatedAt = (DateTime)row["UpdatedAt"]
+            UpdatedAt = (DateTime)row["UpdatedAt"],
         };
     }
 }
