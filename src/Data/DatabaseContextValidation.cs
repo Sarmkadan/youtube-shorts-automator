@@ -47,12 +47,15 @@ public static class DatabaseContextValidation
     /// </summary>
     /// <param name="value">The database context to validate.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when the context is invalid, containing a list of validation errors.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the context is invalid, containing a list of validation errors.
+    /// </exception>
     public static void EnsureValid(this DatabaseContext? value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
         var errors = Validate(value);
+
         if (errors.Count > 0)
         {
             throw new ArgumentException(
