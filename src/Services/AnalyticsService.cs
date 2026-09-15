@@ -16,6 +16,20 @@ namespace YouTubeShortAutomator.Services;
 /// </summary>
 public class AnalyticsService
 {
+    private const int InitialMetricValue = 0;
+    private const int MinimumMockViewCount = 100;
+    private const int MaximumMockViewCount = 10000;
+    private const double MockLikeRate = 0.05;
+    private const double MockCommentRate = 0.02;
+    private const double MockShareRate = 0.01;
+    private const double MockAverageViewDurationSeconds = 15.5;
+    private const double MockAudienceRetentionPercentage = 75.5;
+    private const int MockTrafficSourceDivisor = 2;
+    private const int DefaultTopPerformingVideosLimit = 10;
+    private const int MinimumTopPerformingVideosLimit = 0;
+    private const double ExcellentEngagementRateThreshold = 10;
+    private const double LowEngagementRateThreshold = 2;
+
     private readonly AnalyticsRepository _analyticsRepository;
     private readonly VideoShortRepository _videoRepository;
     private readonly ILogger<AnalyticsService> _logger;
@@ -62,18 +76,18 @@ public class AnalyticsService
             var analyticsData = new AnalyticsData
             {
                 VideoShortId = videoShortId,
-                ViewCount = 0,
-                LikeCount = 0,
-                CommentCount = 0,
-                ShareCount = 0,
-                AverageViewDuration = 0,
-                EngagementRate = 0,
-                ClickThroughRate = 0,
-                SubscribersGained = 0,
-                SubscribersLost = 0,
-                AudienceRetentionPercentage = 0,
-                TrafficSources = 0,
-                ImpressionCount = 0,
+                ViewCount = InitialMetricValue,
+                LikeCount = InitialMetricValue,
+                CommentCount = InitialMetricValue,
+                ShareCount = InitialMetricValue,
+                AverageViewDuration = InitialMetricValue,
+                EngagementRate = InitialMetricValue,
+                ClickThroughRate = InitialMetricValue,
+                SubscribersGained = InitialMetricValue,
+                SubscribersLost = InitialMetricValue,
+                AudienceRetentionPercentage = InitialMetricValue,
+                TrafficSources = InitialMetricValue,
+                ImpressionCount = InitialMetricValue,
                 UpdatedAt = DateTime.UtcNow
             };
 
@@ -113,11 +127,11 @@ public class AnalyticsService
         try
         {
             // Mock data that would come from YouTube API
-            var views = new Random().Next(100, 10000);
-            var likes = (int)(views * 0.05);
-            var comments = (int)(views * 0.02);
-            var shares = (int)(views * 0.01);
-            var avgDuration = 15.5; // seconds
+            var views = new Random().Next(MinimumMockViewCount, MaximumMockViewCount);
+            var likes = (int)(views * MockLikeRate);
+            var comments = (int)(views * MockCommentRate);
+            var shares = (int)(views * MockShareRate);
+            var avgDuration = MockAverageViewDurationSeconds;
 
             var existingAnalytics = await _analyticsRepository.GetByVideoIdAsync(videoShortId, cancellationToken);
             
@@ -127,7 +141,7 @@ public class AnalyticsService
             }
 
             existingAnalytics.UpdateFromAPI(views, likes, comments, shares, avgDuration);
-            existingAnalytics.UpdateRetentionData(75.5, views / 2);
+            existingAnalytics.UpdateRetentionData(MockAudienceRetentionPercentage, views / MockTrafficSourceDivisor);
 
             var updated = await _analyticsRepository.UpdateAsync(existingAnalytics, cancellationToken);
             
@@ -170,11 +184,12 @@ public class AnalyticsService
     /// <returns>An enumerable of analytics data for the top performing videos.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when limit is not a positive integer.</exception>
     /// <exception cref="Exception">Thrown when an error occurs while retrieving top performers.</exception>
-    public virtual async Task<IEnumerable<AnalyticsData>> GetTopPerformingVideosAsync(int limit = 10,
+    public virtual async Task<IEnumerable<AnalyticsData>> GetTopPerformingVideosAsync(
+        int limit = DefaultTopPerformingVideosLimit,
         CancellationToken cancellationToken = default)
     {
         // Fix: Validate that the limit is a positive integer to avoid unexpected behavior.
-        if (limit <= 0)
+        if (limit <= MinimumTopPerformingVideosLimit)
         {
             throw new ArgumentOutOfRangeException(nameof(limit), limit, "The limit for top performing videos must be a positive integer.");
         }
@@ -223,7 +238,9 @@ public class AnalyticsService
                 TotalLikes = allAnalytics.Sum(a => a.LikeCount),
                 TotalComments = allAnalytics.Sum(a => a.CommentCount),
                 TotalShares = allAnalytics.Sum(a => a.ShareCount),
-                AverageEngagementRate = allAnalytics.Any() ? allAnalytics.Average(a => a.EngagementRate) : 0,
+                AverageEngagementRate = allAnalytics.Any()
+                    ? allAnalytics.Average(a => a.EngagementRate)
+                    : InitialMetricValue,
                 TotalSubscribersGained = allAnalytics.Sum(a => a.SubscribersGained),
                 GeneratedAt = DateTime.UtcNow
             };
@@ -258,11 +275,11 @@ public class AnalyticsService
         insights += $"- Avg Watch Duration: {analytics.AverageViewDuration:F1}s\n";
         insights += $"- Audience Retention: {analytics.AudienceRetentionPercentage:F1}%\n";
 
-        if (analytics.EngagementRate > 10)
+        if (analytics.EngagementRate > ExcellentEngagementRateThreshold)
         {
             insights += "- Status: Excellent engagement!\n";
         }
-        else if (analytics.EngagementRate < 2)
+        else if (analytics.EngagementRate < LowEngagementRateThreshold)
         {
             insights += "- Status: Low engagement. Consider reviewing title and thumbnail.\n";
         }
