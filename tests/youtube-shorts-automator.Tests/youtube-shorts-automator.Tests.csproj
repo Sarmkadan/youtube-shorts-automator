@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\youtube-shorts-automator.csproj" />
+    <ProjectReference Include="..\..\YouTubeShortsAutomator.csproj" />
   </ItemGroup>
 
 </Project>

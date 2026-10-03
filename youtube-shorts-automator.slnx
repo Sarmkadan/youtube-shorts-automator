@@ -1,4 +1,10 @@
 <Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/youtube-shorts-automator.Benchmarks/youtube-shorts-automator.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/youtube-shorts-automator.Tests/youtube-shorts-automator.Tests.csproj" />
+  </Folder>
   <Project Path="youtube-shorts-automator.csproj" />
   <Project Path="YouTubeShortsAutomator.csproj" />
 </Solution>
