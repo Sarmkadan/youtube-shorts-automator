@@ -91,6 +91,245 @@ dotnet run
 
 The logger writes progress to the console. On failure, `ProcessAsync` throws `FileNotFoundException` when the source is missing, or `VideoProcessingException` when the input is not a readable video or FFmpeg fails. `GenerateFromVideoAsync` throws `VideoProcessingException` when the video file is missing, but returns `Success = false` with `ErrorMessage` set when FFmpeg fails to extract the frame.
 
+## Uploading and scheduling Shorts (web API)
+
+This section uses the web API in the repository root (namespace `YouTubeShortsAutomator`), not the `src/` console pipeline above. It walks through authentication, an immediate upload with `VideoUploader`, a queued upload with `ScheduleManager`, and reading stats back with `AnalyticsTracker`. The example uses SQLite, so it needs no database server.
+
+> **Current limits.** The YouTube calls are simulated. `GoogleApiClient` returns fixed analytics (1500 views, 120 likes, 45 comments, 30 shares), and `YouTubeUploadService` invents a video ID and does not send title, description or tags to YouTube. The app has no OAuth client-secrets file loader and no token cache on disk. Credentials are stored as `ApiCredential` rows in the database.
+
+### Prerequisites
+
+- **.NET SDK 10.0.100 or later.**
+- **Two 9:16 Shorts under 60 seconds** at `output/short.mp4` and `output/short-2.mp4`, for example from the pipeline in [Getting started](#getting-started). Copy one file to create the second.
+- **A Google Cloud OAuth client** (Desktop app) with the YouTube Data API v3 enabled. Get tokens with the Google OAuth 2.0 Playground or your own consent flow. This repository does not include a consent flow.
+
+Create a console project next to a checkout of this repository, then add the SQLite provider:
+
+```bash
+dotnet new console -n ShortsExample
+cd ShortsExample
+```
+
+Replace the generated `ShortsExample.csproj` with the following. It references the root project and adds the SQLite provider:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+    <ProjectReference Include="../youtube-shorts-automator/YouTubeShortsAutomator.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+### Authentication
+
+The example reads its configuration from environment variables. Nothing is hard-coded.
+
+| Variable | Used for |
+|----------|----------|
+| `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET` | OAuth client from Google Cloud Console |
+| `YOUTUBE_ACCESS_TOKEN`, `YOUTUBE_REFRESH_TOKEN` | Tokens from your consent flow |
+| `YOUTUBE_CHANNEL_ID` | Channel ID stored on the `User` row |
+| `YouTube__ApiKey` | Required by the `GoogleApiClient` constructor. Any non-empty value works while the client is simulated. |
+
+On first run, the example saves a `User` and a `GoogleOAuth` `ApiCredential` in the `ShortsExample` SQLite file (`shorts.db`). Later runs reuse them.
+
+```bash
+export YOUTUBE_CHANNEL_ID=UCxxxxxxxxxxxxxxxxxxxxxx
+export YOUTUBE_CLIENT_ID=...apps.googleusercontent.com
+export YOUTUBE_CLIENT_SECRET=...
+export YOUTUBE_ACCESS_TOKEN=...
+export YOUTUBE_REFRESH_TOKEN=...
+export YouTube__ApiKey=unused-while-simulated
+```
+
+### Example
+
+Replace `Program.cs` with the following:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using YouTubeShortsAutomator.Application.Repositories;
+using YouTubeShortsAutomator.Application.Services;
+using YouTubeShortsAutomator.Domain.Exceptions;
+using YouTubeShortsAutomator.Domain.Models;
+using YouTubeShortsAutomator.Infrastructure.Repositories;
+using YouTubeShortsAutomator.Integration;
+
+static string Required(string name) =>
+    Environment.GetEnvironmentVariable(name) is { Length: > 0 } value
+        ? value
+        : throw new InvalidOperationException($"Set the {name} environment variable.");
+
+// Environment variables such as YouTube__ApiKey map to the YouTube:ApiKey configuration key.
+var configuration = new ConfigurationBuilder()
+    .AddEnvironmentVariables()
+    .Build();
+
+var services = new ServiceCollection();
+services.AddLogging(logging => logging.AddConsole());
+services.AddSingleton<IConfiguration>(configuration);
+services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite("Data Source=shorts.db"));
+
+// Repository and service registrations from AddInfrastructureServices, with SQLite in place of SQL Server.
+YouTubeShortsAutomator.Infrastructure.Extensions.ServiceCollectionExtensions.AddRepositories(services);
+YouTubeShortsAutomator.Infrastructure.Extensions.ServiceCollectionExtensions.AddApplicationServices(services);
+YouTubeShortsAutomator.Extensions.ServiceCollectionExtensions.AddApplicationServices(services);
+
+// These three are not registered by the app, so the example registers them.
+services.AddScoped<IGoogleApiClient, GoogleApiClient>();
+services.AddScoped<VideoUploader>();
+services.AddScoped<IVideoUploader>(sp => sp.GetRequiredService<VideoUploader>());
+services.AddScoped<ScheduleManager>();
+services.AddScoped<AnalyticsTracker>();
+
+await using var provider = services.BuildServiceProvider();
+using var scope = provider.CreateScope();
+var sp = scope.ServiceProvider;
+
+await sp.GetRequiredService<ApplicationDbContext>().Database.EnsureCreatedAsync();
+
+// 1. Authenticate: store the user and their YouTube OAuth credential in the database.
+var db = sp.GetRequiredService<ApplicationDbContext>();
+var email = "creator@example.com";
+var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
+if (user is null)
+{
+    user = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = email,
+        DisplayName = "Shorts Creator",
+        ChannelId = Required("YOUTUBE_CHANNEL_ID"),
+        CreatedAt = DateTime.UtcNow,
+        SubscriptionExpiresAt = DateTime.UtcNow.AddYears(1),
+        StorageQuotaBytes = 10L * 1024 * 1024 * 1024
+    };
+    db.Users.Add(user);
+    await db.SaveChangesAsync();
+}
+
+var credentials = sp.GetRequiredService<IApiCredentialService>();
+if (await credentials.GetActiveCredentialAsync(user.Id) is null)
+{
+    await credentials.CreateCredentialAsync(user.Id, new ApiCredential
+    {
+        Id = Guid.NewGuid(),
+        CredentialType = ApiCredentialType.GoogleOAuth,
+        ClientId = Required("YOUTUBE_CLIENT_ID"),
+        ClientSecret = Required("YOUTUBE_CLIENT_SECRET"),
+        AccessToken = Required("YOUTUBE_ACCESS_TOKEN"),
+        RefreshToken = Required("YOUTUBE_REFRESH_TOKEN"),
+        // Set this to the real expiry of the access token you pasted in.
+        AccessTokenExpiresAt = DateTime.UtcNow.AddHours(1),
+        Scope = "https://www.googleapis.com/auth/youtube.upload"
+    });
+}
+
+// Adds a processed Short to the library. The file must already exist at filePath.
+async Task<Video> AddShortAsync(string filePath, string title)
+{
+    var video = new Video
+    {
+        Id = Guid.NewGuid(),
+        UserId = user.Id,
+        Title = title,
+        Description = "A 30-second look at my morning routine.\n\n#shorts #routine",
+        Tags = new[] { "shorts", "routine", "vlog" },
+        FilePath = filePath,
+        FileSizeBytes = new FileInfo(filePath).Length,
+        DurationSeconds = 59,
+        CreatedAt = DateTime.UtcNow
+    };
+    video.MarkAsProcessed();
+    await sp.GetRequiredService<IVideoRepository>().AddAsync(video);
+    return video;
+}
+
+// 2. Upload a Short now. VideoUploader is the upload entry point; it does not check file size, so validate first.
+var uploader = sp.GetRequiredService<VideoUploader>();
+var immediate = await AddShortAsync(Path.GetFullPath("output/short.mp4"), "Morning routine in 30 seconds");
+
+var problems = await uploader.ValidateForUploadAsync(immediate.Id);
+if (problems.Count > 0)
+    throw new InvalidOperationException(string.Join("; ", problems));
+
+var upload = await uploader.UploadWithRetryAsync(immediate.Id, user.Id);
+Console.WriteLine($"Uploaded: {upload.YouTubeUrl}");
+
+// 3. Schedule a second Short for a later publish time. ScheduleManager uploads it once that time has passed.
+var schedule = new UploadSchedule
+{
+    Id = Guid.NewGuid(),
+    UserId = user.Id,
+    ScheduleName = "Shorts daily",
+    Frequency = ScheduleFrequency.Daily,
+    ScheduledTime = new TimeOnly(9, 0),
+    TimeZoneId = "UTC",
+    IsActive = true,
+    CreatedAt = DateTime.UtcNow
+};
+schedule.NextScheduledTime = schedule.CalculateNextScheduledTime(DateTime.UtcNow);
+await sp.GetRequiredService<IScheduleRepository>().AddAsync(schedule);
+
+var scheduled = await AddShortAsync(Path.GetFullPath("output/short-2.mp4"), "Evening routine in 30 seconds");
+
+var scheduleManager = sp.GetRequiredService<ScheduleManager>();
+var queued = await scheduleManager.EnqueueUploadAsync(schedule.Id, scheduled.Id, DateTime.UtcNow.AddHours(2));
+Console.WriteLine($"Queued {queued.VideoId} for {queued.ScheduledFor:O}");
+
+// Call this from a timer or worker. It returns 0 until the queued time has passed.
+var dispatched = await scheduleManager.ProcessDueSchedulesAsync();
+Console.WriteLine($"Uploads dispatched now: {dispatched}");
+
+// 4. Read back basic stats for the uploaded Short.
+var analytics = sp.GetRequiredService<AnalyticsTracker>();
+var metric = await analytics.SyncVideoAnalyticsAsync(immediate.Id);
+if (metric is null)
+{
+    Console.WriteLine("No analytics available yet.");
+}
+else
+{
+    Console.WriteLine($"Views: {metric.ViewCount}, likes: {metric.LikeCount}, " +
+                      $"comments: {metric.CommentCount}, shares: {metric.ShareCount}");
+}
+Console.WriteLine($"Total views across all Shorts: {await analytics.GetTotalViewsAsync()}");
+```
+
+Run it from the project directory:
+
+```bash
+dotnet run
+```
+
+The flow is:
+
+1. **Authenticate.** Store the user and their OAuth credential.
+2. **Upload now.** `VideoUploader.ValidateForUploadAsync` runs first, then `UploadWithRetryAsync` uploads. `VideoUploader` is the upload entry point. There is no `UploadManager` class in this repository.
+3. **Schedule.** `ScheduleManager.EnqueueUploadAsync` queues a second Short for two hours from now. `ProcessDueSchedulesAsync` returns `0` until that time, then uploads through `VideoUploader`.
+4. **Read stats.** `AnalyticsTracker.SyncVideoAnalyticsAsync` fetches the metrics for the uploaded Short and stores a snapshot. `GetTotalViewsAsync` sums the latest snapshot per video.
+
+The app's DI setup registers the repositories and `IApiCredentialService`, but not `ScheduleManager`, `AnalyticsTracker`, `VideoUploader`, or `IGoogleApiClient`. The example registers those four itself.
+
+### Common errors
+
+| Error | Where it comes from | What to do |
+|-------|---------------------|------------|
+| `UploadException: Upload failed: The database operation was expected to affect 1 row(s)...` (inner `DbUpdateConcurrencyException`) | `YouTubeUploadService.UploadVideoAsync` → `VideoRepository.UpdateAsync` | **Known issue.** `Repository.UpdateAsync` calls `DbSet.Update`, which also marks the new `UploadResult` as modified, so the UPDATE matches no rows. The upload fails on every run. The same EF Core behaviour applies to SQL Server, so this is not specific to SQLite. The fix belongs in the code, not in this example. |
+| Quota exceeded | YouTube Data API v3 returns a `quotaExceeded` error | `QuotaExceededException` exists in `Domain/Exceptions`, but no current code path throws it. A real quota error currently reaches you wrapped in `UploadException` ("Upload failed: ..."). Check usage under Google Cloud Console → APIs & Services → YouTube Data API v3 → Quotas. The quota resets at midnight Pacific Time. |
+| Invalid credentials | `CredentialException` ("Invalid credential: Access token is required", "Credentials are invalid or expired", "No valid YouTube credentials found") or `OAuthTokenExpiredException` ("OAuth refresh token has expired; re-authorization required.") | Get new tokens and update the environment variables. Mark or delete the stale `ApiCredential` row, because the example creates a new one only when `GetActiveCredentialAsync` returns `null`. `VideoUploader` retries these exceptions, so expect a few seconds of delay before the error surfaces. |
+| File too large | `ValidateForUploadAsync` returns `File size exceeds 4GB limit`. `Video.Validate()` returns `File size exceeds maximum limit of 4GB`. | `UploadWithRetryAsync` does not check file size, so call `ValidateForUploadAsync` first, as the example does. Re-export the Short at a lower bitrate or re-run the pipeline. A 60-second Short should never reach 4 GB, so a file this size is usually the wrong file. |
+
 ## FileSystemUtility
 
 `FileSystemUtility` provides static methods for common file system operations, such as ensuring directories exist, validating video files, reading and writing files, and managing directories.
