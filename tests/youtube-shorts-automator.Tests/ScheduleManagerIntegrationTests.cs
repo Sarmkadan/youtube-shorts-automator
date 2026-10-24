@@ -39,7 +39,9 @@ public class ScheduleManagerIntegrationTests : IDisposable
     {
         SqliteConnection.ClearAllPools();
         if (Directory.Exists(_directory))
+        {
             Directory.Delete(_directory, recursive: true);
+        }
     }
 
     [Fact]

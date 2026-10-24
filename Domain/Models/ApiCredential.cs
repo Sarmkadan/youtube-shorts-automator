@@ -109,19 +109,29 @@ public class ApiCredential
         var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(ClientId))
+        {
             errors.Add("Client ID is required");
+        }
 
         if (string.IsNullOrWhiteSpace(ClientSecret))
+        {
             errors.Add("Client secret is required");
+        }
 
         if (string.IsNullOrWhiteSpace(AccessToken))
+        {
             errors.Add("Access token is required");
+        }
 
         if (AccessTokenExpiresAt < DateTime.UtcNow)
+        {
             errors.Add("Access token has already expired");
+        }
 
         if (string.IsNullOrWhiteSpace(RefreshToken) && CredentialType == ApiCredentialType.GoogleOAuth)
+        {
             errors.Add("Refresh token is required for OAuth credentials");
+        }
 
         return (errors.Count == 0, errors);
     }

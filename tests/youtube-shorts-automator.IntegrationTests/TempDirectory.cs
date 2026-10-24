@@ -23,7 +23,9 @@ public sealed class TempDirectory : IDisposable
         try
         {
             if (Directory.Exists(DirectoryPath))
+            {
                 Directory.Delete(DirectoryPath, recursive: true);
+            }
         }
         catch (IOException)
         {

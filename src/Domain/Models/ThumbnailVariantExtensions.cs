@@ -24,7 +24,9 @@ public static class ThumbnailVariantExtensions
         ArgumentNullException.ThrowIfNull(variant);
 
         if (variant.ImpressionCount == 0)
+        {
             return 0;
+        }
 
         return (double)variant.ClickCount / variant.ImpressionCount * 100.0;
     }
@@ -57,13 +59,19 @@ public static class ThumbnailVariantExtensions
         ArgumentOutOfRangeException.ThrowIfNegative(minimumImpressions);
 
         if (!variant.HasSufficientData(minimumImpressions))
+        {
             return "Needs More Data";
+        }
 
         if (variant.ViewRate >= 5.0)
+        {
             return "Excellent";
+        }
 
         if (variant.ViewRate >= 2.5)
+        {
             return "Good";
+        }
 
         return "Poor";
     }
@@ -80,7 +88,9 @@ public static class ThumbnailVariantExtensions
         ArgumentNullException.ThrowIfNull(variant);
 
         if (baseline is null || baseline.ImpressionCount == 0 || baseline.ViewRate == 0)
+        {
             return 0;
+        }
 
         return ((variant.ViewRate - baseline.ViewRate) / baseline.ViewRate) * 100.0;
     }

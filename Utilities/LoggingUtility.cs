@@ -110,7 +110,9 @@ public class OperationLogger : IDisposable
     public void LogSuccess(object? result = null)
     {
         if (_disposed)
+        {
             return;
+        }
 
         var elapsed = (long)(DateTime.UtcNow - _startTime).TotalMilliseconds;
         LoggingUtility.LogOperationSuccess(_logger, _operationName, elapsed, result);
@@ -120,7 +122,9 @@ public class OperationLogger : IDisposable
     public void LogFailure(Exception exception)
     {
         if (_disposed)
+        {
             return;
+        }
 
         var elapsed = (long)(DateTime.UtcNow - _startTime).TotalMilliseconds;
         LoggingUtility.LogOperationFailure(_logger, _operationName, exception, elapsed);

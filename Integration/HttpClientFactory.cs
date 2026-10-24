@@ -37,7 +37,9 @@ public class DefaultHttpClientFactory : IHttpClientFactory
     public HttpClient CreateYouTubeApiClient()
     {
         if (_youtubeClient != null)
+        {
             return _youtubeClient;
+        }
 
         _logger.LogInformation("Creating YouTube API client");
 
@@ -58,7 +60,9 @@ public class DefaultHttpClientFactory : IHttpClientFactory
     public HttpClient CreateStorageClient()
     {
         if (_storageClient != null)
+        {
             return _storageClient;
+        }
 
         _logger.LogInformation("Creating storage client");
 
@@ -79,7 +83,9 @@ public class DefaultHttpClientFactory : IHttpClientFactory
     public HttpClient CreateWebhookClient()
     {
         if (_webhookClient != null)
+        {
             return _webhookClient;
+        }
 
         _logger.LogInformation("Creating webhook client");
 
@@ -94,7 +100,9 @@ public class DefaultHttpClientFactory : IHttpClientFactory
     public HttpClient CreateAnalyticsClient()
     {
         if (_analyticsClient != null)
+        {
             return _analyticsClient;
+        }
 
         _logger.LogInformation("Creating analytics client");
 

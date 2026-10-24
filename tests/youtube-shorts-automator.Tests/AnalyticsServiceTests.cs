@@ -4,11 +4,11 @@
 // =============================================================================
 
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Services;
-using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
@@ -114,7 +114,7 @@ public class AnalyticsServiceTests
         var result = await _service.SyncAnalyticsFromYouTubeAsync(videoId, youtubeVideoId, channel);
 
         result.Should().NotBeNull();
-        result.ViewCount.Should().BeGreaterThan(0);
+        result!.ViewCount.Should().BeGreaterThan(0);
         _mockAnalyticsRepository.Verify(r => r.UpdateAsync(It.IsAny<AnalyticsData>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -190,7 +190,7 @@ public class AnalyticsServiceTests
         var result = await _service.GetVideoAnalyticsAsync(videoId);
 
         result.Should().NotBeNull();
-        result.ViewCount.Should().Be(1000);
+        result!.ViewCount.Should().Be(1000);
     }
 
     /// <summary>

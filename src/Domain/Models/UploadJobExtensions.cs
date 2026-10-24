@@ -3,8 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
-using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Constants;
+using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Domain.Models;
 

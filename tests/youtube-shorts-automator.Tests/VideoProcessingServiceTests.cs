@@ -4,13 +4,13 @@
 // =============================================================================
 
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
 using YouTubeShortAutomator.Services;
-using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
@@ -65,8 +65,15 @@ public class VideoProcessingServiceTests
         }
         finally
         {
-            if (File.Exists(filePath)) File.Delete(filePath);
-            if (Directory.Exists(testDir)) Directory.Delete(testDir);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            if (Directory.Exists(testDir))
+            {
+                Directory.Delete(testDir);
+            }
         }
     }
 
@@ -101,8 +108,15 @@ public class VideoProcessingServiceTests
         }
         finally
         {
-            if (File.Exists(filePath)) File.Delete(filePath);
-            if (Directory.Exists(testDir)) Directory.Delete(testDir);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            if (Directory.Exists(testDir))
+            {
+                Directory.Delete(testDir);
+            }
         }
     }
 
@@ -126,8 +140,15 @@ public class VideoProcessingServiceTests
         }
         finally
         {
-            if (File.Exists(filePath)) File.Delete(filePath);
-            if (Directory.Exists(testDir)) Directory.Delete(testDir);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            if (Directory.Exists(testDir))
+            {
+                Directory.Delete(testDir);
+            }
         }
     }
 
@@ -290,14 +311,10 @@ public class VideoProcessingServiceTests
     }
 
     /// <summary>
-    /// Tests that <see cref="VideoProcessingService.ProcessVideoAsync"/> sets the correct priority based on the input data.
+    /// Tests that <see cref="VideoProcessingService.ProcessVideoAsync"/> sets the fixed default priority of 5.
     /// </summary>
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(5)]
-    [InlineData(10)]
-    public async Task ProcessVideoAsync_SetsCorrectPriority(int expectedPriority)
+    [Fact]
+    public async Task ProcessVideoAsync_SetsCorrectPriority()
     {
         var videoShort = new VideoShort
         {

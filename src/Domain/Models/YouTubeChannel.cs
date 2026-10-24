@@ -175,13 +175,25 @@ public class YouTubeChannel
     {
         // Validates the YouTube channel
         if (string.IsNullOrWhiteSpace(ChannelId) || !ChannelId.StartsWith("UC"))
+        {
             return false;
+        }
+
         if (string.IsNullOrWhiteSpace(ChannelName) || ChannelName.Length > 200)
+        {
             return false;
+        }
+
         if (string.IsNullOrWhiteSpace(AccessToken))
+        {
             return false;
+        }
+
         if (string.IsNullOrWhiteSpace(RefreshToken))
+        {
             return false;
+        }
+
         return true;
     }
 

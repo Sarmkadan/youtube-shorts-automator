@@ -2,22 +2,26 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- CS1591: the XML doc file is generated, but most public members are not documented yet (~1,300 hits). -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <OutputType>Exe</OutputType>
     <RootNamespace>YouTubeShortsAutomator</RootNamespace>
     <AssemblyName>YouTubeShortsAutomator</AssemblyName>
 <PackageId>YouTubeShortsAutomator</PackageId>
     <Version>1.0.0</Version>
-    <Authors>Vladyslav Zaiets</Authors>
     <Description>Automated YouTube Shorts upload pipeline with FFmpeg processing, Google API integration, scheduling, and analytics</Description>
 <PackageTags>youtube;shorts;automation;ffmpeg;google-api;video-processing;scheduling;analytics;dotnet;net10</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/sarmkadan/youtube-shorts-automator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sarmkadan/youtube-shorts-automator</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Test and benchmark projects build into tests/ and benchmarks/ under the repo root. Keep their output out of this project's
+         default globs; otherwise a parallel build copies their bin/ files, which may not exist yet (MSB3030). -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;benchmarks/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,15 +33,17 @@
          otherwise also pick up the other project's generated obj\ files. -->
     <Compile Remove="obj\**\*.cs" />
     <Compile Remove="bin\**\*.cs" />
+    <!-- examples/ holds standalone samples with their own Main methods; they are not part of the web app. -->
+    <Compile Remove="examples\**\*.cs" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.10.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.68.0.3490" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.68.0.3513" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="4.10.0" />
     <PackageReference Include="Serilog" Version="4.2.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="8.1.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="FluentValidation" Version="11.9.2" />
@@ -45,7 +51,9 @@
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.7.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.7.27" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.9" />
+    <!-- Patch transitive packages flagged by NuGet audit (NU1902/NU1903); the framework and EF Core pull in older versions. -->
+    <PackageReference Include="Microsoft.OpenApi" Version="2.13.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,9 +6,9 @@
 // before operations are performed.
 // =============================================================================
 
-using YouTubeShortAutomator.Domain.Models;
 using System;
 using System.Collections.Generic;
+using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Services;
 

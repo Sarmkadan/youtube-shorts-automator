@@ -82,7 +82,9 @@ public class CleanupBackgroundService : BackgroundService
         var tempDir = _configuration.GetValue<string>("Storage:TempDirectory") ?? Path.GetTempPath();
 
         if (!Directory.Exists(tempDir))
+        {
             return;
+        }
 
         try
         {
@@ -110,7 +112,9 @@ public class CleanupBackgroundService : BackgroundService
         var logsDir = _configuration.GetValue<string>("Logging:LogsDirectory") ?? "logs";
 
         if (!Directory.Exists(logsDir))
+        {
             return;
+        }
 
         try
         {
@@ -139,7 +143,9 @@ public class CleanupBackgroundService : BackgroundService
         var tempSubDir = Path.Combine(baseDir, "temp");
 
         if (!Directory.Exists(tempSubDir))
+        {
             return;
+        }
 
         try
         {

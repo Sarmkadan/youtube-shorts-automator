@@ -3,10 +3,10 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Exceptions;
-using Microsoft.Extensions.Logging;
-using System.Runtime.CompilerServices;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -148,7 +148,9 @@ public class FileValidationService
         try
         {
             if (!File.Exists(filePath))
+            {
                 return null;
+            }
 
             // Simulate getting video metadata
             _logger.LogInformation($"Retrieving duration for {filePath}");

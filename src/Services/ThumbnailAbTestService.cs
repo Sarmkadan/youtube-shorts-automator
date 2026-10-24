@@ -3,11 +3,11 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Text;
+using Microsoft.Extensions.Logging;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
-using Microsoft.Extensions.Logging;
-using System.Text;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -58,17 +58,24 @@ public class ThumbnailAbTestService
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(thumbnailPathA))
+        {
             throw new ValidationException("Thumbnail path A is required.", nameof(thumbnailPathA), thumbnailPathA ?? string.Empty);
+        }
+
         if (string.IsNullOrWhiteSpace(thumbnailPathB))
+        {
             throw new ValidationException("Thumbnail path B is required.", nameof(thumbnailPathB), thumbnailPathB ?? string.Empty);
+        }
 
         _ = await _videoRepository.GetByIdAsync(videoShortId, cancellationToken)
             ?? throw new InvalidOperationException($"VideoShort {videoShortId} not found.");
 
         var existing = await _repository.GetActiveVariantsAsync(videoShortId, cancellationToken);
         if (existing.Any())
+        {
             throw new InvalidOperationException(
                 $"An active A/B test already exists for VideoShort {videoShortId}. Conclude it before starting a new one.");
+        }
 
         var now = DateTime.UtcNow;
 
@@ -113,10 +120,15 @@ public class ThumbnailAbTestService
             ?? throw new InvalidOperationException($"ThumbnailVariant {variantId} not found.");
 
         if (!variant.IsActive)
+        {
             throw new InvalidOperationException($"ThumbnailVariant {variantId} is no longer active.");
+        }
 
         variant.RecordImpression();
-        if (clicked) variant.RecordClick();
+        if (clicked)
+        {
+            variant.RecordClick();
+        }
 
         await _repository.UpdateAsync(variant, cancellationToken);
 
@@ -140,7 +152,10 @@ public class ThumbnailAbTestService
         IDictionary<string, (long Impressions, long Clicks)> analyticsData,
         CancellationToken cancellationToken = default)
     {
-        if (analyticsData == null) throw new ArgumentNullException(nameof(analyticsData));
+        if (analyticsData == null)
+        {
+            throw new ArgumentNullException(nameof(analyticsData));
+        }
 
         var variants = (await _repository.GetActiveVariantsAsync(videoShortId, cancellationToken)).ToList();
         if (!variants.Any())
@@ -152,7 +167,9 @@ public class ThumbnailAbTestService
         foreach (var variant in variants)
         {
             if (!analyticsData.TryGetValue(variant.Label, out var data))
+            {
                 continue;
+            }
 
             variant.UpdateFromAnalytics(data.Impressions, data.Clicks);
             await _repository.UpdateAsync(variant, cancellationToken);
@@ -264,7 +281,9 @@ public class ThumbnailAbTestResult
     public string GetSummary()
     {
         if (!Variants.Any())
+        {
             return "No variants found for this test.";
+        }
 
         var sb = new StringBuilder();
         sb.AppendLine($"A/B Thumbnail Test — VideoShort {VideoShortId}");

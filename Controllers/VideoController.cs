@@ -41,10 +41,14 @@ public class VideoController : ControllerBase
     public async Task<IActionResult> GetUserVideos(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         if (pageNumber < 1)
+        {
             return BadRequest(new { success = false, message = "Page number must be at least 1." });
+        }
 
         if (pageSize is < 1 or > 100)
+        {
             return BadRequest(new { success = false, message = "Page size must be between 1 and 100." });
+        }
 
         try
         {
@@ -75,7 +79,9 @@ public class VideoController : ControllerBase
         {
             var video = await _videoRepository.GetByIdAsync(videoId);
             if (video == null)
+            {
                 return NotFound(new { success = false, message = "Video not found" });
+            }
 
             return Ok(new { success = true, data = video });
         }
@@ -167,7 +173,9 @@ public class VideoController : ControllerBase
             var metric = await _analyticsService.GetVideoAnalyticsAsync(videoId, Domain.Models.MetricsPeriod.Daily);
 
             if (metric == null)
+            {
                 return NotFound(new { success = false, message = "No analytics data found" });
+            }
 
             return Ok(new { success = true, data = metric });
         }
@@ -213,7 +221,9 @@ public class VideoController : ControllerBase
 
             var video = await _videoRepository.GetByIdAsync(videoId);
             if (video?.UploadResult == null)
+            {
                 return BadRequest(new { success = false, message = "Video has not been uploaded yet" });
+            }
 
             await _uploadService.PublishVideoAsync(video.UploadResult.Id);
 

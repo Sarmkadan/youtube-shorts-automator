@@ -34,18 +34,24 @@ public static class FileSystemUtility
     public static bool IsValidVideoFile(string filePath, string[] validExtensions)
     {
         if (!File.Exists(filePath))
+        {
             return false;
+        }
 
         var fileInfo = new FileInfo(filePath);
 
         // Check file extension
         var extension = fileInfo.Extension.ToLowerInvariant();
         if (!validExtensions.Contains(extension))
+        {
             return false;
+        }
 
         // Check file size
         if (fileInfo.Length > MaxFileSizeBytes || fileInfo.Length == 0)
+        {
             return false;
+        }
 
         return true;
     }
@@ -87,7 +93,9 @@ public static class FileSystemUtility
     public static long GetDirectorySizeBytes(string directoryPath)
     {
         if (!Directory.Exists(directoryPath))
+        {
             return 0;
+        }
 
         try
         {
@@ -143,7 +151,9 @@ public static class FileSystemUtility
         try
         {
             if (!Directory.Exists(directoryPath))
+            {
                 return Array.Empty<string>();
+            }
 
             return Directory.GetFiles(directoryPath, $"*{extension}", SearchOption.TopDirectoryOnly);
         }
@@ -158,7 +168,9 @@ public static class FileSystemUtility
         try
         {
             if (!File.Exists(filePath))
+            {
                 return DateTime.MinValue;
+            }
 
             return File.GetLastWriteTimeUtc(filePath);
         }

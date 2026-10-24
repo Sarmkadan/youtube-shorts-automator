@@ -185,19 +185,40 @@ public class ProcessingProfile
     {
         // Validates the processing profile
         if (string.IsNullOrWhiteSpace(Name) || Name.Length > 100)
+        {
             return false;
+        }
+
         if (VideoWidth < 360 || VideoWidth > 1920)
+        {
             return false;
+        }
+
         if (VideoHeight < 640 || VideoHeight > 1920)
+        {
             return false;
+        }
+
         if (VideoBitrate < 500 || VideoBitrate > 20000)
+        {
             return false;
+        }
+
         if (AudioBitrate < 64 || AudioBitrate > 320)
+        {
             return false;
+        }
+
         if (FrameRate < 24 || FrameRate > 60)
+        {
             return false;
+        }
+
         if (CompressionLevel < 0 || CompressionLevel > 10)
+        {
             return false;
+        }
+
         return true;
     }
 

@@ -42,10 +42,14 @@ public class WebhookController : ControllerBase
             // Validate URL
             var (isValid, error) = ValidationUtility.ValidateUrl(request.Url);
             if (!isValid)
+            {
                 return BadRequest(new { message = error });
+            }
 
             if (request.Events == null || request.Events.Length == 0)
+            {
                 return BadRequest(new { message = "At least one event type is required" });
+            }
 
             var webhookId = Guid.NewGuid();
 
@@ -91,7 +95,9 @@ public class WebhookController : ControllerBase
         {
             var webhook = _cacheService.Get<WebhookRegistration>($"webhook:{webhookId}");
             if (webhook == null)
+            {
                 return NotFound();
+            }
 
             return Ok(new WebhookDetails
             {
@@ -160,13 +166,18 @@ public class WebhookController : ControllerBase
         {
             var webhook = _cacheService.Get<WebhookRegistration>($"webhook:{webhookId}");
             if (webhook == null)
+            {
                 return NotFound();
+            }
 
             if (!string.IsNullOrEmpty(request.Url))
             {
                 var (isValid, error) = ValidationUtility.ValidateUrl(request.Url);
                 if (!isValid)
+                {
                     return BadRequest(new { message = error });
+                }
+
                 webhook.Url = request.Url;
             }
 

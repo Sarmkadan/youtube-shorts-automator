@@ -21,7 +21,9 @@ public static class CsvExportFormatterValidation
     public static IReadOnlyList<string> Validate(this CsvExportFormatter? value)
     {
         if (value is null)
+        {
             return new[] { "CsvExportFormatter instance cannot be null." };
+        }
 
         return Array.Empty<string>();
     }

@@ -22,6 +22,9 @@ public class ScheduleManager
     /// <summary>
     /// Initializes a new instance of <see cref="ScheduleManager"/>
     /// </summary>
+    /// <param name="logger">Logger for schedule activity</param>
+    /// <param name="scheduleRepository">Repository that stores schedules</param>
+    /// <param name="videoUploader">Uploader that publishes due videos</param>
     /// <param name="timeProvider">Clock used for all due-time decisions; defaults to the system clock</param>
     public ScheduleManager(
         ILogger<ScheduleManager> logger,
@@ -100,7 +103,10 @@ public class ScheduleManager
 
         foreach (var schedule in dueSchedules)
         {
-            if (cancellationToken.IsCancellationRequested) break;
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
 
             try
             {
@@ -202,7 +208,10 @@ public class ScheduleManager
 
         foreach (var upload in dueUploads)
         {
-            if (cancellationToken.IsCancellationRequested) break;
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
 
             // Persist InProgress before uploading so a restart mid-upload cannot re-trigger the same entry
             upload.Status = ScheduledUploadStatus.InProgress;

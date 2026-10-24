@@ -88,8 +88,9 @@ public class AnalyticsController : ControllerBase
         try
         {
             if (days < 1 || days > 365)
-            return BadRequest("Days must be between 1 and 365");
+            {
                 return BadRequest("Days must be between 1 and 365");
+            }
 
             var cachedData = _cacheService.Get<AnalyticsSummaryResponse>($"analytics:summary:{days}days");
             if (cachedData != null)
@@ -137,7 +138,9 @@ public class AnalyticsController : ControllerBase
         try
         {
             if (!new[] { "csv", "json" }.Contains(format.ToLowerInvariant()))
+            {
                 return BadRequest("Format must be 'csv' or 'json'");
+            }
 
             // Simulate analytics data
             var data = new[]

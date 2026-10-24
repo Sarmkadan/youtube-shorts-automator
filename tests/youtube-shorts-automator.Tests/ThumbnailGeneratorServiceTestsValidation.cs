@@ -33,37 +33,73 @@ public static class ThumbnailGeneratorServiceTestsValidation
         // Validate default values from ThumbnailGenerationRequest
         var request = new YouTubeShortAutomator.Domain.Models.ThumbnailGenerationRequest();
         if (request.CaptureTimestamp != TimeSpan.FromSeconds(1))
+        {
             errors.Add("ThumbnailGenerationRequest default CaptureTimestamp should be 1 second");
+        }
+
         if (request.Format != YouTubeShortAutomator.Domain.Models.ThumbnailOutputFormat.Jpeg)
+        {
             errors.Add("ThumbnailGenerationRequest default Format should be Jpeg");
+        }
+
         if (request.AspectRatio != YouTubeShortAutomator.Domain.Models.ThumbnailAspectRatio.Vertical)
+        {
             errors.Add("ThumbnailGenerationRequest default AspectRatio should be Vertical");
+        }
+
         if (request.Quality != 85)
+        {
             errors.Add("ThumbnailGenerationRequest default Quality should be 85");
+        }
+
         if (request.OverlayText != null)
+        {
             errors.Add("ThumbnailGenerationRequest default OverlayText should be null");
+        }
 
         // Validate default values from TextOverlayOptions
         var textOverlay = new YouTubeShortAutomator.Domain.Models.TextOverlayOptions();
         if (textOverlay.FontSize != 48)
+        {
             errors.Add("TextOverlayOptions default FontSize should be 48");
+        }
+
         if (textOverlay.FontColor != "white")
+        {
             errors.Add("TextOverlayOptions default FontColor should be 'white'");
+        }
+
         if (!textOverlay.ShowBox)
+        {
             errors.Add("TextOverlayOptions default ShowBox should be true");
+        }
+
         if (textOverlay.BoxColor != "black@0.5")
+        {
             errors.Add("TextOverlayOptions default BoxColor should be 'black@0.5'");
+        }
+
         if (textOverlay.Position != YouTubeShortAutomator.Domain.Models.TextPosition.BottomCenter)
+        {
             errors.Add("TextOverlayOptions default Position should be BottomCenter");
+        }
 
         // Validate default values from ThumbnailGenerationResult
         var result = new YouTubeShortAutomator.Domain.Models.ThumbnailGenerationResult();
         if (result.Success)
+        {
             errors.Add("ThumbnailGenerationResult default Success should be false");
+        }
+
         if (!string.IsNullOrEmpty(result.OutputPath))
+        {
             errors.Add("ThumbnailGenerationResult default OutputPath should be empty");
+        }
+
         if (result.FileSizeBytes != 0)
+        {
             errors.Add("ThumbnailGenerationResult default FileSizeBytes should be 0");
+        }
 
         return errors.AsReadOnly();
     }
@@ -89,7 +125,9 @@ public static class ThumbnailGeneratorServiceTestsValidation
 
         var errors = value.Validate();
         if (errors.Count == 0)
+        {
             return;
+        }
 
         throw new ArgumentException(
             string.Join("\n", errors),

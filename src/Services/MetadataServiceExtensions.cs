@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using YouTubeShortAutomator.Services;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
+using YouTubeShortAutomator.Services;
 
 namespace YouTubeShortAutomator.Services;
 

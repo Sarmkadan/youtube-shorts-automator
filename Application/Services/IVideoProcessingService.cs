@@ -3,8 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
-using YouTubeShortsAutomator.Domain.Models;
 using System;
+using YouTubeShortsAutomator.Domain.Models;
 
 namespace YouTubeShortsAutomator.Application.Services;
 

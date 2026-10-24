@@ -147,15 +147,30 @@ public class ProcessingTask
     {
         // Validates processing task metadata
         if (string.IsNullOrWhiteSpace(TaskType))
+        {
             return false;
+        }
+
         if (VideoShortId <= 0)
+        {
             return false;
+        }
+
         if (Priority < 1 || Priority > 10)
+        {
             return false;
+        }
+
         if (OutputWidth <= 0 || OutputHeight <= 0)
+        {
             return false;
+        }
+
         if (OutputBitrate <= 0)
+        {
             return false;
+        }
+
         return true;
     }
 

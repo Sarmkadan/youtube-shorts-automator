@@ -36,7 +36,9 @@ public static class CollectionUtility
         Func<TInput, TOutput> selector)
     {
         if (IsNullOrEmpty(collection))
+        {
             return new List<TOutput>();
+        }
 
         try
         {
@@ -53,7 +55,9 @@ public static class CollectionUtility
         Func<T, bool> predicate)
     {
         if (IsNullOrEmpty(collection))
+        {
             return new List<T>();
+        }
 
         try
         {
@@ -68,7 +72,9 @@ public static class CollectionUtility
     public static List<List<T>> ChunkBy<T>(IEnumerable<T> collection, int chunkSize)
     {
         if (chunkSize <= 0)
+        {
             throw new ArgumentException("Chunk size must be greater than 0");
+        }
 
         var chunks = new List<List<T>>();
         var chunk = new List<T>();
@@ -113,7 +119,9 @@ public static class CollectionUtility
     public static T? FirstOrDefault<T>(IEnumerable<T>? collection, T? defaultValue = default)
     {
         if (IsNullOrEmpty(collection))
+        {
             return defaultValue;
+        }
 
         return collection!.FirstOrDefault() ?? defaultValue;
     }
@@ -121,7 +129,9 @@ public static class CollectionUtility
     public static T? LastOrDefault<T>(IEnumerable<T>? collection, T? defaultValue = default)
     {
         if (IsNullOrEmpty(collection))
+        {
             return defaultValue;
+        }
 
         return collection!.LastOrDefault() ?? defaultValue;
     }
@@ -173,7 +183,9 @@ public static class CollectionUtility
     public static decimal Average(IEnumerable<decimal> collection)
     {
         if (IsNullOrEmpty(collection))
+        {
             return 0;
+        }
 
         return collection!.Average();
     }
@@ -181,7 +193,9 @@ public static class CollectionUtility
     public static int Sum(IEnumerable<int> collection)
     {
         if (IsNullOrEmpty(collection))
+        {
             return 0;
+        }
 
         return collection!.Sum();
     }

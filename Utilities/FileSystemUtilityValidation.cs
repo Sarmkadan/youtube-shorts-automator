@@ -23,7 +23,10 @@ public static class FileSystemUtilityValidation
     public static IReadOnlyList<string> ValidateDirectoryPath(string directoryPath)
     {
         ArgumentNullException.ThrowIfNull(directoryPath, nameof(directoryPath));
-        if (directoryPath.Length == 0) throw new ArgumentException("Value cannot be empty", nameof(directoryPath));
+        if (directoryPath.Length == 0)
+        {
+            throw new ArgumentException("Value cannot be empty", nameof(directoryPath));
+        }
 
         var problems = new List<string>();
 
@@ -91,7 +94,10 @@ public static class FileSystemUtilityValidation
     public static IReadOnlyList<string> ValidateFilePath(string filePath)
     {
         ArgumentNullException.ThrowIfNull(filePath, nameof(filePath));
-        if (filePath.Length == 0) throw new ArgumentException("Value cannot be empty", nameof(filePath));
+        if (filePath.Length == 0)
+        {
+            throw new ArgumentException("Value cannot be empty", nameof(filePath));
+        }
 
         var problems = new List<string>();
 
@@ -172,7 +178,11 @@ public static class FileSystemUtilityValidation
     public static IReadOnlyList<string> ValidateVideoFileParameters(string filePath, string[] validExtensions)
     {
         ArgumentNullException.ThrowIfNull(filePath, nameof(filePath));
-        if (filePath.Length == 0) throw new ArgumentException("Value cannot be empty", nameof(filePath));
+        if (filePath.Length == 0)
+        {
+            throw new ArgumentException("Value cannot be empty", nameof(filePath));
+        }
+
         ArgumentNullException.ThrowIfNull(validExtensions, nameof(validExtensions));
 
         if (validExtensions.Length == 0)
@@ -304,9 +314,16 @@ public static class FileSystemUtilityValidation
     public static IReadOnlyList<string> ValidateDirectoryFilesParameters(string directoryPath, string extension)
     {
         ArgumentNullException.ThrowIfNull(directoryPath, nameof(directoryPath));
-        if (directoryPath.Length == 0) throw new ArgumentException("Value cannot be empty", nameof(directoryPath));
+        if (directoryPath.Length == 0)
+        {
+            throw new ArgumentException("Value cannot be empty", nameof(directoryPath));
+        }
+
         ArgumentNullException.ThrowIfNull(extension, nameof(extension));
-        if (extension.Length == 0) throw new ArgumentException("Value cannot be empty", nameof(extension));
+        if (extension.Length == 0)
+        {
+            throw new ArgumentException("Value cannot be empty", nameof(extension));
+        }
 
         var problems = new List<string>();
 

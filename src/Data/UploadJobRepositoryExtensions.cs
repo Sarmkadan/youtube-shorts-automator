@@ -7,8 +7,8 @@
 // =============================================================================
 
 using System.Diagnostics.CodeAnalysis;
-using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Constants;
+using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Data;
 

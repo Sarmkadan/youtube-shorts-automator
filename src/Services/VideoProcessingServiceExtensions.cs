@@ -150,6 +150,11 @@ public static class VideoProcessingServiceExtensions
         ArgumentNullException.ThrowIfNull(filePath);
         ArgumentNullException.ThrowIfNull(videoShort);
 
+        if (videoShort.ProcessingProfile is null)
+        {
+            throw new ValidationException("Video short has no processing profile");
+        }
+
         if (!await service.ValidateVideoFileAsync(filePath, cancellationToken))
         {
             return null;

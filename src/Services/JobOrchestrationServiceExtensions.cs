@@ -1,8 +1,8 @@
-using YouTubeShortAutomator.Services;
-using YouTubeShortAutomator.Domain.Models;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using YouTubeShortAutomator.Domain.Models;
+using YouTubeShortAutomator.Services;
 
 public static class JobOrchestrationServiceExtensions
 {
@@ -16,7 +16,6 @@ public static class JobOrchestrationServiceExtensions
     public static async Task<bool> ProcessReadyUploadForVideoShortAsync(this JobOrchestrationService jobOrchestrationService, int videoShortId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(jobOrchestrationService);
-        ArgumentNullException.ThrowIfNull(videoShortId);
 
         var result = await jobOrchestrationService.ProcessReadyUploadsAsync(new YouTubeChannel(), cancellationToken);
         return result;
@@ -32,7 +31,6 @@ public static class JobOrchestrationServiceExtensions
     public static async Task<bool> ProcessFailedRetriableJobForVideoShortAsync(this JobOrchestrationService jobOrchestrationService, int videoShortId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(jobOrchestrationService);
-        ArgumentNullException.ThrowIfNull(videoShortId);
 
         var result = await jobOrchestrationService.ProcessFailedRetriableJobsAsync(new YouTubeChannel(), cancellationToken);
         return result;
@@ -48,7 +46,6 @@ public static class JobOrchestrationServiceExtensions
     public static async Task<SyncResult> SyncAnalyticsForVideoShortAsync(this JobOrchestrationService jobOrchestrationService, int videoShortId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(jobOrchestrationService);
-        ArgumentNullException.ThrowIfNull(videoShortId);
 
         var channel = new YouTubeChannel();
         var result = await jobOrchestrationService.SyncAnalyticsAsync(channel, cancellationToken);
@@ -65,7 +62,6 @@ public static class JobOrchestrationServiceExtensions
     public static async Task<int?> GetUploadJobIdForVideoShortAsync(this JobOrchestrationService jobOrchestrationService, int videoShortId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(jobOrchestrationService);
-        ArgumentNullException.ThrowIfNull(videoShortId);
 
         var pipeline = await jobOrchestrationService.ProcessFullPipelineAsync(videoShortId, new ProcessingProfile(), new YouTubeChannel(), DateTime.UtcNow, cancellationToken);
         return pipeline.UploadJobId;

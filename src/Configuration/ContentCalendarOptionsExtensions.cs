@@ -22,9 +22,14 @@ public static class ContentCalendarOptionsExtensions
         foreach (var hour in options.OptimalPostingHoursUtc)
         {
             if (hour < 0 || hour > 23)
+            {
                 throw new ArgumentException($"Hour {hour} is outside valid UTC range (0-23)");
+            }
+
             if (!uniqueHours.Add(hour))
+            {
                 throw new ArgumentException($"Duplicate hour {hour} in optimal posting hours");
+            }
         }
     }
 
@@ -66,7 +71,9 @@ public static class ContentCalendarOptionsExtensions
             .ToList();
 
         if (newHashtags.Count == 0)
+        {
             return description;
+        }
 
         return $"{description} {string.Join(" ", newHashtags)}";
     }

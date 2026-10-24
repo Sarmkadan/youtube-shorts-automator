@@ -34,7 +34,10 @@ public class Program
         services.AddApplicationServices(appSettings);
         services.AddApplicationLogging(appSettings);
 
+        // ASP0000 targets ASP.NET hosts that build a second container; this entry point has no host, so this is the only one.
+#pragma warning disable ASP0000
         var serviceProvider = services.BuildServiceProvider();
+#pragma warning restore ASP0000
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
         try

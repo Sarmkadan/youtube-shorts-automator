@@ -40,7 +40,9 @@ public class JobStatusController : ControllerBase
         {
             var job = _cacheService.Get<JobInfo>($"job:{jobId}");
             if (job == null)
+            {
                 return NotFound(new { message = "Job not found" });
+            }
 
             var response = new JobStatusResponse
             {
@@ -74,7 +76,9 @@ public class JobStatusController : ControllerBase
         {
             var jobResults = _cacheService.Get<JobResults>($"job:results:{jobId}");
             if (jobResults == null)
+            {
                 return NotFound(new { message = "Job results not found" });
+            }
 
             var response = new JobResultsResponse
             {
@@ -107,10 +111,14 @@ public class JobStatusController : ControllerBase
         {
             var job = _cacheService.Get<JobInfo>($"job:{jobId}");
             if (job == null)
+            {
                 return NotFound(new { message = "Job not found" });
+            }
 
             if (job.Status == "Completed" || job.Status == "Failed" || job.Status == "Cancelled")
+            {
                 return BadRequest(new { message = $"Cannot cancel job with status: {job.Status}" });
+            }
 
             job.Status = "Cancelled";
             job.CompletedAtUtc = DateTime.UtcNow;
@@ -137,7 +145,9 @@ public class JobStatusController : ControllerBase
         try
         {
             if (limit < 1 || limit > 100)
+            {
                 limit = 10;
+            }
 
             // Simulate fetching from database
             var jobs = new List<JobListItem>

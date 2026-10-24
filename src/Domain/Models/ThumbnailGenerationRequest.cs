@@ -130,7 +130,7 @@ public sealed class ThumbnailGenerationRequest
 }
 
 /// <summary>
-/// The result returned by <see cref="IThumbnailGeneratorService"/> after a generation attempt.
+/// The result returned by <see cref="YouTubeShortAutomator.Services.IThumbnailGeneratorService"/> after a generation attempt.
 /// </summary>
 public sealed class ThumbnailGenerationResult
 {

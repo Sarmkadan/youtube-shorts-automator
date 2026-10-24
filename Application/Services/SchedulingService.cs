@@ -60,7 +60,9 @@ public class SchedulingService
 
         var (isValid, errors) = schedule.Validate();
         if (!isValid)
+        {
             throw new DomainException($"Invalid schedule: {string.Join(", ", errors)}");
+        }
 
         schedule.NextScheduledTime = schedule.CalculateNextScheduledTime();
 
@@ -82,7 +84,9 @@ public class SchedulingService
 
         var (isValid, errors) = updatedSchedule.Validate();
         if (!isValid)
+        {
             throw new DomainException($"Invalid schedule: {string.Join(", ", errors)}");
+        }
 
         schedule.ScheduleName = updatedSchedule.ScheduleName;
         schedule.Frequency = updatedSchedule.Frequency;
@@ -162,7 +166,9 @@ public class SchedulingService
             ?? throw new ResourceNotFoundException("Video not found", videoId, "Video");
 
         if (scheduledFor < DateTime.UtcNow)
+        {
             throw new InvalidStateException("Cannot schedule for past date", DateTime.UtcNow.ToString(), "ScheduleUpload");
+        }
 
         var scheduledUpload = new ScheduledUpload
         {
@@ -193,7 +199,9 @@ public class SchedulingService
         foreach (var schedule in dueSchedules)
         {
             if (!schedule.IsActive)
+            {
                 continue;
+            }
 
             var pendingUploads = schedule.ScheduledUploads
                 .Where(su => su.Status == ScheduledUploadStatus.Pending && su.ScheduledFor <= DateTime.UtcNow)

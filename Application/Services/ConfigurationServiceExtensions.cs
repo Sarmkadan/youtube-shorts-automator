@@ -36,7 +36,9 @@ public static class ConfigurationServiceExtensions
         if (string.IsNullOrWhiteSpace(value as string))
         {
             if (defaultValue is null)
+            {
                 throw new DomainException($"Configuration key '{key}' must not be null or whitespace");
+            }
 
             return defaultValue;
         }

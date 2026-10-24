@@ -4,13 +4,13 @@
 // =============================================================================
 
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
 using YouTubeShortAutomator.Services;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
@@ -292,7 +292,11 @@ public class ThumbnailGeneratorServiceTests
     /// </summary>
     ~ThumbnailGeneratorServiceTests()
     {
-        try { if (Directory.Exists(_tempDir)) Directory.Delete(_tempDir, true); }
+        try { if (Directory.Exists(_tempDir))
+            {
+                Directory.Delete(_tempDir, true);
+            }
+        }
         catch { /* best-effort cleanup */ }
     }
 }

@@ -5,8 +5,8 @@
 // Extension methods for AnalyticsController providing additional analytics utilities
 // =============================================================================
 
-using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace YouTubeShortsAutomator.API;
 
@@ -26,7 +26,9 @@ public static class AnalyticsControllerExtensions
         ArgumentNullException.ThrowIfNull(response);
 
         if (response.ViewCount == 0)
+        {
             return 0.0;
+        }
 
         var totalEngagement = response.LikeCount + response.CommentCount + response.ShareCount;
         return (double)totalEngagement / response.ViewCount;

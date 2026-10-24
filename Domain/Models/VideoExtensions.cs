@@ -64,7 +64,9 @@ public static class VideoExtensions
         ArgumentNullException.ThrowIfNull(video);
 
         if (video.ProcessingJobs == null || video.ProcessingJobs.Count == 0)
+        {
             return 0;
+        }
 
         return video.ProcessingJobs
             .Where(j => j.Status == ProcessingJobStatus.Completed && j.CompletedAt.HasValue && j.StartedAt.HasValue)
@@ -82,7 +84,9 @@ public static class VideoExtensions
         ArgumentNullException.ThrowIfNull(video);
 
         if (video.Metrics == null || video.Metrics.Count == 0)
+        {
             return 0;
+        }
 
         return video.Metrics.Sum(m => m.ViewCount);
     }
@@ -98,7 +102,9 @@ public static class VideoExtensions
         ArgumentNullException.ThrowIfNull(video);
 
         if (video.Metrics == null || video.Metrics.Count == 0)
+        {
             return 0;
+        }
 
         return video.Metrics.Average(m => m.CalculateEngagementScore());
     }
@@ -142,7 +148,9 @@ public static class VideoExtensions
         ArgumentNullException.ThrowIfNull(video);
 
         if (string.IsNullOrWhiteSpace(video.FilePath))
+        {
             return string.Empty;
+        }
 
         var extension = Path.GetExtension(video.FilePath);
         return extension ?? string.Empty;
@@ -159,7 +167,9 @@ public static class VideoExtensions
         ArgumentNullException.ThrowIfNull(video);
 
         if (string.IsNullOrWhiteSpace(video.FilePath))
+        {
             return string.Empty;
+        }
 
         return Path.GetFileName(video.FilePath);
     }
@@ -175,7 +185,9 @@ public static class VideoExtensions
         ArgumentNullException.ThrowIfNull(video);
 
         if (string.IsNullOrWhiteSpace(video.FilePath))
+        {
             return string.Empty;
+        }
 
         return Path.GetDirectoryName(video.FilePath) ?? string.Empty;
     }

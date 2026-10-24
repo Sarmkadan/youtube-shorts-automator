@@ -3,10 +3,10 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Text;
+using Microsoft.Extensions.Logging;
 using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Domain.Models;
-using Microsoft.Extensions.Logging;
-using System.Text;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -98,7 +98,9 @@ public sealed class TitleOptimizationEngine : ITitleOptimizationEngine
         CancellationToken cancellationToken = default)
     {
         if (count <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(count), "Slot count must be positive.");
+        }
 
         var topVideos = await _analyticsService
             .GetTopPerformingVideosAsync(_options.HistoricalSampleSize, cancellationToken);
@@ -113,10 +115,14 @@ public sealed class TitleOptimizationEngine : ITitleOptimizationEngine
             var candidate = baseDate.AddDays(dayOffset).AddHours(optimalHour);
 
             if (candidate.DayOfWeek is DayOfWeek.Sunday)
+            {
                 continue;
+            }
 
             if (slots.Count == 0 || (candidate - slots[^1]).TotalMinutes >= _options.MinSlotGapMinutes)
+            {
                 slots.Add(candidate);
+            }
         }
 
         _logger.LogDebug("Recommended {Count} posting slots for channel {ChannelId}", slots.Count, channelId);
@@ -127,7 +133,9 @@ public sealed class TitleOptimizationEngine : ITitleOptimizationEngine
     public double ScoreTitle(string title)
     {
         if (string.IsNullOrWhiteSpace(title))
+        {
             return 0;
+        }
 
         double score = 0.4;
 
@@ -140,18 +148,27 @@ public sealed class TitleOptimizationEngine : ITitleOptimizationEngine
         };
 
         if (PowerWords.Any(w => title.Contains(w, StringComparison.OrdinalIgnoreCase)))
+        {
             score += 0.15;
+        }
 
         if (QuestionStarters.Any(q => title.StartsWith(q, StringComparison.OrdinalIgnoreCase)) || title.EndsWith('?'))
+        {
             score += 0.1;
+        }
 
         if (title.Any(char.IsDigit))
+        {
             score += 0.1;
+        }
 
         foreach (var keyword in _options.HighEngagementKeywords)
         {
             if (!title.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            {
                 continue;
+            }
+
             score += 0.05 * _options.KeywordWeightMultiplier;
             break;
         }
@@ -236,7 +253,9 @@ public sealed class TitleOptimizationEngine : ITitleOptimizationEngine
     {
         var data = analyticsData.ToList();
         if (data.Count == 0)
+        {
             return new PerformancePattern(OptimalHour: 17, TopKeywords: [], AverageEngagementRate: 0);
+        }
 
         var avgEngagement = data.Average(a => a.EngagementRate);
 
@@ -261,7 +280,9 @@ public sealed class TitleOptimizationEngine : ITitleOptimizationEngine
     private static string InjectPowerWord(string title)
     {
         if (PowerWords.Any(w => title.Contains(w, StringComparison.OrdinalIgnoreCase)))
+        {
             return title;
+        }
 
         var word = PowerWords[title.Length % PowerWords.Length];
         return title.StartsWith("How to", StringComparison.OrdinalIgnoreCase)

@@ -3,9 +3,9 @@
 // CTO & Software Architect
 // =====================================================================
 
-using BenchmarkDotNet.Attributes;
 using System;
 using System.Collections.Generic;
+using BenchmarkDotNet.Attributes;
 using YouTubeShortsAutomator.Utilities;
 
 namespace YouTubeShortsAutomator.Benchmarks;

@@ -3,11 +3,11 @@
 // CTO & Software Architect
 // =============================================================================
 
+using Microsoft.Extensions.Logging;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
-using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -174,7 +174,7 @@ public class VideoProcessingService
         }
     }
 
-    public async Task<bool> ApplyColorGradingAsync(string videoPath, string colorProfile,
+    public async Task<bool> ApplyColorGradingAsync(string videoPath, string? colorProfile,
         CancellationToken cancellationToken = default)
     {
         // Applies color grading to a video

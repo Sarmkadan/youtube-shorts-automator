@@ -37,7 +37,7 @@ public static class VideoControllerExtensions
         foreach (var videoId in videoIds)
         {
             var result = await controller.GetVideo(videoId);
-            if (result is OkObjectResult okResult)
+            if (result is OkObjectResult { Value: not null } okResult)
             {
                 videos.Add(okResult.Value);
             }
@@ -72,7 +72,7 @@ public static class VideoControllerExtensions
         foreach (var userId in userIds)
         {
             var result = await controller.GetUserVideos(userId, 1, pageSize);
-            if (result is OkObjectResult okResult)
+            if (result is OkObjectResult { Value: not null } okResult)
             {
                 resultDictionary[userId] = okResult.Value;
             }
@@ -221,7 +221,7 @@ public static class VideoControllerExtensions
         foreach (var jobId in jobIds)
         {
             var result = await controller.GetJobStatus(jobId);
-            if (result is OkObjectResult okResult)
+            if (result is OkObjectResult { Value: not null } okResult)
             {
                 jobStatuses[jobId] = okResult.Value;
             }

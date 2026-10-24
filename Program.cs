@@ -5,11 +5,11 @@
 
 using Serilog;
 using YouTubeShortsAutomator.Configuration;
+using YouTubeShortsAutomator.Extensions;
 using YouTubeShortsAutomator.Infrastructure.Extensions;
 using YouTubeShortsAutomator.Infrastructure.Repositories;
-using YouTubeShortsAutomator.Extensions;
-using YouTubeShortsAutomator.Middleware;
 using YouTubeShortsAutomator.Metrics;
+using YouTubeShortsAutomator.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 

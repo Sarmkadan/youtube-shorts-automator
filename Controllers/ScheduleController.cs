@@ -92,7 +92,9 @@ public class ScheduleController : ControllerBase
             var schedule = await _schedulingService.GetScheduleAsync(scheduleId);
 
             if (schedule == null)
+            {
                 return NotFound(new { success = false, message = "Schedule not found" });
+            }
 
             return Ok(new { success = true, data = schedule });
         }

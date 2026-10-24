@@ -128,7 +128,9 @@ public class ContentCalendarController : ControllerBase
         {
             var entry = await _calendarService.GetEntryAsync(entryId);
             if (entry is null)
+            {
                 return NotFound(new { success = false, message = $"Calendar entry {entryId} not found." });
+            }
 
             entry.Title              = request.Title;
             entry.Description        = request.Description ?? entry.Description;

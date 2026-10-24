@@ -2,24 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>YouTubeShortAutomator</RootNamespace>
     <AssemblyName>YouTubeShortAutomator</AssemblyName>
     <PackageId>Zaiets.youtube.shorts.automator</PackageId>
     <Version>2.0.2</Version>
-    <Authors>Vladyslav Zaiets</Authors>
     <Description>Automated YouTube Shorts upload pipeline in .NET - FFmpeg processing, Google API, scheduling, analytics dashboard</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/sarmkadan/youtube-shorts-automator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sarmkadan/youtube-shorts-automator</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>youtube;shorts;automation;ffmpeg;google-api;scheduling;analytics;dotnet</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>true</IsPackable>
-    <!-- Reproducible builds and SourceLink: the .NET SDK ships SourceLink, so no extra package is needed. -->
-    <Deterministic>true</Deterministic>
+    <!-- SourceLink: the .NET SDK ships it, so no extra package is needed. -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>

@@ -62,7 +62,9 @@ public class HealthController : ControllerBase
         {
             healthStatus.ConfigurationErrors = configErrors;
             if (healthStatus.Status == "Healthy")
+            {
                 healthStatus.Status = "Degraded";
+            }
         }
 
         return Ok(new { success = true, data = healthStatus });

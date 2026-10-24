@@ -32,7 +32,9 @@ public sealed class FfmpegFixture : IDisposable
 
         IsAvailable = IsToolAvailable("ffmpeg") && IsToolAvailable("ffprobe");
         if (!IsAvailable)
+        {
             return;
+        }
 
         GenerateSample(LongLandscapeVideoPath, seconds: 90);
         GenerateSample(ShortLandscapeVideoPath, seconds: 5);
@@ -52,7 +54,9 @@ public sealed class FfmpegFixture : IDisposable
                 CreateNoWindow = true
             });
             if (process is null)
+            {
                 return false;
+            }
 
             process.StandardOutput.ReadToEnd();
             process.StandardError.ReadToEnd();
@@ -87,7 +91,9 @@ public sealed class FfmpegFixture : IDisposable
             CreateNoWindow = true
         };
         foreach (var argument in arguments)
+        {
             startInfo.ArgumentList.Add(argument);
+        }
 
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException("Failed to start ffmpeg for fixture generation.");
@@ -99,7 +105,9 @@ public sealed class FfmpegFixture : IDisposable
         var stderr = stderrTask.GetAwaiter().GetResult();
 
         if (process.ExitCode != 0 || !File.Exists(outputPath))
+        {
             throw new InvalidOperationException(
                 $"ffmpeg failed to generate fixture '{outputPath}' (exit {process.ExitCode}): {stderr}");
+        }
     }
 }

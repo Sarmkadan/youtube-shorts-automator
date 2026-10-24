@@ -74,7 +74,9 @@ public class MetricsController : ControllerBase
         try
         {
             if (limit < 1 || limit > 100)
+            {
                 limit = 20;
+            }
 
             var snapshot = await _metricsCollector.GetMetricsAsync();
 

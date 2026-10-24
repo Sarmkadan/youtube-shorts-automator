@@ -168,11 +168,20 @@ public class UploadJob
     {
         // Validates upload job metadata
         if (VideoShortId <= 0)
+        {
             return false;
+        }
+
         if (MaxRetries < 0 || MaxRetries > 10)
+        {
             return false;
+        }
+
         if (ScheduledAt < DateTime.UtcNow)
+        {
             return false;
+        }
+
         return true;
     }
 }

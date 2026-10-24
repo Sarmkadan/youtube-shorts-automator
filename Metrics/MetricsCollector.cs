@@ -53,10 +53,14 @@ public class MetricsCollector : IMetricsCollector
                 metric.LastRecordedUtc = DateTime.UtcNow;
 
                 if (duration.TotalMilliseconds < metric.MinDurationMs || metric.MinDurationMs == 0)
+                {
                     metric.MinDurationMs = duration.TotalMilliseconds;
+                }
 
                 if (duration.TotalMilliseconds > metric.MaxDurationMs)
+                {
                     metric.MaxDurationMs = duration.TotalMilliseconds;
+                }
 
                 _logger.LogDebug("Recorded processing duration. ProcessType: {ProcessType}, DurationMs: {DurationMs}, Count: {Count}",
                     processType, duration.TotalMilliseconds, metric.Count);
@@ -103,7 +107,9 @@ public class MetricsCollector : IMetricsCollector
             lock (_lockObj)
             {
                 if (!_errorCounts.ContainsKey(errorCode))
+                {
                     _errorCounts[errorCode] = 0;
+                }
 
                 _errorCounts[errorCode]++;
 

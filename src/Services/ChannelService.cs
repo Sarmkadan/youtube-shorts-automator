@@ -3,11 +3,11 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
-using Microsoft.Extensions.Logging;
-using System.Runtime.CompilerServices;
 
 namespace YouTubeShortAutomator.Services;
 

@@ -27,19 +27,29 @@ public static class DateTimeUtility
         var timeSpan = now - dateTime.ToUniversalTime();
 
         if (timeSpan.TotalSeconds < 60)
+        {
             return $"{(int)timeSpan.TotalSeconds} seconds ago";
+        }
 
         if (timeSpan.TotalMinutes < 60)
+        {
             return $"{(int)timeSpan.TotalMinutes} minutes ago";
+        }
 
         if (timeSpan.TotalHours < 24)
+        {
             return $"{(int)timeSpan.TotalHours} hours ago";
+        }
 
         if (timeSpan.TotalDays < 7)
+        {
             return $"{(int)timeSpan.TotalDays} days ago";
+        }
 
         if (timeSpan.TotalDays < 30)
+        {
             return $"{(int)(timeSpan.TotalDays / 7)} weeks ago";
+        }
 
         return $"{(int)(timeSpan.TotalDays / 30)} months ago";
     }
@@ -47,10 +57,14 @@ public static class DateTimeUtility
     public static string FormatDuration(TimeSpan duration)
     {
         if (duration.TotalSeconds < 60)
+        {
             return $"{(int)duration.TotalSeconds}s";
+        }
 
         if (duration.TotalMinutes < 60)
+        {
             return $"{(int)duration.TotalMinutes}m {duration.Seconds}s";
+        }
 
         return $"{(int)duration.TotalHours}h {duration.Minutes}m {duration.Seconds}s";
     }
@@ -88,7 +102,9 @@ public static class DateTimeUtility
 
         // Exclude weekends
         if (dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday)
+        {
             return false;
+        }
 
         return hour >= startHour && hour < endHour;
     }
@@ -118,7 +134,10 @@ public static class DateTimeUtility
     {
         var diff = (int)dateTime.DayOfWeek - (int)DayOfWeek.Monday;
         if (diff < 0)
+        {
             diff += 7;
+        }
+
         return dateTime.AddDays(-diff).Date;
     }
 

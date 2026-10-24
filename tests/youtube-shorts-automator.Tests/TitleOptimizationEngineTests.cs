@@ -4,12 +4,12 @@
 // =============================================================================
 
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Services;
-using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
@@ -116,11 +116,8 @@ public class TitleOptimizationEngineTests
     /// <summary>
     /// Tests that the return value is clamped to the range [0, 1].
     /// </summary>
-    /// <param name="boundary">The boundary value to test.</param>
-    [Theory]
-    [InlineData(0.0)]
-    [InlineData(1.0)]
-    public void ScoreTitle_ReturnValueIsClamped(double boundary)
+    [Fact]
+    public void ScoreTitle_ReturnValueIsClamped()
     {
         // scores are in [0,1]; arbitrary title
         var score = _engine.ScoreTitle("Some sample title text for testing");
@@ -236,8 +233,10 @@ public class TitleOptimizationEngineTests
 
         var best = result.BestSuggestion;
         if (best is not null && result.Suggestions.Count > 1)
+        {
             best.ConfidenceScore.Should().BeGreaterThanOrEqualTo(
                 result.Suggestions.Min(s => s.ConfidenceScore));
+        }
     }
 
     /// <summary>

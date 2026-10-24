@@ -3,11 +3,11 @@
 // CTO & Software Architect
 // =============================================================================
 
+using Microsoft.Extensions.Logging;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
-using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -181,9 +181,12 @@ public class JobOrchestrationService
 				try
 				{
 					var video = await _videoRepository.GetByIdAsync(job.VideoShortId, cancellationToken);
-					if (video == null) continue;
+					if (video == null)
+                    {
+                        continue;
+                    }
 
-					var uploadResult = await _uploadService.UploadVideoAsync(job, video.FilePath, channel, video, cancellationToken);
+                    var uploadResult = await _uploadService.UploadVideoAsync(job, video.FilePath, channel, video, cancellationToken);
 					if (uploadResult.Status == UploadStatus.Completed)
 					{
 						successCount++;
@@ -227,9 +230,12 @@ public class JobOrchestrationService
 				try
 				{
 					var video = await _videoRepository.GetByIdAsync(job.VideoShortId, cancellationToken);
-					if (video == null) continue;
+					if (video == null)
+                    {
+                        continue;
+                    }
 
-					var success = await _uploadService.RetryFailedUploadAsync(job, video.FilePath, channel, video, cancellationToken);
+                    var success = await _uploadService.RetryFailedUploadAsync(job, video.FilePath, channel, video, cancellationToken);
 					if (success)
 					{
 						await _uploadRepository.UpdateAsync(job, cancellationToken);

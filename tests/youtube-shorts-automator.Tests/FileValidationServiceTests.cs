@@ -4,10 +4,10 @@
 // =============================================================================
 
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Services;
-using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 

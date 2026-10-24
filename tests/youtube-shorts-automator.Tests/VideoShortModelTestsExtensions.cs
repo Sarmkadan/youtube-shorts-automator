@@ -4,8 +4,8 @@
 // =====================================================================
 
 using FluentAssertions;
-using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Constants;
+using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Tests;
 

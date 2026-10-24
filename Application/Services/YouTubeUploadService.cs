@@ -3,8 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
-using YouTubeShortsAutomator.Domain.Constants;
 using YouTubeShortsAutomator.Application.Repositories;
+using YouTubeShortsAutomator.Domain.Constants;
 using YouTubeShortsAutomator.Domain.Exceptions;
 using YouTubeShortsAutomator.Domain.Models;
 using YouTubeShortsAutomator.Integration;
@@ -47,16 +47,20 @@ public class YouTubeUploadService
             ?? throw new ResourceNotFoundException("Video not found", videoId, "Video");
 
         if (video.Status != VideoStatus.Processed && video.Status != VideoStatus.Processing)
+        {
             throw new InvalidStateException(
                 "Video must be processed before upload",
                 video.Status.ToString(),
                 "Upload");
+        }
 
         var credential = await _credentialService.GetActiveCredentialAsync(userId)
             ?? throw new CredentialException("No valid YouTube credentials found");
 
         if (!credential.IsValid)
+        {
             throw new CredentialException("Credentials are invalid or expired");
+        }
 
         var uploadResult = new UploadResult
         {
@@ -151,12 +155,16 @@ public class YouTubeUploadService
         _logger.LogInformation($"Updating metadata for YouTube video {youtubeVideoId}");
 
         if (title.Length > ApplicationConstants.Video.MaxTitleLength)
+        {
             throw new VideoValidationException("Title too long",
                 new List<string> { $"Title must not exceed {ApplicationConstants.Video.MaxTitleLength} characters" });
+        }
 
         if (description.Length > ApplicationConstants.Video.MaxDescriptionLength)
+        {
             throw new VideoValidationException("Description too long",
                 new List<string> { $"Description must not exceed {ApplicationConstants.Video.MaxDescriptionLength} characters" });
+        }
 
         try
         {
@@ -179,12 +187,16 @@ public class YouTubeUploadService
         _logger.LogInformation($"Adding {tags.Length} tags to YouTube video {youtubeVideoId}");
 
         if (tags.Length > ApplicationConstants.Video.MaxTagsCount)
+        {
             throw new VideoValidationException("Too many tags",
                 new List<string> { $"Cannot have more than {ApplicationConstants.Video.MaxTagsCount} tags" });
+        }
 
         if (tags.Any(t => t.Length > ApplicationConstants.Video.MaxTagLength))
+        {
             throw new VideoValidationException("Tag too long",
                 new List<string> { $"Tags cannot exceed {ApplicationConstants.Video.MaxTagLength} characters" });
+        }
 
         try
         {
@@ -206,7 +218,9 @@ public class YouTubeUploadService
         _logger.LogInformation($"Setting thumbnail for YouTube video {youtubeVideoId}");
 
         if (!File.Exists(thumbnailPath))
+        {
             throw new DomainException("Thumbnail file not found");
+        }
 
         try
         {
@@ -276,7 +290,9 @@ public class YouTubeUploadService
         _logger.LogInformation($"Executing YouTube upload for video {video.Id}");
 
         if (!File.Exists(video.FilePath))
+        {
             throw new DomainException("Video file not found");
+        }
 
         var fileInfo = new FileInfo(video.FilePath);
         var uploadStartTime = DateTime.UtcNow;
@@ -319,7 +335,9 @@ public class YouTubeUploadService
             ?? Array.Empty<string>();
 
         if (urls.Length == 0)
+        {
             return;
+        }
 
         foreach (var url in urls)
         {

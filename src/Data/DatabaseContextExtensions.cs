@@ -39,7 +39,7 @@ public static class DatabaseContextExtensions
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="sql"/> is <c>null</c> or whitespace.
     /// </exception>
-    /// <exception cref="YoutubeShortsAutomatorException">
+    /// <exception cref="YouTubeShortAutomator.Exceptions.YoutubeShortsAutomatorException">
     /// Propagated from the underlying <see cref="DatabaseContext"/> methods.
     /// </exception>
     public static async Task<IReadOnlyList<T>> QueryAsync<T>(
@@ -83,7 +83,7 @@ public static class DatabaseContextExtensions
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="sql"/> is <c>null</c> or whitespace.
     /// </exception>
-    /// <exception cref="YoutubeShortsAutomatorException">
+    /// <exception cref="YouTubeShortAutomator.Exceptions.YoutubeShortsAutomatorException">
     /// Propagated from the underlying <see cref="DatabaseContext"/> methods.
     /// </exception>
     public static async Task<T?> QuerySingleAsync<T>(
@@ -108,7 +108,7 @@ public static class DatabaseContextExtensions
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="db"/> or <paramref name="commands"/> is <c>null</c>.
     /// </exception>
-    /// <exception cref="YoutubeShortsAutomatorException">
+    /// <exception cref="YouTubeShortAutomator.Exceptions.YoutubeShortsAutomatorException">
     /// Propagated from the underlying <see cref="DatabaseContext"/> methods.
     /// </exception>
     public static async Task<int> ExecuteBatchAsync(
@@ -123,7 +123,9 @@ public static class DatabaseContextExtensions
         foreach (var cmd in commands)
         {
             if (string.IsNullOrWhiteSpace(cmd))
+            {
                 continue;
+            }
 
             total += await db.ExecuteCommandAsync(cmd, commandType);
         }

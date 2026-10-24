@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace YouTubeShortsAutomator.CLI;
@@ -220,7 +221,7 @@ public static class CliArgumentParserExtensions
     private static bool TryGetCommand(
         this CliArgumentParser parser,
         string commandName,
-        out CliCommand command)
+        [MaybeNullWhen(false)] out CliCommand command)
     {
         if (parser.GetType().GetProperty("_commands",
             System.Reflection.BindingFlags.NonPublic |

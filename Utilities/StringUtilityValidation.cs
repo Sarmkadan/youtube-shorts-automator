@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
+// Null is passed on purpose in this file: the checks confirm StringUtility handles null input without throwing.
+#pragma warning disable CS8625
+
 namespace YouTubeShortsAutomator.Utilities;
 
 /// <summary>
@@ -324,3 +327,5 @@ public static class StringUtilityValidation
         }
     }
 }
+
+#pragma warning restore CS8625

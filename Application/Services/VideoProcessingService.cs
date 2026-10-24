@@ -3,8 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
-using YouTubeShortsAutomator.Domain.Constants;
 using YouTubeShortsAutomator.Application.Repositories;
+using YouTubeShortsAutomator.Domain.Constants;
 using YouTubeShortsAutomator.Domain.Exceptions;
 using YouTubeShortsAutomator.Domain.Models;
 
@@ -46,7 +46,9 @@ public class VideoProcessingService : IVideoProcessingService
 
         var (isValid, errors) = video.Validate();
         if (!isValid)
+        {
             throw new VideoValidationException("Video validation failed", errors);
+        }
 
         var job = new ProcessingJob
         {
@@ -79,7 +81,9 @@ public class VideoProcessingService : IVideoProcessingService
         _logger.LogInformation($"Starting processing for job {job.Id}");
 
         if (job.Status != ProcessingJobStatus.Queued)
+        {
             throw new InvalidStateException("Job is not in queued state", job.Status.ToString(), "ProcessVideo");
+        }
 
         job.Start();
         await _processingRepository.UpdateAsync(job);
@@ -137,16 +141,22 @@ public class VideoProcessingService : IVideoProcessingService
 
         var extension = Path.GetExtension(video.FilePath).ToLower().TrimStart('.');
         if (!ApplicationConstants.Video.AllowedFormats.Contains(extension))
+        {
             throw new VideoValidationException("Invalid video format",
                 new List<string> { $"Format {extension} is not supported" });
+        }
 
         if (!File.Exists(video.FilePath))
+        {
             throw new VideoValidationException("Video file not found",
                 new List<string> { "Source file does not exist" });
+        }
 
         if (video.FileSizeBytes > ApplicationConstants.Video.MaxFileSizeBytes)
+        {
             throw new VideoValidationException("File size exceeds limit",
                 new List<string> { "Video file is too large" });
+        }
 
         await Task.Delay(100); // Simulate validation work
     }
@@ -243,7 +253,9 @@ public class VideoProcessingService : IVideoProcessingService
             ?? throw new ResourceNotFoundException("Job not found", jobId, "ProcessingJob");
 
         if (!job.CanRetry())
+        {
             throw new InvalidStateException("Job cannot be retried", job.Status.ToString(), "Retry");
+        }
 
         job.ResetForRetry();
         await _processingRepository.UpdateAsync(job);

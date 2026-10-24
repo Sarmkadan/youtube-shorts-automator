@@ -18,7 +18,9 @@ public static class EncodingUtility
     public static string EncodeBase64(string text)
     {
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
 
         var bytes = Encoding.UTF8.GetBytes(text);
         return Convert.ToBase64String(bytes);
@@ -27,7 +29,9 @@ public static class EncodingUtility
     public static string DecodeBase64(string base64Text)
     {
         if (string.IsNullOrEmpty(base64Text))
+        {
             return string.Empty;
+        }
 
         try
         {
@@ -43,7 +47,9 @@ public static class EncodingUtility
     public static string ComputeSha256Hash(string text)
     {
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
 
         // SHA256.HashData is a static one-shot API — no Create/Dispose overhead,
         // no intermediate HashAlgorithm object on the heap.
@@ -54,7 +60,9 @@ public static class EncodingUtility
     public static string ComputeSha256Hash(byte[] data)
     {
         if (data == null || data.Length == 0)
+        {
             return string.Empty;
+        }
 
         return Convert.ToHexStringLower(SHA256.HashData(data));
     }
@@ -62,7 +70,9 @@ public static class EncodingUtility
     public static string ComputeMd5Hash(string text)
     {
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
 
         return Convert.ToHexStringLower(MD5.HashData(Encoding.UTF8.GetBytes(text)));
     }
@@ -70,7 +80,9 @@ public static class EncodingUtility
     public static string UrlEncode(string text)
     {
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
 
         return Uri.EscapeDataString(text);
     }
@@ -78,7 +90,9 @@ public static class EncodingUtility
     public static string UrlDecode(string encodedText)
     {
         if (string.IsNullOrEmpty(encodedText))
+        {
             return string.Empty;
+        }
 
         try
         {
@@ -101,7 +115,10 @@ public static class EncodingUtility
             RandomNumberGenerator.Fill(buffer.AsSpan(0, length));
             var result = new StringBuilder(length);
             for (int i = 0; i < length; i++)
+            {
                 result.Append(chars[buffer[i] % chars.Length]);
+            }
+
             return result.ToString();
         }
         finally
@@ -142,13 +159,17 @@ public static class EncodingUtility
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         if (string.IsNullOrEmpty(queryString))
+        {
             return parameters;
+        }
 
         var parts = queryString.TrimStart('?').Split('&');
         foreach (var part in parts)
         {
             if (string.IsNullOrEmpty(part))
+            {
                 continue;
+            }
 
             var keyValue = part.Split('=');
             if (keyValue.Length >= 2)
@@ -168,7 +189,9 @@ public static class EncodingUtility
     public static string BuildQueryString(Dictionary<string, string> parameters)
     {
         if (parameters == null || parameters.Count == 0)
+        {
             return string.Empty;
+        }
 
         var parts = parameters.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}");
         return string.Join("&", parts);
@@ -182,7 +205,9 @@ public static class EncodingUtility
     public static string HtmlEncode(string text)
     {
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
 
         return System.Net.WebUtility.HtmlEncode(text);
     }
@@ -190,7 +215,9 @@ public static class EncodingUtility
     public static string HtmlDecode(string encodedText)
     {
         if (string.IsNullOrEmpty(encodedText))
+        {
             return string.Empty;
+        }
 
         return System.Net.WebUtility.HtmlDecode(encodedText);
     }

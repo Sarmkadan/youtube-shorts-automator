@@ -33,7 +33,9 @@ public class AnalyticsMetric
     {
         var totalInteractions = LikeCount + CommentCount + ShareCount;
         if (ViewCount == 0)
+        {
             return 0;
+        }
 
         var engagementRate = (totalInteractions / (double)ViewCount) * 100;
         return Math.Min(engagementRate * 10, 100);
@@ -45,7 +47,9 @@ public class AnalyticsMetric
     public bool IsHighPerforming(AnalyticsMetric? averageMetric = null)
     {
         if (ViewCount == 0)
+        {
             return false;
+        }
 
         var engagementScore = CalculateEngagementScore();
         var isHighEngagement = engagementScore >= 5.0;
@@ -60,14 +64,21 @@ public class AnalyticsMetric
     public MetricsTrend CompareTo(AnalyticsMetric? previous)
     {
         if (previous == null)
+        {
             return MetricsTrend.Neutral;
+        }
 
         var viewChange = ((double)ViewCount - previous.ViewCount) / Math.Max(previous.ViewCount, 1);
 
         if (viewChange > 0.1)
+        {
             return MetricsTrend.Improving;
+        }
+
         if (viewChange < -0.1)
+        {
             return MetricsTrend.Declining;
+        }
 
         return MetricsTrend.Neutral;
     }
@@ -86,7 +97,9 @@ public class AnalyticsMetric
     public double CalculateRetentionRate()
     {
         if (ViewCount == 0)
+        {
             return 0;
+        }
 
         var avgDurationPercent = (AverageViewDurationSeconds / 60.0) * 100; // Assuming 60s shorts
         return Math.Min(avgDurationPercent, 100);

@@ -33,28 +33,44 @@ public class Video
         var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(Title) || Title.Length > 100)
+        {
             errors.Add("Title must be between 1 and 100 characters");
+        }
 
         if (Description.Length > 5000)
+        {
             errors.Add("Description must not exceed 5000 characters");
+        }
 
         if (string.IsNullOrWhiteSpace(FilePath))
+        {
             errors.Add("File path is required");
+        }
 
         if (FileSizeBytes <= 0)
+        {
             errors.Add("File size must be greater than zero");
+        }
 
         if (FileSizeBytes > 4_294_967_296) // 4GB limit
+        {
             errors.Add("File size exceeds maximum limit of 4GB");
+        }
 
         if (DurationSeconds <= 0 || DurationSeconds > 3600)
+        {
             errors.Add("Duration must be between 1 second and 60 minutes");
+        }
 
         if (Tags.Length > 500)
+        {
             errors.Add("Cannot have more than 500 tags");
+        }
 
         if (Tags.Any(t => t.Length > 30))
+        {
             errors.Add("Individual tags cannot exceed 30 characters");
+        }
 
         return (errors.Count == 0, errors);
     }

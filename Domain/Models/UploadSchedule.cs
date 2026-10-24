@@ -35,7 +35,9 @@ public class UploadSchedule
     public DateTime CalculateNextScheduledTime(DateTime utcNow)
     {
         if (!IsActive)
+        {
             return DateTime.MaxValue;
+        }
 
         var timeZone = TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
         var nowInZone = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZone);
@@ -81,16 +83,24 @@ public class UploadSchedule
         var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(ScheduleName) || ScheduleName.Length > 100)
+        {
             errors.Add("Schedule name must be between 1 and 100 characters");
+        }
 
         if (Frequency == ScheduleFrequency.Weekly && !DayOfWeek.HasValue)
+        {
             errors.Add("Day of week is required for weekly schedules");
+        }
 
         if (Frequency == ScheduleFrequency.Monthly && (!DayOfMonth.HasValue || DayOfMonth < 1 || DayOfMonth > 31))
+        {
             errors.Add("Valid day of month (1-31) is required for monthly schedules");
+        }
 
         if (string.IsNullOrWhiteSpace(TimeZoneId))
+        {
             errors.Add("Time zone is required");
+        }
 
         try
         {
@@ -116,7 +126,9 @@ public class UploadSchedule
     public bool IsDueForExecution(DateTime utcNow)
     {
         if (!IsActive || NextScheduledTime == null)
+        {
             return false;
+        }
 
         return utcNow >= NextScheduledTime;
     }
@@ -148,7 +160,9 @@ public class UploadSchedule
     {
         var daysUntilTarget = ((int)targetDay - (int)from.DayOfWeek + 7) % 7;
         if (daysUntilTarget == 0 && from.TimeOfDay > ScheduledTime.ToTimeSpan())
+        {
             daysUntilTarget = 7;
+        }
 
         return from.AddDays(daysUntilTarget).Date.Add(ScheduledTime.ToTimeSpan());
     }

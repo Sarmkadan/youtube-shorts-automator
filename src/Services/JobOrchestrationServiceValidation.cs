@@ -106,7 +106,9 @@ public static class JobOrchestrationServiceValidation
 
         var errors = Validate(value);
         if (errors.Count == 0)
+        {
             return;
+        }
 
         throw new ArgumentException(
             $"Pipeline instance is not valid. Problems:\n{string.Join("\n", errors)}",
@@ -186,7 +188,9 @@ public static class JobOrchestrationServiceValidation
 
         var errors = Validate(value);
         if (errors.Count == 0)
+        {
             return;
+        }
 
         throw new ArgumentException(
             $"SyncResult instance is not valid. Problems:\n{string.Join("\n", errors)}",

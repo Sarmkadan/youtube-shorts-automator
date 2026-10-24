@@ -45,7 +45,9 @@ public static class MediaProbe
         var stderr = await stderrTask;
 
         if (process.ExitCode != 0)
+        {
             throw new InvalidOperationException($"ffprobe could not read '{path}': {stderr}");
+        }
 
         using var document = JsonDocument.Parse(stdout);
         var root = document.RootElement;

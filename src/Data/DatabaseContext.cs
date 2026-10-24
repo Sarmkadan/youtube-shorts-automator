@@ -7,6 +7,10 @@ using System.Data;
 using System.Data.SqlClient;
 using YouTubeShortAutomator.Exceptions;
 
+// System.Data.SqlClient is deprecated (CS0618) in favour of Microsoft.Data.SqlClient. Migrating the package is a separate change,
+// so the obsolete warning is silenced for this file only.
+#pragma warning disable CS0618
+
 namespace YouTubeShortAutomator.Data;
 
 /// <summary>
@@ -53,7 +57,9 @@ public class DatabaseContext : IAsyncDisposable
         Dictionary<string, object?>? parameters = null)
     {
         if (string.IsNullOrWhiteSpace(commandText))
+        {
             throw new ArgumentException("Command text cannot be null or empty.", nameof(commandText));
+        }
 
         try
         {
@@ -95,7 +101,9 @@ public class DatabaseContext : IAsyncDisposable
         Dictionary<string, object?>? parameters = null)
     {
         if (string.IsNullOrWhiteSpace(commandText))
+        {
             throw new ArgumentException("Command text cannot be null or empty.", nameof(commandText));
+        }
 
         try
         {
@@ -140,7 +148,9 @@ public class DatabaseContext : IAsyncDisposable
         Dictionary<string, object?>? parameters = null)
     {
         if (string.IsNullOrWhiteSpace(commandText))
+        {
             throw new ArgumentException("Command text cannot be null or empty.", nameof(commandText));
+        }
 
         try
         {
@@ -180,7 +190,10 @@ public class DatabaseContext : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         // Properly closes and disposes the database connection
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
 
         if (_connection != null)
         {
@@ -195,3 +208,5 @@ public class DatabaseContext : IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 }
+
+#pragma warning restore CS0618

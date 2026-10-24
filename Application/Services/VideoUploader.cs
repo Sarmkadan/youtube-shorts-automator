@@ -4,9 +4,9 @@
 // =============================================================================
 
 using Microsoft.Extensions.Options;
+using YouTubeShortsAutomator.Application.Repositories;
 using YouTubeShortsAutomator.Configuration;
 using YouTubeShortsAutomator.Domain.Constants;
-using YouTubeShortsAutomator.Application.Repositories;
 using YouTubeShortsAutomator.Domain.Exceptions;
 using YouTubeShortsAutomator.Domain.Models;
 using YouTubeShortsAutomator.Integration;
@@ -139,19 +139,29 @@ public class VideoUploader : IVideoUploader
         }
 
         if (string.IsNullOrWhiteSpace(video.Title))
+        {
             errors.Add("Video title is required");
+        }
 
         if (video.Title.Length > ApplicationConstants.Video.MaxTitleLength)
+        {
             errors.Add($"Title exceeds {ApplicationConstants.Video.MaxTitleLength} characters");
+        }
 
         if (video.FileSizeBytes > ApplicationConstants.Video.MaxFileSizeBytes)
+        {
             errors.Add($"File size exceeds {ApplicationConstants.Video.MaxFileSizeBytes / (1024 * 1024 * 1024)}GB limit");
+        }
 
         if (!File.Exists(video.FilePath))
+        {
             errors.Add($"Video file not found at {video.FilePath}");
+        }
 
         if (video.Status != VideoStatus.Processed)
+        {
             errors.Add($"Video status is {video.Status}, expected Processed");
+        }
 
         return errors;
     }
@@ -159,7 +169,10 @@ public class VideoUploader : IVideoUploader
     private async Task NotifyUploadCompleteAsync(Guid videoId, UploadResult result)
     {
         var webhookUrl = _configuration.GetValue<string>("Upload:WebhookUrl");
-        if (string.IsNullOrEmpty(webhookUrl)) return;
+        if (string.IsNullOrEmpty(webhookUrl))
+        {
+            return;
+        }
 
         await _webhookPublisher.PublishEventAsync("video.uploaded", new
         {

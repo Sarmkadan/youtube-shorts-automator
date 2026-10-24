@@ -33,7 +33,9 @@ public static class ValidationUtilityValidation
         {
             var (isValid, error) = ValidationUtility.ValidateEmail(value.Email);
             if (!isValid && error != null)
+            {
                 problems.Add(error);
+            }
         }
 
         // Validate Url
@@ -41,7 +43,9 @@ public static class ValidationUtilityValidation
         {
             var (isValid, error) = ValidationUtility.ValidateUrl(value.Url);
             if (!isValid && error != null)
+            {
                 problems.Add(error);
+            }
         }
 
         // Validate YouTubeChannelId
@@ -49,7 +53,9 @@ public static class ValidationUtilityValidation
         {
             var (isValid, error) = ValidationUtility.ValidateYouTubeChannelId(value.YouTubeChannelId);
             if (!isValid && error != null)
+            {
                 problems.Add(error);
+            }
         }
 
         // Validate YouTubeVideoId
@@ -57,7 +63,9 @@ public static class ValidationUtilityValidation
         {
             var (isValid, error) = ValidationUtility.ValidateYouTubeVideoId(value.YouTubeVideoId);
             if (!isValid && error != null)
+            {
                 problems.Add(error);
+            }
         }
 
         // Validate VideoTitle
@@ -65,7 +73,9 @@ public static class ValidationUtilityValidation
         {
             var (isValid, error) = ValidationUtility.ValidateVideoTitle(value.VideoTitle);
             if (!isValid && error != null)
+            {
                 problems.Add(error);
+            }
         }
 
         // Validate VideoDescription
@@ -73,7 +83,9 @@ public static class ValidationUtilityValidation
         {
             var (isValid, error) = ValidationUtility.ValidateVideoDescription(value.VideoDescription);
             if (!isValid && error != null)
+            {
                 problems.Add(error);
+            }
         }
 
         // Validate VideoTags
@@ -81,7 +93,9 @@ public static class ValidationUtilityValidation
         {
             var (isValid, error) = ValidationUtility.ValidateVideoTags(value.VideoTags);
             if (!isValid && error != null)
+            {
                 problems.Add(error);
+            }
         }
 
         // Validate FilePath
@@ -89,7 +103,9 @@ public static class ValidationUtilityValidation
         {
             var (isValid, error) = ValidationUtility.ValidateVideoFile(value.FilePath, value.MaxFileSizeBytes);
             if (!isValid && error != null)
+            {
                 problems.Add(error);
+            }
         }
 
         // Validate TimeSpan
@@ -109,7 +125,9 @@ public static class ValidationUtilityValidation
         {
             var (isValid, error) = ValidationUtility.ValidateScheduleTime(value.ScheduledTime);
             if (!isValid && error != null)
+            {
                 problems.Add(error);
+            }
         }
 
         return problems.AsReadOnly();
@@ -141,7 +159,9 @@ public static class ValidationUtilityValidation
 
         var problems = value.Validate();
         if (problems.Count == 0)
+        {
             return;
+        }
 
         throw new ArgumentException(
             $"Validation failed with {problems.Count} problem(s):{Environment.NewLine}- {

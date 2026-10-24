@@ -3,8 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
-using YouTubeShortsAutomator.Domain.Constants;
 using YouTubeShortsAutomator.Application.Repositories;
+using YouTubeShortsAutomator.Domain.Constants;
 using YouTubeShortsAutomator.Domain.Exceptions;
 using YouTubeShortsAutomator.Domain.Models;
 
@@ -176,7 +176,9 @@ public class AnalyticsService
         var allMetrics = videos.SelectMany(v => v.Metrics).ToList();
 
         if (!allMetrics.Any())
+        {
             return (0, 0, 0);
+        }
 
         var avgViews = (long)allMetrics.Average(m => m.ViewCount);
         var avgEngagement = allMetrics.Average(m => m.EngagementRatePercent);
@@ -260,7 +262,9 @@ public class AnalyticsService
 
         var currentMetric = video.Metrics.LastOrDefault();
         if (currentMetric == null)
+        {
             return false;
+        }
 
         return currentMetric.ViewCount > (avgViews * 1.5);
     }

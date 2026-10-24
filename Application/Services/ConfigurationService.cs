@@ -32,7 +32,9 @@ public class ConfigurationService
         try
         {
             if (_cachedSettings.TryGetValue(key, out var cachedValue))
+            {
                 return (T)cachedValue;
+            }
 
             var value = _configuration.GetValue<T>(key, defaultValue);
             _cachedSettings[key] = value ?? defaultValue!;
@@ -63,7 +65,9 @@ public class ConfigurationService
         };
 
         if (string.IsNullOrEmpty(config.ApiKey) && string.IsNullOrEmpty(config.ClientId))
+        {
             _logger.LogWarning("YouTube API credentials are not configured");
+        }
 
         return config;
     }
@@ -77,7 +81,9 @@ public class ConfigurationService
         var connectionString = _configuration.GetConnectionString(connectionName);
 
         if (string.IsNullOrEmpty(connectionString))
+        {
             throw new DomainException($"Connection string '{connectionName}' not found in configuration");
+        }
 
         return connectionString;
     }
@@ -152,7 +158,9 @@ public class ConfigurationService
         foreach (var feature in featuresSection.GetChildren())
         {
             if (feature.Value == "true")
+            {
                 enabledFeatures.Add(feature.Key);
+            }
         }
 
         _logger.LogInformation($"Enabled features: {string.Join(", ", enabledFeatures)}");
@@ -171,7 +179,9 @@ public class ConfigurationService
         {
             var connectionString = GetConnectionString();
             if (string.IsNullOrEmpty(connectionString))
+            {
                 errors.Add("Database connection string is not configured");
+            }
         }
         catch
         {
@@ -180,7 +190,9 @@ public class ConfigurationService
 
         var youtubeConfig = GetYouTubeApiConfig();
         if (string.IsNullOrEmpty(youtubeConfig.ClientId) || string.IsNullOrEmpty(youtubeConfig.ClientSecret))
+        {
             errors.Add("YouTube API credentials are not configured");
+        }
 
         return (errors.Count == 0, errors);
     }

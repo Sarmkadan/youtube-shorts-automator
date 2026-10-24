@@ -63,7 +63,9 @@ public class UploadResult
     public double GetUploadSpeedMbps()
     {
         if (UploadDuration.TotalSeconds == 0)
+        {
             return 0;
+        }
 
         var totalBits = UploadedFileSizeBytes * 8;
         return totalBits / (1_000_000 * UploadDuration.TotalSeconds);
@@ -77,16 +79,24 @@ public class UploadResult
         var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(YouTubeVideoId))
+        {
             errors.Add("YouTube video ID is required");
+        }
 
         if (string.IsNullOrWhiteSpace(YouTubeUrl))
+        {
             errors.Add("YouTube URL is required");
+        }
 
         if (UploadedFileSizeBytes <= 0)
+        {
             errors.Add("Uploaded file size must be greater than zero");
+        }
 
         if (Status == UploadStatus.Completed && UploadedAt == default)
+        {
             errors.Add("Upload timestamp is required for completed uploads");
+        }
 
         return (errors.Count == 0, errors);
     }

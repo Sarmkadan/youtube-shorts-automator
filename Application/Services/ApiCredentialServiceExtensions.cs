@@ -21,14 +21,13 @@ public static class ApiCredentialServiceExtensions
     /// <param name="userId">The user ID</param>
     /// <param name="credentialType">The type of credential to create if needed</param>
     /// <returns>The active credential or newly created credential</returns>
-    /// <exception cref="ArgumentNullException">Thrown when service or userId is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when service is null</exception>
     public static async Task<ApiCredential> GetOrCreateActiveCredentialAsync(
         this ApiCredentialService service,
         Guid userId,
         ApiCredentialType credentialType = ApiCredentialType.GoogleOAuth)
     {
         ArgumentNullException.ThrowIfNull(service);
-        ArgumentNullException.ThrowIfNull(userId);
 
         var credential = await service.GetActiveCredentialAsync(userId);
 
@@ -60,13 +59,12 @@ public static class ApiCredentialServiceExtensions
     /// <param name="service">The credential service</param>
     /// <param name="userId">The user ID</param>
     /// <returns>Read-only list of valid credentials</returns>
-    /// <exception cref="ArgumentNullException">Thrown when service or userId is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when service is null</exception>
     public static async Task<IReadOnlyList<ApiCredential>> GetValidCredentialsAsync(
         this ApiCredentialService service,
         Guid userId)
     {
         ArgumentNullException.ThrowIfNull(service);
-        ArgumentNullException.ThrowIfNull(userId);
 
         var allCredentials = await service.GetUserCredentialsAsync(userId);
         return allCredentials
@@ -82,14 +80,13 @@ public static class ApiCredentialServiceExtensions
     /// <param name="userId">The user ID</param>
     /// <param name="credentialType">The credential type to find</param>
     /// <returns>The credential if found, otherwise null</returns>
-    /// <exception cref="ArgumentNullException">Thrown when service or userId is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when service is null</exception>
     public static async Task<ApiCredential?> GetCredentialByTypeAsync(
         this ApiCredentialService service,
         Guid userId,
         ApiCredentialType credentialType)
     {
         ArgumentNullException.ThrowIfNull(service);
-        ArgumentNullException.ThrowIfNull(userId);
 
         var credentials = await service.GetUserCredentialsAsync(userId);
         return credentials.FirstOrDefault(c => c.CredentialType == credentialType);
@@ -101,13 +98,12 @@ public static class ApiCredentialServiceExtensions
     /// <param name="service">The credential service</param>
     /// <param name="userId">The user ID</param>
     /// <returns>True if any credential needs refresh, otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when service or userId is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when service is null</exception>
     public static async Task<bool> AnyCredentialNeedsRefreshAsync(
         this ApiCredentialService service,
         Guid userId)
     {
         ArgumentNullException.ThrowIfNull(service);
-        ArgumentNullException.ThrowIfNull(userId);
 
         var credentials = await service.GetUserCredentialsAsync(userId);
         return credentials.Any(c => c.IsValid && c.Status == CredentialStatus.Active && c.NeedsRefresh());
@@ -119,13 +115,12 @@ public static class ApiCredentialServiceExtensions
     /// <param name="service">The credential service</param>
     /// <param name="userId">The user ID</param>
     /// <returns>TimeSpan until expiration, or null if no active credentials</returns>
-    /// <exception cref="ArgumentNullException">Thrown when service or userId is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when service is null</exception>
     public static async Task<TimeSpan?> GetTimeUntilFirstExpirationAsync(
         this ApiCredentialService service,
         Guid userId)
     {
         ArgumentNullException.ThrowIfNull(service);
-        ArgumentNullException.ThrowIfNull(userId);
 
         var credentials = await service.GetUserCredentialsAsync(userId);
         var activeCredentials = credentials
@@ -150,13 +145,12 @@ public static class ApiCredentialServiceExtensions
     /// <param name="service">The credential service</param>
     /// <param name="userId">The user ID</param>
     /// <returns>Number of successfully refreshed credentials</returns>
-    /// <exception cref="ArgumentNullException">Thrown when service or userId is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when service is null</exception>
     public static async Task<int> RefreshAllExpiredCredentialsAsync(
         this ApiCredentialService service,
         Guid userId)
     {
         ArgumentNullException.ThrowIfNull(service);
-        ArgumentNullException.ThrowIfNull(userId);
 
         var credentials = await service.GetUserCredentialsAsync(userId);
         var expiredCredentials = credentials
@@ -188,13 +182,12 @@ public static class ApiCredentialServiceExtensions
     /// <param name="service">The credential service</param>
     /// <param name="userId">The user ID</param>
     /// <returns>Read-only list of credentials ordered by expiration</returns>
-    /// <exception cref="ArgumentNullException">Thrown when service or userId is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when service is null</exception>
     public static async Task<IReadOnlyList<ApiCredential>> GetCredentialsOrderedByExpirationAsync(
         this ApiCredentialService service,
         Guid userId)
     {
         ArgumentNullException.ThrowIfNull(service);
-        ArgumentNullException.ThrowIfNull(userId);
 
         var credentials = await service.GetUserCredentialsAsync(userId);
         return credentials

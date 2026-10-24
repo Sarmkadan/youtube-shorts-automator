@@ -5,8 +5,8 @@
 // Validation helpers for VideoShort model via VideoShortModelTests extension methods
 // =====================================================================
 
-using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Constants;
+using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Tests;
 

@@ -59,7 +59,10 @@ public class ThumbnailVariant
     public void RecordClick()
     {
         if (ImpressionCount == 0)
+        {
             throw new InvalidOperationException("Cannot record a click without a prior impression.");
+        }
+
         ClickCount++;
         RecalculateViewRate();
         UpdatedAt = DateTime.UtcNow;
@@ -73,8 +76,16 @@ public class ThumbnailVariant
     /// <param name="clicks">Total clicks reported by the analytics source.</param>
     public void UpdateFromAnalytics(long impressions, long clicks)
     {
-        if (impressions < 0) throw new ArgumentOutOfRangeException(nameof(impressions));
-        if (clicks < 0) throw new ArgumentOutOfRangeException(nameof(clicks));
+        if (impressions < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(impressions));
+        }
+
+        if (clicks < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(clicks));
+        }
+
         ImpressionCount = impressions;
         ClickCount = Math.Min(clicks, impressions);
         RecalculateViewRate();

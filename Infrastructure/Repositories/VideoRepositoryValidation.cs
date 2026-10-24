@@ -86,13 +86,19 @@ public static class VideoRepositoryValidation
     public static IReadOnlyList<string> ValidateVideoRecentVideos(this Guid userId, int daysBack)
     {
         if (userId == Guid.Empty)
+        {
             return ["User ID cannot be empty (Guid.Empty)"];
+        }
 
         if (daysBack <= 0)
+        {
             return ["Days back must be greater than zero"];
+        }
 
         if (daysBack > 365 * 2) // 2 years max
+        {
             return ["Days back cannot exceed 2 years"];
+        }
 
         return Array.Empty<string>();
     }
@@ -109,10 +115,14 @@ public static class VideoRepositoryValidation
         ArgumentException.ThrowIfNullOrEmpty(youtubeId);
 
         if (youtubeId.Length < 11 || youtubeId.Length > 50)
+        {
             return ["YouTube video ID must be between 11 and 50 characters"];
+        }
 
         if (!youtubeId.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-'))
+        {
             return ["YouTube video ID contains invalid characters (only letters, digits, underscores, and hyphens are allowed)"];
+        }
 
         return Array.Empty<string>();
     }
@@ -127,13 +137,19 @@ public static class VideoRepositoryValidation
     public static IReadOnlyList<string> Validate(this int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
+        {
             return ["Page number must be 1 or greater"];
+        }
 
         if (pageSize < 1)
+        {
             return ["Page size must be 1 or greater"];
+        }
 
         if (pageSize > 1000)
+        {
             return ["Page size cannot exceed 1000 items"];
+        }
 
         return Array.Empty<string>();
     }
@@ -149,16 +165,24 @@ public static class VideoRepositoryValidation
     public static IReadOnlyList<string> ValidateVideoUserVideosPaginated(this Guid userId, int pageNumber, int pageSize)
     {
         if (userId == Guid.Empty)
+        {
             return ["User ID cannot be empty (Guid.Empty)"];
+        }
 
         if (pageNumber < 1)
+        {
             return ["Page number must be 1 or greater"];
+        }
 
         if (pageSize < 1)
+        {
             return ["Page size must be 1 or greater"];
+        }
 
         if (pageSize > 1000)
+        {
             return ["Page size cannot exceed 1000 items"];
+        }
 
         return Array.Empty<string>();
     }

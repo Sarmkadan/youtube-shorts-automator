@@ -108,7 +108,9 @@ public class ProcessingJob
     public void ResetForRetry()
     {
         if (!CanRetry())
+        {
             throw new InvalidOperationException("Job cannot be retried");
+        }
 
         RetryCount++;
         Status = ProcessingJobStatus.Queued;

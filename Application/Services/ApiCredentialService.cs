@@ -84,7 +84,9 @@ public class ApiCredentialService : IApiCredentialService
 
         var (isValid, errors) = credential.Validate();
         if (!isValid)
+        {
             throw new CredentialException($"Invalid credential: {string.Join(", ", errors)}");
+        }
 
         credential.UserId = userId;
         credential.CreatedAt = DateTime.UtcNow;
@@ -108,7 +110,9 @@ public class ApiCredentialService : IApiCredentialService
 
         var (isValid, errors) = credential.Validate();
         if (!isValid)
+        {
             throw new CredentialException($"Invalid credential: {string.Join(", ", errors)}");
+        }
 
         existing.ClientSecret = credential.ClientSecret;
         existing.AccessToken = credential.AccessToken;
@@ -133,7 +137,9 @@ public class ApiCredentialService : IApiCredentialService
             ?? throw new ResourceNotFoundException("Credential not found", credentialId, "ApiCredential");
 
         if (string.IsNullOrWhiteSpace(credential.RefreshToken))
+        {
             throw new CredentialException("Refresh token is not available");
+        }
 
         try
         {

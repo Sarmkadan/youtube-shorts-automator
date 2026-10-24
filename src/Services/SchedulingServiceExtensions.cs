@@ -3,8 +3,8 @@
 // CTO & Software Architect
 // =====================================================================
 
-using YouTubeShortAutomator.Domain.Models;
 using Microsoft.Extensions.Logging;
+using YouTubeShortAutomator.Domain.Models;
 
 namespace YouTubeShortAutomator.Services;
 

@@ -87,12 +87,18 @@ public class AnalyticsTracker
 
         foreach (var video in uploaded)
         {
-            if (cancellationToken.IsCancellationRequested) break;
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
 
             try
             {
                 var result = await SyncVideoAnalyticsAsync(video.Id);
-                if (result is not null) synced++;
+                if (result is not null)
+                {
+                    synced++;
+                }
             }
             catch (Exception ex)
             {

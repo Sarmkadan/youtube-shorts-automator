@@ -72,8 +72,10 @@ public class CacheService : ICacheService
             var cacheOptions = new MemoryCacheEntryOptions()
                 .RegisterPostEvictionCallback((evictedKey, _, _, state) =>
                 {
-                    var cacheService = (CacheService)state;
-                    var keyToRemove = (string)evictedKey;
+                    if (evictedKey is not string keyToRemove || state is not CacheService cacheService)
+                    {
+                        return;
+                    }
 
                     lock (cacheService._lockObj)
                     {

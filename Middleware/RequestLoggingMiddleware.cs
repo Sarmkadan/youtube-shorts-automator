@@ -98,7 +98,11 @@ public class RequestLoggingMiddleware
 
     private static string TruncateBody(string body, int maxLength)
     {
-        if (string.IsNullOrEmpty(body)) return body;
+        if (string.IsNullOrEmpty(body))
+        {
+            return body;
+        }
+
         return body.Length > maxLength ? body[..maxLength] + "..." : body;
     }
 }

@@ -122,15 +122,30 @@ public class VideoShort
     {
         // Validates the video short metadata
         if (string.IsNullOrWhiteSpace(Title) || Title.Length > 100)
+        {
             return false;
+        }
+
         if (Description.Length > 5000)
+        {
             return false;
+        }
+
         if (string.IsNullOrWhiteSpace(FilePath))
+        {
             return false;
+        }
+
         if (Duration.TotalSeconds < 1 || Duration.TotalSeconds > 60)
+        {
             return false;
+        }
+
         if (ProcessingProfileId <= 0 || YouTubeChannelId <= 0)
+        {
             return false;
+        }
+
         return true;
     }
 

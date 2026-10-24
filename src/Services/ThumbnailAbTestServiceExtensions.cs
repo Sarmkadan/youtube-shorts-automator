@@ -6,9 +6,9 @@
 // fluent APIs and common operations for managing thumbnail A/B tests.
 // =============================================================================
 
+using System.Globalization;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
-using System.Globalization;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -160,7 +160,9 @@ public static class ThumbnailAbTestServiceExtensions
 
         var result = await service.GetTestResultAsync(videoShortId, cancellationToken);
         if (result.Variants.Count == 0)
+        {
             return null;
+        }
 
         return result.Variants.Max(v => v.ViewRate);
     }
@@ -221,7 +223,9 @@ public static class ThumbnailAbTestServiceExtensions
 
         var result = await service.GetTestResultAsync(videoShortId, cancellationToken);
         if (result.Variants.Count == 0 || result.Variants.All(v => v.ImpressionCount == 0))
+        {
             return null;
+        }
 
         var leading = result.Variants.OrderByDescending(v => v.ViewRate).First();
         return leading.ImpressionCount > 0

@@ -4,13 +4,13 @@
 // =============================================================================
 
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
 
@@ -71,7 +71,9 @@ private void InitializeDirectories(AppSettings appSettings)
         foreach (var dir in directories)
         {
             if (!Directory.Exists(dir))
+            {
                 Directory.CreateDirectory(dir);
+            }
         }
     }
 
@@ -96,7 +98,7 @@ private void InitializeDirectories(AppSettings appSettings)
 
         var retrievedJob = await uploadJobRepository.GetByIdAsync(job.Id);
         retrievedJob.Should().NotBeNull();
-        retrievedJob.ScheduledAt.Should().Be(scheduledTime);
+        retrievedJob!.ScheduledAt.Should().Be(scheduledTime);
     }
 
     /// <summary>
@@ -319,7 +321,7 @@ private void InitializeDirectories(AppSettings appSettings)
         rescheduleSuccess.Should().BeTrue();
 
         var updatedJob = await uploadJobRepository.GetByIdAsync(job.Id);
-        updatedJob.ScheduledAt.Should().Be(newTime);
+        updatedJob!.ScheduledAt.Should().Be(newTime);
     }
 
     /// <summary>
@@ -341,7 +343,7 @@ private void InitializeDirectories(AppSettings appSettings)
         cancelSuccess.Should().BeTrue();
 
         var cancelledJob = await uploadJobRepository.GetByIdAsync(job.Id);
-        cancelledJob.Status.Should().Be(UploadStatus.Cancelled);
+        cancelledJob!.Status.Should().Be(UploadStatus.Cancelled);
     }
 
     /// <summary>
@@ -400,8 +402,15 @@ private void InitializeDirectories(AppSettings appSettings)
         }
         finally
         {
-            if (File.Exists(testFile)) File.Delete(testFile);
-            if (Directory.Exists(testDir)) Directory.Delete(testDir);
+            if (File.Exists(testFile))
+            {
+                File.Delete(testFile);
+            }
+
+            if (Directory.Exists(testDir))
+            {
+                Directory.Delete(testDir);
+            }
         }
     }
 

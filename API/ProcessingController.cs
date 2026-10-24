@@ -5,8 +5,8 @@
 
 using Microsoft.AspNetCore.Mvc;
 using YouTubeShortsAutomator.Caching;
-using YouTubeShortsAutomator.Utilities;
 using YouTubeShortsAutomator.Formatters;
+using YouTubeShortsAutomator.Utilities;
 
 namespace YouTubeShortsAutomator.API;
 
@@ -46,15 +46,21 @@ public class ProcessingController : ControllerBase
         {
             // Validate request
             if (request.File == null || request.File.Length == 0)
+            {
                 return BadRequest("No file provided");
+            }
 
             var (isValid, error) = ValidationUtility.ValidateVideoTitle(request.Title);
             if (!isValid)
+            {
                 return BadRequest(new { message = error });
+            }
 
             (isValid, error) = ValidationUtility.ValidateVideoDescription(request.Description);
             if (!isValid)
+            {
                 return BadRequest(new { message = error });
+            }
 
             var processingId = Guid.NewGuid();
 

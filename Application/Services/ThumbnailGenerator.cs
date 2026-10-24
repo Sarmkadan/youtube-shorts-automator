@@ -103,10 +103,16 @@ public class ThumbnailGenerator
 
         foreach (var video in missing)
         {
-            if (cancellationToken.IsCancellationRequested) break;
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
 
             var result = await GenerateFromVideoAsync(video.Id, secondsOffset: 1, cancellationToken);
-            if (result is not null) generated++;
+            if (result is not null)
+            {
+                generated++;
+            }
         }
 
         _logger.LogInformation("Generated {Generated}/{Total} missing thumbnails", generated, missing.Count);
@@ -145,7 +151,9 @@ public class ThumbnailGenerator
     public async Task<int> CleanupOrphanedThumbnailsAsync()
     {
         if (!Directory.Exists(_thumbnailOutputDir))
+        {
             return 0;
+        }
 
         var videos = await _videoRepository.GetAllAsync();
         var knownIds = new HashSet<string>(videos.Select(v => v.Id.ToString()));

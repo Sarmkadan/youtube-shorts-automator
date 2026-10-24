@@ -39,7 +39,9 @@ public class CsvExportFormatter
             {
                 var property = properties.FirstOrDefault(p => p.Name.Equals(col, StringComparison.OrdinalIgnoreCase));
                 if (property == null)
+                {
                     return string.Empty;
+                }
 
                 var value = property.GetValue(item);
                 return EscapeCsvField(value?.ToString() ?? string.Empty);
@@ -83,7 +85,9 @@ public class CsvExportFormatter
     public string EscapeCsvField(string field)
     {
         if (string.IsNullOrEmpty(field))
+        {
             return string.Empty;
+        }
 
         // If field contains delimiter, quotes, or newlines, wrap in quotes and escape quotes
         if (field.Contains(_delimiter) || field.Contains('"') || field.Contains('\n') || field.Contains('\r'))

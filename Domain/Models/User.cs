@@ -31,22 +31,34 @@ public class User
         var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(Email) || !Email.Contains("@"))
+        {
             errors.Add("Valid email address is required");
+        }
 
         if (Email.Length > 254)
+        {
             errors.Add("Email address is too long");
+        }
 
         if (string.IsNullOrWhiteSpace(DisplayName) || DisplayName.Length > 100)
+        {
             errors.Add("Display name must be between 1 and 100 characters");
+        }
 
         if (string.IsNullOrWhiteSpace(ChannelId))
+        {
             errors.Add("YouTube channel ID is required");
+        }
 
         if (StorageQuotaBytes <= 0)
+        {
             errors.Add("Storage quota must be greater than zero");
+        }
 
         if (StorageUsedBytes < 0 || StorageUsedBytes > StorageQuotaBytes)
+        {
             errors.Add("Storage used cannot exceed quota");
+        }
 
         return (errors.Count == 0, errors);
     }
@@ -97,8 +109,15 @@ public class User
     /// </summary>
     public bool CanUploadNewVideo()
     {
-        if (!IsActive) return false;
-        if (IsStorageFull()) return false;
+        if (!IsActive)
+        {
+            return false;
+        }
+
+        if (IsStorageFull())
+        {
+            return false;
+        }
 
         return SubscriptionTier switch
         {

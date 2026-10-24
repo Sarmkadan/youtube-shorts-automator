@@ -59,8 +59,10 @@ public class ContentPipeline
         errors.RemoveAll(e => e.Contains("expected Processed"));
 
         if (errors.Count > 0)
+        {
             throw new InvalidOperationException(
                 $"Video {videoId} failed validation: {string.Join("; ", errors)}");
+        }
 
         var video = (await _videoRepository.GetByIdAsync(videoId))!;
 
@@ -116,7 +118,10 @@ public class ContentPipeline
 
         foreach (var videoId in videoIds)
         {
-            if (cancellationToken.IsCancellationRequested) break;
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
 
             try
             {
@@ -143,13 +148,17 @@ public class ContentPipeline
     public bool CanProcess(string filePath)
     {
         if (!File.Exists(filePath))
+        {
             return false;
+        }
 
         var ext = Path.GetExtension(filePath).ToLowerInvariant();
         var allowedExtensions = new HashSet<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
 
         if (!allowedExtensions.Contains(ext))
+        {
             return false;
+        }
 
         var size = new FileInfo(filePath).Length;
         return size is > 0 and <= 4_294_967_296; // 4GB

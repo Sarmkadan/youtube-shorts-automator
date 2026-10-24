@@ -5,11 +5,11 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Exceptions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -56,14 +56,18 @@ public class VideoProcessor
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
 
         if (!File.Exists(inputPath))
+        {
             throw new FileNotFoundException("Input video not found", inputPath);
+        }
 
         var sourceSeconds = await ProbeDurationSecondsAsync(inputPath, cancellationToken);
         var outputSeconds = Math.Min(sourceSeconds, _options.MaxDurationSeconds);
 
         var outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
         if (!string.IsNullOrEmpty(outputDirectory))
+        {
             Directory.CreateDirectory(outputDirectory);
+        }
 
         _logger.LogInformation("Processing {Input} ({Source:F1}s) -> {Output} ({Output:F1}s)",
             inputPath, sourceSeconds, outputPath, outputSeconds);
@@ -136,7 +140,9 @@ public class VideoProcessor
             CreateNoWindow = true
         };
         foreach (var argument in arguments)
+        {
             startInfo.ArgumentList.Add(argument);
+        }
 
         using var process = Process.Start(startInfo)
             ?? throw new VideoProcessingException($"Failed to start '{fileName}'. Is it installed and on PATH?");
@@ -173,7 +179,9 @@ public class VideoProcessor
         try
         {
             if (File.Exists(path))
+            {
                 File.Delete(path);
+            }
         }
         catch (IOException)
         {

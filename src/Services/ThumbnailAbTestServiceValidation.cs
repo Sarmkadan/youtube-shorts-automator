@@ -60,7 +60,9 @@ public static class ThumbnailAbTestServiceValidation
 
         var errors = Validate(value);
         if (errors.Count == 0)
+        {
             return;
+        }
 
         throw new ArgumentException(
             $"ThumbnailAbTestService instance is not valid. Problems:\n{string.Join("\n", errors)}",
@@ -237,7 +239,9 @@ public static class ThumbnailAbTestServiceValidation
 
         var errors = Validate(result);
         if (errors.Count == 0)
+        {
             return;
+        }
 
         throw new ArgumentException(
             $"ThumbnailAbTestResult instance is not valid. Problems:\n{string.Join("\n", errors)}",
@@ -327,7 +331,9 @@ public static class ThumbnailAbTestServiceValidation
 
         var errors = Validate(variant);
         if (errors.Count == 0)
+        {
             return;
+        }
 
         throw new ArgumentException(
             $"ThumbnailVariant instance is not valid. Problems:\n{string.Join("\n", errors)}",

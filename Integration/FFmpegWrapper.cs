@@ -65,7 +65,9 @@ public class FFmpegWrapper : IFFmpegWrapper
         }
 
         if (!OutputDirectoryExists(outputPath, "video conversion"))
+        {
             return false;
+        }
 
         try
         {
@@ -130,7 +132,9 @@ public class FFmpegWrapper : IFFmpegWrapper
         }
 
         if (!OutputDirectoryExists(outputPath, "thumbnail extraction"))
+        {
             return false;
+        }
 
         try
         {
@@ -159,7 +163,9 @@ public class FFmpegWrapper : IFFmpegWrapper
         {
             var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
             if (directory != null && Directory.Exists(directory))
+            {
                 return true;
+            }
 
             _logger.LogError(
                 "Output directory not found for {Operation}. OutputPath: {OutputPath}, Directory: {OutputDirectory}",

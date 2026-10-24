@@ -42,7 +42,9 @@ public class ScheduleController : ControllerBase
             // Validate request
             var (isValid, error) = ValidationUtility.ValidateScheduleTime(request.ScheduledUploadTimeUtc.ToString("O"));
             if (!isValid)
+            {
                 return BadRequest(new { message = error });
+            }
 
             var scheduleId = Guid.NewGuid();
 
@@ -84,7 +86,9 @@ public class ScheduleController : ControllerBase
         {
             var schedule = _cacheService.Get<ScheduledUpload>($"schedule:{scheduleId}");
             if (schedule == null)
+            {
                 return NotFound();
+            }
 
             return Ok(new ScheduledUploadDetails
             {
@@ -115,7 +119,9 @@ public class ScheduleController : ControllerBase
         try
         {
             if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+            {
                 return BadRequest("Invalid pagination parameters");
+            }
 
             // Simulate fetching from database
             var schedules = new List<ScheduleListItem>
@@ -153,7 +159,9 @@ public class ScheduleController : ControllerBase
         {
             var schedule = _cacheService.Get<ScheduledUpload>($"schedule:{scheduleId}");
             if (schedule == null)
+            {
                 return NotFound();
+            }
 
             if (request.ScheduledUploadTimeUtc.HasValue)
             {
@@ -213,10 +221,14 @@ public class ScheduleController : ControllerBase
     public async Task<IActionResult> ImportSchedulesFromCsvAsync(IFormFile file)
     {
         if (file == null || file.Length == 0)
+        {
             return BadRequest(new { message = "A non-empty CSV file is required." });
+        }
 
         if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        {
             return BadRequest(new { message = "Only CSV files are accepted." });
+        }
 
         var rowErrors = new List<CsvRowError>();
         var created = new List<ScheduleResponse>();
@@ -227,20 +239,27 @@ public class ScheduleController : ControllerBase
             using var reader = new StreamReader(file.OpenReadStream());
             string? headerLine = await reader.ReadLineAsync();
             if (headerLine == null)
+            {
                 return BadRequest(new { message = "CSV file is empty." });
+            }
 
             lineNumber = 1;
             var headers = ParseCsvLine(headerLine);
             var required = new[] { "FilePath", "Title", "ScheduledPublishTimeUtc" };
             var missing = required.Where(h => !headers.ContainsKey(h)).ToList();
             if (missing.Count > 0)
+            {
                 return BadRequest(new { message = $"Missing required CSV columns: {string.Join(", ", missing)}" });
+            }
 
             string? line;
             while ((line = await reader.ReadLineAsync()) != null)
             {
                 lineNumber++;
-                if (string.IsNullOrWhiteSpace(line)) continue;
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
 
                 var cols = ParseCsvLine(line, headers.Count);
                 var rowErrors2 = new List<string>();
@@ -256,18 +275,32 @@ public class ScheduleController : ControllerBase
                 };
 
                 if (string.IsNullOrWhiteSpace(row.FilePath))
+                {
                     rowErrors2.Add("FilePath is required.");
+                }
+
                 if (string.IsNullOrWhiteSpace(row.Title))
+                {
                     rowErrors2.Add("Title is required.");
+                }
+
                 if (string.IsNullOrWhiteSpace(row.RawScheduledTime))
+                {
                     rowErrors2.Add("ScheduledPublishTimeUtc is required.");
+                }
                 else if (!DateTime.TryParse(row.RawScheduledTime, null,
                     System.Globalization.DateTimeStyles.AdjustToUniversal, out var parsedTime))
+                {
                     rowErrors2.Add($"ScheduledPublishTimeUtc '{row.RawScheduledTime}' is not a valid date/time.");
+                }
                 else if (parsedTime <= DateTime.UtcNow)
+                {
                     rowErrors2.Add("ScheduledPublishTimeUtc must be in the future.");
+                }
                 else
+                {
                     row.ScheduledPublishTimeUtc = parsedTime;
+                }
 
                 if (rowErrors2.Count > 0)
                 {
@@ -315,7 +348,10 @@ public class ScheduleController : ControllerBase
         var parts = SplitCsvLine(line);
         var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         for (int i = 0; i < parts.Count; i++)
+        {
             map[parts[i].Trim()] = i;
+        }
+
         return map;
     }
 
@@ -361,7 +397,10 @@ public class ScheduleController : ControllerBase
     private static string GetColumn(List<string> cols, Dictionary<string, int> headers, string name)
     {
         if (!headers.TryGetValue(name, out var idx) || idx >= cols.Count)
+        {
             return string.Empty;
+        }
+
         return cols[idx].Trim();
     }
 }

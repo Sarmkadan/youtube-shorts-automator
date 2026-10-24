@@ -43,7 +43,9 @@ internal sealed class RecordingVideoUploader : IVideoUploader
         await Task.Yield();
 
         if (_failingVideos.Contains(videoId))
+        {
             throw new UploadException("Simulated YouTube failure");
+        }
 
         return new UploadResult { VideoId = videoId, Status = UploadStatus.Completed };
     }

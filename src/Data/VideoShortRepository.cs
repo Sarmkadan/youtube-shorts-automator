@@ -3,9 +3,9 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Data;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Domain.Models;
-using System.Data;
 
 namespace YouTubeShortAutomator.Data;
 
@@ -182,7 +182,7 @@ public class VideoShortRepository : IRepository<VideoShort>
             Title = (string)row["Title"],
             Description = (string)row["Description"],
             FilePath = (string)row["FilePath"],
-            ThumbnailPath = row["ThumbnailPath"] != DBNull.Value ? (string)row["ThumbnailPath"] : null,
+            ThumbnailPath = row["ThumbnailPath"] != DBNull.Value ? (string)row["ThumbnailPath"] : string.Empty,
             Duration = TimeSpan.FromSeconds((double)row["Duration"]),
             FileSizeBytes = (long)row["FileSizeBytes"],
             Quality = (VideoQuality)(int)row["Quality"],

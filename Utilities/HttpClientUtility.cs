@@ -39,25 +39,50 @@ public static class HttpClientUtility
 
     public static void AddAuthorizationHeader(HttpClient client, string scheme, string token)
     {
-        if (client == null) throw new ArgumentNullException(nameof(client));
-        if (string.IsNullOrWhiteSpace(scheme)) throw new ArgumentException("Scheme cannot be null or empty.", nameof(scheme));
-        if (string.IsNullOrWhiteSpace(token)) throw new ArgumentException("Token cannot be null or empty.", nameof(token));
+        if (client == null)
+        {
+            throw new ArgumentNullException(nameof(client));
+        }
+
+        if (string.IsNullOrWhiteSpace(scheme))
+        {
+            throw new ArgumentException("Scheme cannot be null or empty.", nameof(scheme));
+        }
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new ArgumentException("Token cannot be null or empty.", nameof(token));
+        }
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, token);
     }
 
     public static void AddApiKeyHeader(HttpClient client, string apiKey)
     {
-        if (client == null) throw new ArgumentNullException(nameof(client));
-        if (string.IsNullOrWhiteSpace(apiKey)) throw new ArgumentException("API key cannot be null or empty.", nameof(apiKey));
+        if (client == null)
+        {
+            throw new ArgumentNullException(nameof(client));
+        }
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            throw new ArgumentException("API key cannot be null or empty.", nameof(apiKey));
+        }
 
         client.DefaultRequestHeaders.Add("X-API-Key", apiKey);
     }
 
     public static void AddBearerToken(HttpClient client, string token)
     {
-        if (client == null) throw new ArgumentNullException(nameof(client));
-        if (string.IsNullOrWhiteSpace(token)) throw new ArgumentException("Token cannot be null or empty.", nameof(token));
+        if (client == null)
+        {
+            throw new ArgumentNullException(nameof(client));
+        }
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new ArgumentException("Token cannot be null or empty.", nameof(token));
+        }
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
@@ -67,8 +92,15 @@ public static class HttpClientUtility
         string url,
         int maxRetries = 3)
     {
-        if (client == null) throw new ArgumentNullException(nameof(client));
-        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        if (client == null)
+        {
+            throw new ArgumentNullException(nameof(client));
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        }
 
         try
         {
@@ -95,9 +127,20 @@ public static class HttpClientUtility
         T data,
         int maxRetries = 3)
     {
-        if (client == null) throw new ArgumentNullException(nameof(client));
-        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
-        if (data == null) throw new ArgumentNullException(nameof(data));
+        if (client == null)
+        {
+            throw new ArgumentNullException(nameof(client));
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        }
+
+        if (data == null)
+        {
+            throw new ArgumentNullException(nameof(data));
+        }
 
         try
         {
@@ -119,8 +162,15 @@ public static class HttpClientUtility
         string url,
         int maxRetries = 3)
     {
-        if (client == null) throw new ArgumentNullException(nameof(client));
-        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        if (client == null)
+        {
+            throw new ArgumentNullException(nameof(client));
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        }
 
         try
         {
@@ -143,9 +193,20 @@ public static class HttpClientUtility
         T data,
         int maxRetries = 3)
     {
-        if (client == null) throw new ArgumentNullException(nameof(client));
-        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
-        if (data == null) throw new ArgumentNullException(nameof(data));
+        if (client == null)
+        {
+            throw new ArgumentNullException(nameof(client));
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        }
+
+        if (data == null)
+        {
+            throw new ArgumentNullException(nameof(data));
+        }
 
         try
         {
@@ -167,8 +228,15 @@ public static class HttpClientUtility
         string url,
         int maxRetries = 3)
     {
-        if (client == null) throw new ArgumentNullException(nameof(client));
-        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        if (client == null)
+        {
+            throw new ArgumentNullException(nameof(client));
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+        }
 
         try
         {

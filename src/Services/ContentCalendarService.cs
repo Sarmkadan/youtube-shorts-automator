@@ -3,11 +3,11 @@
 // CTO & Software Architect
 // =============================================================================
 
+using Microsoft.Extensions.Logging;
 using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
-using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -98,7 +98,9 @@ public sealed class ContentCalendarService : IContentCalendarService
         CancellationToken cancellationToken = default)
     {
         if (from > to)
+        {
             throw new ArgumentException("Range start cannot be after range end.", nameof(from));
+        }
 
         return await _repository.GetByDateRangeAsync(from, to, cancellationToken);
     }
@@ -109,7 +111,9 @@ public sealed class ContentCalendarService : IContentCalendarService
         CancellationToken cancellationToken = default)
     {
         if (daysAhead <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(daysAhead), "Days ahead must be a positive integer.");
+        }
 
         var cutoff = DateTime.UtcNow.AddDays(daysAhead);
         return await _repository.GetUpcomingAsync(cutoff, cancellationToken);
@@ -123,7 +127,9 @@ public sealed class ContentCalendarService : IContentCalendarService
         ArgumentNullException.ThrowIfNull(entry);
 
         if (!await _repository.ExistsAsync(entry.Id, cancellationToken))
+        {
             throw new ValidationException($"Calendar entry {entry.Id} not found.");
+        }
 
         ValidateEntry(entry);
         entry.UpdatedAt = DateTime.UtcNow;
@@ -138,7 +144,10 @@ public sealed class ContentCalendarService : IContentCalendarService
     {
         var deleted = await _repository.DeleteAsync(entryId, cancellationToken);
         if (deleted)
+        {
             _logger.LogInformation("Deleted calendar entry {EntryId}", entryId);
+        }
+
         return deleted;
     }
 
@@ -186,13 +195,17 @@ public sealed class ContentCalendarService : IContentCalendarService
         var entry = await RequireEntryAsync(entryId, cancellationToken);
 
         if (entry.LastOptimization is null)
+        {
             throw new InvalidOperationException(
                 $"Entry {entryId} has no stored optimisation result. Call OptimizeEntryAsync first.");
+        }
 
         var suggestions = entry.LastOptimization.Suggestions;
         if (suggestionIndex < 0 || suggestionIndex >= suggestions.Count)
+        {
             throw new ArgumentOutOfRangeException(nameof(suggestionIndex),
                 $"Index {suggestionIndex} is out of range for {suggestions.Count} available suggestions.");
+        }
 
         entry.ApplyOptimization(suggestions[suggestionIndex]);
         await _repository.UpdateAsync(entry, cancellationToken);
@@ -220,12 +233,16 @@ public sealed class ContentCalendarService : IContentCalendarService
         var entry = await RequireEntryAsync(entryId, cancellationToken);
 
         if (entry.Status is CalendarEntryStatus.Published or CalendarEntryStatus.Cancelled)
+        {
             throw new InvalidOperationException(
                 $"Cannot schedule an entry with status {entry.Status}.");
+        }
 
         if (!entry.VideoShortId.HasValue)
+        {
             throw new InvalidOperationException(
                 $"Entry {entryId} must be linked to a VideoShort before scheduling. Set VideoShortId first.");
+        }
 
         var videoShort = await _videoRepository.GetByIdAsync(entry.VideoShortId.Value, cancellationToken)
             ?? throw new InvalidOperationException(
@@ -276,20 +293,32 @@ public sealed class ContentCalendarService : IContentCalendarService
         var errors = new Dictionary<string, string>();
 
         if (string.IsNullOrWhiteSpace(entry.Title))
+        {
             errors[nameof(entry.Title)] = "Title is required.";
+        }
         else if (entry.Title.Length > _options.MaxTitleLength)
+        {
             errors[nameof(entry.Title)] = $"Title must not exceed {_options.MaxTitleLength} characters.";
+        }
 
         if (entry.Description.Length > _options.MaxDescriptionLength)
+        {
             errors[nameof(entry.Description)] = $"Description must not exceed {_options.MaxDescriptionLength} characters.";
+        }
 
         if (entry.Tags.Length > _options.MaxTagCount)
+        {
             errors[nameof(entry.Tags)] = $"Tag count must not exceed {_options.MaxTagCount}.";
+        }
 
         if (entry.YouTubeChannelId <= 0)
+        {
             errors[nameof(entry.YouTubeChannelId)] = "A valid YouTube channel identifier is required.";
+        }
 
         if (errors.Count > 0)
+        {
             throw new ValidationException("Content calendar entry validation failed.", errors);
+        }
     }
 }

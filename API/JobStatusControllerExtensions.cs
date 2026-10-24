@@ -4,8 +4,8 @@
 // Extension methods for JobStatusController providing additional functionality
 // =============================================================================
 
-using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace YouTubeShortsAutomator.API;
 
@@ -27,11 +27,15 @@ public static class JobStatusControllerExtensions
 
         var result = await controller.GetJobStatusAsync(jobId);
         if (result is not OkObjectResult okResult)
+        {
             return false;
+        }
 
         var jobStatus = okResult.Value as JobStatusResponse;
         if (jobStatus == null)
+        {
             return false;
+        }
 
         return jobStatus.Status is "Completed" or "Failed" or "Cancelled";
     }
@@ -51,14 +55,20 @@ public static class JobStatusControllerExtensions
 
         var result = await controller.GetJobStatusAsync(jobId);
         if (result is not OkObjectResult okResult)
+        {
             return "N/A";
+        }
 
         var jobStatus = okResult.Value as JobStatusResponse;
         if (jobStatus == null)
+        {
             return "N/A";
+        }
 
         if (jobStatus.StartedAtUtc == null || jobStatus.CompletedAtUtc == null)
+        {
             return "N/A";
+        }
 
         var duration = jobStatus.CompletedAtUtc.Value - jobStatus.StartedAtUtc.Value;
         return duration.ToString("hh:mm:ss", CultureInfo.InvariantCulture);
@@ -77,11 +87,15 @@ public static class JobStatusControllerExtensions
 
         var result = await controller.GetJobStatusAsync(jobId);
         if (result is not OkObjectResult okResult)
+        {
             return "0%";
+        }
 
         var jobStatus = okResult.Value as JobStatusResponse;
         if (jobStatus == null)
+        {
             return "0%";
+        }
 
         return $"{jobStatus.Progress}%";
     }
@@ -103,11 +117,15 @@ public static class JobStatusControllerExtensions
 
         var result = await controller.GetJobResultsAsync(jobId);
         if (result is not OkObjectResult okResult)
+        {
             return (0, 0, 0);
+        }
 
         var jobResults = okResult.Value as JobResultsResponse;
         if (jobResults == null)
+        {
             return (0, 0, 0);
+        }
 
         return (jobResults.SuccessfulCount, jobResults.FailedCount, jobResults.TotalCount);
     }

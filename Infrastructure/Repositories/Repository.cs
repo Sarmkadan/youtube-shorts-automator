@@ -104,7 +104,9 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         {
             var entity = await GetByIdAsync(id);
             if (entity != null)
+            {
                 entities.Add(entity);
+            }
         }
 
         _logger.LogDebug($"Deleting {entities.Count} entities of type {typeof(TEntity).Name}");

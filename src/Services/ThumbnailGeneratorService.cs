@@ -5,11 +5,11 @@
 
 using System.Diagnostics;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -139,10 +139,14 @@ public sealed class ThumbnailGeneratorService : IThumbnailGeneratorService
         ArgumentNullException.ThrowIfNull(request);
 
         if (!File.Exists(videoPath))
+        {
             throw new VideoProcessingException($"Video file not found: {videoPath}");
+        }
 
         if (string.IsNullOrWhiteSpace(request.OutputDirectory))
+        {
             throw new ValidationException("OutputDirectory is required.", nameof(request.OutputDirectory), string.Empty);
+        }
 
         Directory.CreateDirectory(request.OutputDirectory);
 
@@ -200,7 +204,9 @@ public sealed class ThumbnailGeneratorService : IThumbnailGeneratorService
         ArgumentNullException.ThrowIfNull(options);
 
         if (!File.Exists(imagePath))
+        {
             throw new VideoProcessingException($"Image file not found: {imagePath}");
+        }
 
         var outputPath = Path.Combine(
             Path.GetDirectoryName(imagePath)!,
@@ -242,10 +248,14 @@ public sealed class ThumbnailGeneratorService : IThumbnailGeneratorService
         CancellationToken cancellationToken = default)
     {
         if (frameCount < 1)
+        {
             throw new ArgumentOutOfRangeException(nameof(frameCount), "Frame count must be at least 1.");
+        }
 
         if (videoDuration <= TimeSpan.Zero)
+        {
             throw new ArgumentOutOfRangeException(nameof(videoDuration), "Video duration must be positive.");
+        }
 
         var step = videoDuration.TotalSeconds / (frameCount + 1);
         var results = new List<ThumbnailGenerationResult>(frameCount);
