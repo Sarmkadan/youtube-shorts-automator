@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using Microsoft.Extensions.Options;
+using YouTubeShortsAutomator.Configuration;
 using YouTubeShortsAutomator.Domain.Constants;
 using YouTubeShortsAutomator.Application.Repositories;
 using YouTubeShortsAutomator.Domain.Exceptions;
@@ -32,7 +34,8 @@ public class VideoUploader : IVideoUploader
         IVideoRepository videoRepository,
         YouTubeUploadService youTubeUploadService,
         IWebhookPublisher webhookPublisher,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IOptions<UploadOptions> uploadOptions)
     {
         _logger = logger;
         _videoRepository = videoRepository;
@@ -40,7 +43,7 @@ public class VideoUploader : IVideoUploader
         _webhookPublisher = webhookPublisher;
         _configuration = configuration;
 
-        _maxRetries = configuration.GetValue("Upload:MaxRetries", 3);
+        _maxRetries = uploadOptions.Value.MaxRetries;
     }
 
     /// <summary>

@@ -35,6 +35,23 @@ public static class ApplicationConstants
         public const int ProVideosPerMonth = 100;
     }
 
+    /// <summary>
+    /// Defaults and sane bounds for the options bound from configuration at startup.
+    /// </summary>
+    public static class OptionLimits
+    {
+        public const int DefaultUploadMaxRetries = 3;
+        public const int MinUploadMaxRetries = 0;
+        public const int MaxUploadMaxRetries = 10;
+
+        public const int DefaultScheduleCheckIntervalSeconds = 60;
+        public const int MinScheduleCheckIntervalSeconds = 10;
+        public const int MaxScheduleCheckIntervalSeconds = 3600;
+
+        public const int DefaultAnalyticsPollingIntervalMinutes = 360;
+        public const int MinAnalyticsPollingIntervalMinutes = 1;
+    }
+
     public static class Processing
     {
         public const int MaxRetries = 3;

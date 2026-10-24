@@ -4,6 +4,7 @@
 // =============================================================================
 
 using Serilog;
+using YouTubeShortsAutomator.Configuration;
 using YouTubeShortsAutomator.Infrastructure.Extensions;
 using YouTubeShortsAutomator.Infrastructure.Repositories;
 using YouTubeShortsAutomator.Extensions;
@@ -38,6 +39,9 @@ try
     YouTubeShortsAutomator.Extensions.ServiceCollectionExtensions.AddApplicationServices(builder.Services);
     builder.Services.AddBackgroundServices();
     builder.Services.AddSingleton<IMetricsCollector, MetricsCollector>();
+
+    // Bind and validate upload, schedule and analytics options at startup
+    builder.Services.AddUploadScheduleAnalyticsOptions(builder.Configuration);
 
     // Configure rate limiting
     builder.Services.AddRateLimitingOptions(
