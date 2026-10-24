@@ -16,7 +16,9 @@ public interface IScheduleRepository : IRepository<UploadSchedule>
     Task<List<UploadSchedule>> GetActiveSchedulesAsync();
     Task<List<UploadSchedule>> GetDueSchedulesAsync();
     Task<List<UploadSchedule>> GetByFrequencyAsync(ScheduleFrequency frequency);
+    Task<UploadSchedule?> GetByIdWithUploadsAsync(Guid scheduleId);
     Task<ScheduledUpload?> GetScheduledUploadAsync(Guid uploadId);
+    Task AddScheduledUploadAsync(ScheduledUpload scheduledUpload);
     Task UpdateScheduledUploadAsync(ScheduledUpload scheduledUpload);
     Task<(List<UploadSchedule> Schedules, int Total)> GetPaginatedAsync(int pageNumber, int pageSize);
 }

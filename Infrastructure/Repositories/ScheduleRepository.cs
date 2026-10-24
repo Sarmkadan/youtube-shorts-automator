@@ -76,6 +76,17 @@ public class ScheduleRepository : Repository<UploadSchedule>, IScheduleRepositor
     }
 
     /// <summary>
+    /// Gets a schedule with its queued uploads loaded
+    /// </summary>
+    public async Task<UploadSchedule?> GetByIdWithUploadsAsync(Guid scheduleId)
+    {
+        _logger.LogInformation($"Retrieving schedule {scheduleId} with uploads");
+        return await _dbSet
+            .Include(s => s.ScheduledUploads)
+            .FirstOrDefaultAsync(s => s.Id == scheduleId);
+    }
+
+    /// <summary>
     /// Gets a scheduled upload
     /// </summary>
     public async Task<ScheduledUpload?> GetScheduledUploadAsync(Guid uploadId)
@@ -83,6 +94,16 @@ public class ScheduleRepository : Repository<UploadSchedule>, IScheduleRepositor
         _logger.LogInformation($"Retrieving scheduled upload {uploadId}");
         return await _context.ScheduledUploads
             .FirstOrDefaultAsync(su => su.Id == uploadId);
+    }
+
+    /// <summary>
+    /// Inserts a new scheduled upload
+    /// </summary>
+    public async Task AddScheduledUploadAsync(ScheduledUpload scheduledUpload)
+    {
+        _logger.LogInformation($"Adding scheduled upload {scheduledUpload.Id}");
+        await _context.ScheduledUploads.AddAsync(scheduledUpload);
+        await _context.SaveChangesAsync();
     }
 
     /// <summary>

@@ -26,13 +26,19 @@ public class UploadSchedule
     /// <summary>
     /// Calculates the next scheduled upload time
     /// </summary>
-    public DateTime CalculateNextScheduledTime()
+    public DateTime CalculateNextScheduledTime() => CalculateNextScheduledTime(DateTime.UtcNow);
+
+    /// <summary>
+    /// Calculates the next scheduled upload time relative to the given UTC instant
+    /// </summary>
+    /// <param name="utcNow">Current time in UTC</param>
+    public DateTime CalculateNextScheduledTime(DateTime utcNow)
     {
         if (!IsActive)
             return DateTime.MaxValue;
 
         var timeZone = TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
-        var nowInZone = TimeZoneInfo.ConvertTime(DateTime.Now, timeZone);
+        var nowInZone = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZone);
         var nextTime = nowInZone.Date.Add(ScheduledTime.ToTimeSpan());
 
         if (nextTime <= nowInZone)
@@ -54,11 +60,17 @@ public class UploadSchedule
     /// <summary>
     /// Records a successful execution
     /// </summary>
-    public void RecordExecution()
+    public void RecordExecution() => RecordExecution(DateTime.UtcNow);
+
+    /// <summary>
+    /// Records a successful execution at the given UTC instant
+    /// </summary>
+    /// <param name="utcNow">Execution time in UTC</param>
+    public void RecordExecution(DateTime utcNow)
     {
-        LastExecutedAt = DateTime.UtcNow;
+        LastExecutedAt = utcNow;
         TotalExecutions++;
-        NextScheduledTime = CalculateNextScheduledTime();
+        NextScheduledTime = CalculateNextScheduledTime(utcNow);
     }
 
     /// <summary>
@@ -95,12 +107,18 @@ public class UploadSchedule
     /// <summary>
     /// Checks if a schedule is due for execution
     /// </summary>
-    public bool IsDueForExecution()
+    public bool IsDueForExecution() => IsDueForExecution(DateTime.UtcNow);
+
+    /// <summary>
+    /// Checks if a schedule is due for execution at the given UTC instant
+    /// </summary>
+    /// <param name="utcNow">Current time in UTC</param>
+    public bool IsDueForExecution(DateTime utcNow)
     {
         if (!IsActive || NextScheduledTime == null)
             return false;
 
-        return DateTime.UtcNow >= NextScheduledTime;
+        return utcNow >= NextScheduledTime;
     }
 
     /// <summary>
@@ -114,10 +132,16 @@ public class UploadSchedule
     /// <summary>
     /// Activates the schedule
     /// </summary>
-    public void Activate()
+    public void Activate() => Activate(DateTime.UtcNow);
+
+    /// <summary>
+    /// Activates the schedule and recalculates the next run relative to the given UTC instant
+    /// </summary>
+    /// <param name="utcNow">Current time in UTC</param>
+    public void Activate(DateTime utcNow)
     {
         IsActive = true;
-        NextScheduledTime = CalculateNextScheduledTime();
+        NextScheduledTime = CalculateNextScheduledTime(utcNow);
     }
 
     private DateTime FindNextOccurrence(DateTime from, DayOfWeek targetDay)
