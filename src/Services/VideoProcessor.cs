@@ -5,9 +5,11 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Exceptions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -27,15 +29,19 @@ public class VideoProcessor
 
     private const int ProcessTimeoutSeconds = 600;
 
-    private readonly string _ffmpegPath;
-    private readonly string _ffprobePath;
+    private readonly VideoProcessorOptions _options;
     private readonly ILogger<VideoProcessor> _logger;
 
-    public VideoProcessor(ILogger<VideoProcessor> logger, string ffmpegPath = "ffmpeg", string ffprobePath = "ffprobe")
+    /// <summary>
+    /// Initialises a new instance of <see cref="VideoProcessor"/>.
+    /// </summary>
+    /// <param name="logger">Logger instance.</param>
+    /// <param name="options">Tool paths, output limits and target resolution. Defaults are used when omitted.
+    /// Values are checked at startup by <see cref="VideoProcessorOptionsValidation"/>.</param>
+    public VideoProcessor(ILogger<VideoProcessor> logger, IOptions<VideoProcessorOptions>? options = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _ffmpegPath = ffmpegPath;
-        _ffprobePath = ffprobePath;
+        _options = (options ?? Options.Create(new VideoProcessorOptions())).Value;
     }
 
     /// <summary>
@@ -53,7 +59,7 @@ public class VideoProcessor
             throw new FileNotFoundException("Input video not found", inputPath);
 
         var sourceSeconds = await ProbeDurationSecondsAsync(inputPath, cancellationToken);
-        var outputSeconds = Math.Min(sourceSeconds, MaxOutputSeconds);
+        var outputSeconds = Math.Min(sourceSeconds, _options.MaxDurationSeconds);
 
         var outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
         if (!string.IsNullOrEmpty(outputDirectory))
@@ -63,7 +69,7 @@ public class VideoProcessor
             inputPath, sourceSeconds, outputPath, outputSeconds);
 
         var arguments = BuildFFmpegArguments(inputPath, outputPath, outputSeconds);
-        var (exitCode, stderr) = await RunProcessAsync(_ffmpegPath, arguments, cancellationToken);
+        var (exitCode, stderr) = await RunProcessAsync(_options.FfmpegPath, arguments, cancellationToken);
 
         if (exitCode != 0)
         {
@@ -76,10 +82,10 @@ public class VideoProcessor
         _logger.LogInformation("Finished processing {Input}", inputPath);
     }
 
-    private static IReadOnlyList<string> BuildFFmpegArguments(string inputPath, string outputPath, double outputSeconds)
+    private IReadOnlyList<string> BuildFFmpegArguments(string inputPath, string outputPath, double outputSeconds)
     {
-        // Crop the widest 9:16 window from the centre of the frame, then scale to the Shorts resolution.
-        var filter = $"crop='min(iw,ih*9/16)':ih,scale={OutputWidth}:{OutputHeight}:flags=lanczos,setsar=1";
+        // Crop the widest 9:16 window from the centre of the frame, then scale to the configured target resolution.
+        var filter = $"crop='min(iw,ih*9/16)':ih,scale={_options.TargetWidth}:{_options.TargetHeight}:flags=lanczos,setsar=1";
 
         return
         [
@@ -96,7 +102,7 @@ public class VideoProcessor
 
     private async Task<double> ProbeDurationSecondsAsync(string inputPath, CancellationToken cancellationToken)
     {
-        var (exitCode, stdout, stderr) = await RunProcessWithOutputAsync(_ffprobePath,
+        var (exitCode, stdout, stderr) = await RunProcessWithOutputAsync(_options.FfprobePath,
             ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", inputPath],
             cancellationToken);
 

@@ -5,10 +5,11 @@
 
 using FluentAssertions;
 using Moq;
+using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
 using YouTubeShortAutomator.Services;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 
 namespace YouTubeShortAutomator.Tests;
@@ -25,14 +26,14 @@ public class ThumbnailGeneratorServiceTests
     /// Initializes a new instance of the <see cref="ThumbnailGeneratorServiceTests"/> class, setting up the service and a temporary directory.
     /// </summary>
     /// <remarks>
-    /// Creates a new <see cref="ThumbnailGeneratorService"/> instance with mocked configuration and logger,
+    /// Creates a new <see cref="ThumbnailGeneratorService"/> instance with default options and a mocked logger,
     /// and establishes a temporary directory for test file operations.
     /// </remarks>
     public ThumbnailGeneratorServiceTests()
     {
-        var config = new ConfigurationBuilder().Build();
+        var options = Options.Create(new ThumbnailGeneratorOptions());
         var logger = Mock.Of<ILogger<ThumbnailGeneratorService>>();
-        _service = new ThumbnailGeneratorService(config, logger);
+        _service = new ThumbnailGeneratorService(options, logger);
         _tempDir = Path.Combine(Path.GetTempPath(), $"thumbtest_{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDir);
     }

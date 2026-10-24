@@ -6,6 +6,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Constants;
 using YouTubeShortAutomator.Data;
@@ -27,6 +28,7 @@ public class Program
         // Register configuration
         services.AddSingleton(appSettings);
         services.AddSingleton(configuration);
+        services.AddMediaProcessingOptions(configuration);
 
         // Register application services
         services.AddApplicationServices(appSettings);
@@ -37,6 +39,13 @@ public class Program
 
         try
         {
+            // ValidateOnStart is normally run by the generic host. This entry point builds its container by hand,
+            // so run the same startup validators here; an invalid media setting stops the app before any work starts.
+            foreach (var startupValidator in serviceProvider.GetServices<IStartupValidator>())
+            {
+                startupValidator.Validate();
+            }
+
             logger.LogInformation("Starting YouTube Shorts Automator application");
 
             // Ensure the upload history table exists
@@ -61,7 +70,8 @@ public class Program
         catch (Exception ex)
         {
             logger.LogError($"Application failed: {ex.Message}");
-            Environment.Exit(1);
+            // Not Environment.Exit: that skips the finally block, and the console logger could lose this message.
+            Environment.ExitCode = 1;
         }
         finally
         {

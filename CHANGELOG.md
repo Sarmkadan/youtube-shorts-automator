@@ -1,3 +1,9 @@
+## [Unreleased]
+### Added
+- Startup validation for `VideoProcessor` and `ThumbnailGenerator` options (`IOptions<T>` with `ValidateOnStart`): FFmpeg/FFprobe paths, writable output directory, max duration 1-60 s, 9:16 target resolution, thumbnail quality 1-100. Misconfiguration stops the app at startup with a message naming each setting.
+### Fixed
+- Startup failures are logged before the process exits, instead of `Environment.Exit` dropping the message
+
 ## [2.0.2] - 2026-05-27
 ### Fixed
 - Fix upload retry not resuming from last chunk on network timeout

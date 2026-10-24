@@ -3,8 +3,10 @@
 // CTO & Software Architect
 // =============================================================================
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using YouTubeShortAutomator.Data;
 using YouTubeShortAutomator.Exceptions;
 using YouTubeShortAutomator.Services;
@@ -17,6 +19,8 @@ namespace YouTubeShortAutomator.Configuration;
 /// </summary>
 public static class DependencyInjection
 {
+    private const string ProcessingSectionName = "Processing";
+
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, AppSettings appSettings)
     {
         if (services == null)
@@ -67,7 +71,7 @@ public static class DependencyInjection
 
         services.AddScoped<IThumbnailGeneratorService>(sp =>
             new ThumbnailGeneratorService(
-                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<IOptions<ThumbnailGeneratorOptions>>(),
                 sp.GetRequiredService<ILogger<ThumbnailGeneratorService>>()));
 
         services.AddScoped(sp => new JobOrchestrationService(
@@ -120,6 +124,43 @@ public static class DependencyInjection
                 sp.GetRequiredService<ITitleOptimizationEngine>(),
                 sp.GetRequiredService<ContentCalendarOptions>(),
                 sp.GetRequiredService<ILogger<ContentCalendarService>>()));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Binds <see cref="VideoProcessorOptions"/> and <see cref="ThumbnailGeneratorOptions"/> from configuration and
+    /// registers their validators. Both are validated with <c>ValidateOnStart</c>, so an invalid value is reported
+    /// when the application starts instead of on first use. The console app builds its container by hand and has no
+    /// generic host to run these checks, so the entry point runs them explicitly (see <c>Program.Main</c>).
+    /// </summary>
+    /// <param name="services">The service collection to extend.</param>
+    /// <param name="configuration">Application configuration that holds the <c>Processing</c>,
+    /// <c>VideoProcessor</c> and <c>ThumbnailGenerator</c> sections.</param>
+    public static IServiceCollection AddMediaProcessingOptions(this IServiceCollection services, IConfiguration configuration)
+    {
+        if (services == null)
+        {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        if (configuration == null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        // FFmpeg tool settings live in the shared "Processing" section; the rest in each component's own section.
+        services.AddOptions<VideoProcessorOptions>()
+            .Bind(configuration.GetSection(ProcessingSectionName))
+            .Bind(configuration.GetSection(VideoProcessorOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<VideoProcessorOptions>, VideoProcessorOptionsValidation>();
+
+        services.AddOptions<ThumbnailGeneratorOptions>()
+            .Bind(configuration.GetSection(ProcessingSectionName))
+            .Bind(configuration.GetSection(ThumbnailGeneratorOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<ThumbnailGeneratorOptions>, ThumbnailGeneratorOptionsValidation>();
 
         return services;
     }

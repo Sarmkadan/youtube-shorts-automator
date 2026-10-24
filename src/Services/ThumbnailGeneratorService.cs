@@ -5,9 +5,11 @@
 
 using System.Diagnostics;
 using System.Text;
+using YouTubeShortAutomator.Configuration;
 using YouTubeShortAutomator.Domain.Models;
 using YouTubeShortAutomator.Exceptions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace YouTubeShortAutomator.Services;
 
@@ -78,6 +80,7 @@ public sealed class ThumbnailGeneratorService : IThumbnailGeneratorService
 {
     private readonly string _ffmpegPath;
     private readonly int _timeoutSeconds;
+    private readonly int _defaultQuality;
     private readonly ILogger<ThumbnailGeneratorService> _logger;
 
     private static readonly IReadOnlyDictionary<ThumbnailAspectRatio, (int W, int H)> Dimensions =
@@ -99,17 +102,32 @@ public sealed class ThumbnailGeneratorService : IThumbnailGeneratorService
     /// <summary>
     /// Initialises a new instance of <see cref="ThumbnailGeneratorService"/>.
     /// </summary>
-    /// <param name="configuration">Application configuration; reads <c>Processing:FFmpegPath</c>
-    /// and <c>Processing:FFmpegTimeoutSeconds</c>.</param>
+    /// <param name="options">FFmpeg path, timeout and default quality. Checked at startup by
+    /// <see cref="ThumbnailGeneratorOptionsValidation"/>.</param>
     /// <param name="logger">Logger instance.</param>
     public ThumbnailGeneratorService(
-        IConfiguration configuration,
+        IOptions<ThumbnailGeneratorOptions> options,
         ILogger<ThumbnailGeneratorService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _ffmpegPath = configuration?.GetValue<string>("Processing:FFmpegPath") ?? "ffmpeg";
-        _timeoutSeconds = configuration?.GetValue<int>("Processing:FFmpegTimeoutSeconds", 120) ?? 120;
+
+        var value = (options ?? throw new ArgumentNullException(nameof(options))).Value;
+        _ffmpegPath = value.FfmpegPath;
+        _timeoutSeconds = value.FfmpegTimeoutSeconds;
+        _defaultQuality = value.DefaultQuality;
     }
+
+    /// <summary>
+    /// Creates a request for <paramref name="outputDirectory"/> that uses the configured default quality.
+    /// All other fields keep their request defaults.
+    /// </summary>
+    /// <param name="outputDirectory">Directory where the generated thumbnail will be written.</param>
+    public ThumbnailGenerationRequest CreateDefaultRequest(string outputDirectory) =>
+        new()
+        {
+            OutputDirectory = outputDirectory,
+            Quality = _defaultQuality
+        };
 
     /// <inheritdoc />
     public async Task<ThumbnailGenerationResult> GenerateFromVideoAsync(
