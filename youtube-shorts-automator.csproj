@@ -17,6 +17,19 @@
     <PackageTags>youtube;shorts;automation;ffmpeg;google-api;scheduling;analytics;dotnet</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>true</IsPackable>
+    <!-- Reproducible builds and SourceLink: the .NET SDK ships SourceLink, so no extra package is needed. -->
+    <Deterministic>true</Deterministic>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DebugType>portable</DebugType>
+    <!-- NU1510: Microsoft.Extensions.* are kept as explicit dependencies so the nuspec keeps them
+         (the Web SDK also supplies them via the framework, which is why NuGet suggests pruning).
+         CS1591: the XML doc file is generated, but most public members are not documented yet. -->
+    <NoWarn>$(NoWarn);NU1510;CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,13 +41,24 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.68.0.3490" />
-    <PackageReference Include="Google.Apis.Auth.AspNetCore3" Version="1.68.0.3490" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.7" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.68.0.3513" />
+    <PackageReference Include="Google.Apis.Auth.AspNetCore3" Version="1.69.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     <PackageReference Include="Quartz" Version="3.8.0" />
+    <!-- Patch transitive JWT packages (GHSA-59j7-ghrg-fj52, NU1902) pulled in by Google.Apis.Auth.AspNetCore3. -->
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.23.0" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Test and benchmark projects build into tests/ and benchmarks/ under the repo root; keep their output out of the default globs (and the package). -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;benchmarks/**</DefaultItemExcludes>
+  </PropertyGroup>
+
   <ItemGroup>
+    <!-- The Web SDK packs appsettings.json and global.json as content files; consumers should not get them copied in. -->
+    <Content Remove="appsettings.json;global.json" />
+    <None Remove="global.json" />
     <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
