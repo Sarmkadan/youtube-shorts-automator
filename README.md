@@ -1,3 +1,96 @@
+## Getting started
+
+This walkthrough uses the console pipeline in `src/` (namespace `YouTubeShortAutomator`). It converts a source video into a 9:16 Short with `VideoProcessor`, then generates a vertical thumbnail from that Short with `ThumbnailGeneratorService`. No YouTube credentials or database are needed.
+
+### Prerequisites
+
+- **.NET SDK 10.0.100 or later.** `global.json` pins `10.0.100` with `rollForward: latestMinor`. Check with `dotnet --version`.
+- **FFmpeg and FFprobe on `PATH`.** FFprobe ships with FFmpeg. Check with `ffmpeg -version` and `ffprobe -version`. The processor encodes with `libx264` and `aac`, so your build must include both (distribution and static builds do).
+- **A source video** that FFmpeg can read. The example expects `input/source.mp4` relative to the working directory.
+
+### Project setup
+
+Create a console project next to a checkout of this repository (the path in `ProjectReference` assumes the checkout is in `../youtube-shorts-automator`):
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../youtube-shorts-automator/youtube-shorts-automator.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+### Example
+
+Save as `Program.cs`:
+
+```csharp
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using YouTubeShortAutomator.Domain.Models;
+using YouTubeShortAutomator.Services;
+
+using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+
+// 1. Create the processor. The FFmpeg and FFprobe paths default to "ffmpeg" and "ffprobe" (resolved from PATH).
+var videoProcessor = new VideoProcessor(
+    loggerFactory.CreateLogger<VideoProcessor>(),
+    ffmpegPath: "ffmpeg",
+    ffprobePath: "ffprobe");
+
+// 2. Convert the source into a 9:16 Short: 1080x1920, H.264/AAC, trimmed to at most 59 seconds.
+var sourcePath = Path.GetFullPath("input/source.mp4");
+var shortPath = Path.GetFullPath("output/short.mp4");
+
+await videoProcessor.ProcessAsync(sourcePath, shortPath);
+Console.WriteLine($"Short written to {shortPath}");
+
+// 3. Generate a 9:16 thumbnail from the first second of the Short.
+// An empty configuration means FFmpeg is resolved from PATH; set "Processing:FFmpegPath" to override it.
+var configuration = new ConfigurationBuilder().Build();
+
+var thumbnails = new ThumbnailGeneratorService(
+    configuration,
+    loggerFactory.CreateLogger<ThumbnailGeneratorService>());
+
+var thumbnail = await thumbnails.GenerateFromVideoAsync(
+    shortPath,
+    new ThumbnailGenerationRequest
+    {
+        CaptureTimestamp = TimeSpan.FromSeconds(1),
+        OutputDirectory = Path.GetFullPath("output/thumbnails"),
+        AspectRatio = ThumbnailAspectRatio.Vertical,
+        Format = ThumbnailOutputFormat.Jpeg,
+        Quality = 85
+    });
+
+if (!thumbnail.Success)
+    throw new InvalidOperationException($"Thumbnail generation failed: {thumbnail.ErrorMessage}");
+
+Console.WriteLine($"Thumbnail written to {thumbnail.OutputPath} ({thumbnail.Width}x{thumbnail.Height})");
+```
+
+Run it from the project directory:
+
+```bash
+dotnet run
+```
+
+### Expected output
+
+| Path | Contents |
+|------|----------|
+| `output/short.mp4` | 1080x1920 H.264 video with AAC audio. Sources longer than 59 seconds are trimmed; shorter ones keep their length. Any existing file at this path is overwritten. |
+| `output/thumbnails/thumb_<32 hex chars>.jpg` | 720x1280 JPEG captured at 1 second into the Short. The file name is a new GUID on each run, so read the path from `thumbnail.OutputPath`. |
+
+The logger writes progress to the console. On failure, `ProcessAsync` throws `FileNotFoundException` when the source is missing, or `VideoProcessingException` when the input is not a readable video or FFmpeg fails. `GenerateFromVideoAsync` throws `VideoProcessingException` when the video file is missing, but returns `Success = false` with `ErrorMessage` set when FFmpeg fails to extract the frame.
+
 ## FileSystemUtility
 
 `FileSystemUtility` provides static methods for common file system operations, such as ensuring directories exist, validating video files, reading and writing files, and managing directories.
