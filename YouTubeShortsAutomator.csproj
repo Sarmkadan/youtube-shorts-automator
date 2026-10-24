@@ -35,7 +35,7 @@
     <Compile Remove="bin\**\*.cs" />
     <!-- examples/ holds standalone samples with their own Main methods; they are not part of the web app. -->
     <Compile Remove="examples\**\*.cs" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
