@@ -4,6 +4,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/youtube-shorts-automator.Tests/youtube-shorts-automator.Tests.csproj" />
+    <Project Path="tests/youtube-shorts-automator.IntegrationTests/youtube-shorts-automator.IntegrationTests.csproj" />
   </Folder>
   <Project Path="youtube-shorts-automator.csproj" />
   <Project Path="YouTubeShortsAutomator.csproj" />
