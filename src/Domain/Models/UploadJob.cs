@@ -184,4 +184,13 @@ public sealed class UploadJob
 
         return true;
     }
+
+    /// <summary>
+    /// Returns a concise, human-readable summary of the key properties of the upload job.
+    /// </summary>
+    /// <returns>A string containing the job's Id, VideoShortId, YouTubeVideoId, Status and ScheduledAt.</returns>
+    public override string ToString()
+    {
+        return $"UploadJob {{ Id={Id}, VideoShortId={VideoShortId}, YouTubeVideoId={YouTubeVideoId}, Status={Status}, ScheduledAt={ScheduledAt:yyyy-MM-dd HH:mm:ss} }}";
+    }
 }
