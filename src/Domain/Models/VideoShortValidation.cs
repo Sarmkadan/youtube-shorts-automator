@@ -127,7 +127,12 @@ public static class VideoShortValidation
     /// <param name="value">The video short to check.</param>
     /// <returns><see langword="true"/> if the video short is valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
-    public static bool IsValid(this VideoShort value) => value.Validate().Count == 0;
+    public static bool IsValid(this VideoShort value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        return value.Validate().Count == 0;
+    }
 
     /// <summary>
     /// Ensures that the specified video short is valid, throwing an <see cref="ArgumentException"/> if it is not.
