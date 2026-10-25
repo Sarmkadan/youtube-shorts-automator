@@ -1649,3 +1649,80 @@ public class ThumbnailTestRunner
     }
 }
 ```
+
+## TitleOptimizationEngine
+
+`TitleOptimizationEngine` produces title and description suggestions for a channel by comparing the current metadata against its historical performance (`src/Services/TitleOptimizationEngine.cs`, namespace `YouTubeShortAutomator.Services`). It implements `ITitleOptimizationEngine` and is registered as scoped in `src/Configuration/DependencyInjection.cs`, so resolve it from the container rather than constructing it by hand. The scoring and suggestion logic is deterministic: the only external call is `AnalyticsService.GetTopPerformingVideosAsync`, which supplies the sample of top-performing videos (`HistoricalSampleSize`, default 25).
+
+### Method reference
+
+| Member | Signature | Description |
+|--------|-----------|-------------|
+| Constructor | `TitleOptimizationEngine(AnalyticsService, ContentCalendarOptions, ILogger<TitleOptimizationEngine>)` | Creates the engine. Throws `ArgumentNullException` if any argument is `null`. |
+| `OptimizeAsync` | `Task<TitleOptimizationResult> OptimizeAsync(string title, string description, string[] tags, int channelId, CancellationToken cancellationToken = default)` | Fetches the channel's top-performing videos, builds up to `OptimizationSuggestionCount` (default 3) suggestions ordered by `ConfidenceScore`, and returns them with the optimal posting hour and recommended hashtags. Throws `ArgumentNullException` when `title` is `null` and `ArgumentException` when it is empty or whitespace. |
+| `RecommendPostingTimesAsync` | `Task<IEnumerable<DateTime>> RecommendPostingTimesAsync(int channelId, int count = 5, CancellationToken cancellationToken = default)` | Returns up to `count` UTC upload slots, starting tomorrow at the optimal hour. Sundays are skipped, and consecutive slots are at least `MinSlotGapMinutes` (default 240) apart. The search covers at most `count * 4` days, so fewer slots than requested can be returned. Throws `ArgumentOutOfRangeException` when `count` is zero or negative. |
+| `ScoreTitle` | `double ScoreTitle(string title)` | Returns a heuristic quality score clamped to the range 0 to 1. Returns `0` for a `null` or whitespace title. See the scoring table below. |
+| `ExtractKeywords` | `string[] ExtractKeywords(string title, string description)` | Returns up to 10 lowercase keywords from the combined title and description, ordered by frequency. Only words of at least 4 letters that are not stop words are kept. `null` arguments are treated as empty strings. |
+
+`OptimizeAsync` and `RecommendPostingTimesAsync` both pass the sample through the same private pattern builder, so their results depend on the same analytics data.
+
+### ScoreTitle scoring
+
+`ScoreTitle` starts at a base score of `0.4` and adds or subtracts the following components. The final value is clamped to `[0, 1]`.
+
+| Component | Condition | Adjustment |
+|-----------|-----------|------------|
+| Length | Length is between `OptimalTitleMinLength` (40) and `OptimalTitleMaxLength` (70) | `+0.2` |
+| Length | Length is under 20 or over 90 characters | `-0.15` |
+| Length | Any other length | `+0.05` |
+| Power word | Title contains one of `Ultimate`, `Essential`, `Complete`, `Proven`, `Simple`, `Fast`, `Best`, `Top`, `Easy`, `Quick` (case-insensitive) | `+0.15` |
+| Question | Title starts with `How to`, `Why does`, `What is`, `When should`, or `Which is better`, or ends with `?` | `+0.1` |
+| Digits | Title contains at least one digit | `+0.1` |
+| Engagement keyword | Title contains any of `HighEngagementKeywords` | `+0.05 * KeywordWeightMultiplier` (applied once) |
+
+The length thresholds of 20 and 90 are fixed in the code. Only the optimal range and the keyword settings come from `ContentCalendarOptions`.
+
+### OptimizeAsync output
+
+Each suggestion carries the same description and tags, built from the input:
+
+- **Power-word injection** is added only when the title has no power word. The word is picked from the title length, and it is inserted after `How to` when the title starts with that phrase.
+- **Question format** is added only when the title does not already end with `?`. It turns the title into a `How to ...?` question.
+- **Keyword alignment** is always added. It appends the first top-performer or extracted keyword that is missing from the title.
+
+`ConfidenceScore` is capped at `1.0`. `SuggestedDescription` is the original description followed by `TrendingHashtags`. `RecommendedHashtags` contains the trending hashtags plus up to five extracted keywords as `#keyword` tags, with a maximum of 10 entries.
+
+The optimal posting hour is currently fixed at `17` UTC. `AnalyticsData` does not include upload timestamps, so the pattern builder cannot derive the hour from the data yet. If `17` is not in `OptimalPostingHoursUtc`, the engine uses the middle entry of that array instead.
+
+### Usage Example
+
+```csharp
+using YouTubeShortAutomator.Services;
+
+// Resolve the engine from the container (registered as scoped)
+ITitleOptimizationEngine engine = scope.ServiceProvider.GetRequiredService<ITitleOptimizationEngine>();
+
+// Score a candidate title before scheduling
+double score = engine.ScoreTitle("How to Edit Shorts Fast in 2 Minutes");
+Console.WriteLine($"Title score: {score:F2}");
+
+// Generate suggestions for the channel's current metadata
+TitleOptimizationResult result = await engine.OptimizeAsync(
+    title: "How to edit Shorts",
+    description: "A quick tutorial on editing vertical video.",
+    tags: new[] { "shorts", "editing" },
+    channelId: 1);
+
+// Use the highest-confidence suggestion, if there is one
+OptimizationSuggestion? best = result.BestSuggestion;
+if (best is not null)
+{
+    Console.WriteLine($"{best.SuggestedTitle} ({best.ConfidenceScore:F2}): {best.Rationale}");
+}
+
+// Pick five upcoming UTC slots, skipping Sundays
+IEnumerable<DateTime> slots = await engine.RecommendPostingTimesAsync(channelId: 1, count: 5);
+
+// Extract seed keywords for a new description
+string[] keywords = engine.ExtractKeywords("Edit Shorts faster", "Batch editing tips for creators");
+```
