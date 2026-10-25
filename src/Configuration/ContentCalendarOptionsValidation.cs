@@ -230,7 +230,9 @@ public static class ContentCalendarOptionsValidation
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static bool IsValid(this ContentCalendarOptions? value)
     {
-        return value?.Validate().Count == 0;
+        ArgumentNullException.ThrowIfNull(value);
+
+        return value.Validate().Count == 0;
     }
 
     /// <summary>
