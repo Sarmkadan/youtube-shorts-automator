@@ -213,4 +213,11 @@ public sealed class ProcessingTask
         OutputBitrate = bitrate;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Returns a concise summary of the task in the form
+    /// <c>[Id] TaskType (Status) short #VideoShortId, priority P, WxH @ B kbps</c>.
+    /// </summary>
+    public override string ToString() =>
+        $"[{Id}] {TaskType} ({Status}) short #{VideoShortId}, priority {Priority}, {OutputWidth}x{OutputHeight} @ {OutputBitrate} kbps";
 }
