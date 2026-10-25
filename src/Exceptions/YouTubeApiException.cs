@@ -14,14 +14,24 @@ public sealed class YouTubeApiException : YoutubeShortsAutomatorException
     public string? ApiErrorCode { get; set; }
     public int? HttpStatusCode { get; set; }
 
-    public YouTubeApiException(string message) : base(message) { }
+    public YouTubeApiException(string message) : base(message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+    }
 
     public YouTubeApiException(string message, Exception innerException)
-        : base(message, innerException) { }
+        : base(message, innerException)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(innerException);
+    }
 
     public YouTubeApiException(string message, int channelId, string apiErrorCode, int httpStatusCode)
         : base(message)
     {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(apiErrorCode);
+
         ChannelId = channelId;
         ApiErrorCode = apiErrorCode;
         HttpStatusCode = httpStatusCode;
