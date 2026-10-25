@@ -1927,3 +1927,51 @@ TimeSpan? duration = fileValidationService.GetVideoDuration(inputPath);
 fileValidationService.DeleteTemporaryFile("./temp/clip_720p.mp4");
 fileValidationService.CleanupTemporaryDirectory("./temp");
 ```
+
+## SchedulingService
+
+`SchedulingService` creates, reschedules, cancels and queries `UploadJob` records (`src/Services/SchedulingService.cs`, namespace `YouTubeShortAutomator.Services`). It takes an `UploadJobRepository` and an `ILogger<SchedulingService>`, and throws `ArgumentNullException` if either is `null`. It is registered as scoped in `src/Configuration/DependencyInjection.cs`. Every method except `CalculateOptimalUploadTime` is `virtual`, so Moq can mock the class.
+
+Times are compared against `DateTime.UtcNow`, so pass UTC values. Scheduling and rescheduling reject times more than 5 seconds in the past. The methods that wrap repository errors throw `SchedulingException`, with the original exception as the inner exception.
+
+### Public members
+
+| Member | Returns | Description |
+|--------|---------|-------------|
+| `ScheduleUploadAsync(videoShortId, scheduledTime, cancellationToken)` | `Task<UploadJob>` | Creates a `Pending` job with `AttemptCount` 0 and `MaxRetries` set to `Constants.DEFAULT_RETRY_COUNT`, then saves it. Throws `SchedulingException` if `scheduledTime` is in the past. Logs the hours until the upload at information level |
+| `GetUpcomingJobsAsync(hoursAhead = 24, cancellationToken)` | `Task<IEnumerable<UploadJob>>` | Returns `Pending` and `Queued` jobs scheduled between now and `now + hoursAhead`, ordered by `ScheduledAt`. Loads all jobs through `GetAllAsync` and filters them in memory. Logs and throws `SchedulingException` on failure |
+| `GetOverdueJobsAsync(cancellationToken)` | `Task<IEnumerable<UploadJob>>` | Returns `Pending` jobs whose `ScheduledAt` is at or before now, oldest first. Logs and throws `SchedulingException` on failure |
+| `RescheduleUploadAsync(uploadJobId, newScheduledTime, cancellationToken)` | `Task<bool>` | Sets a new `ScheduledAt` and updates `UpdatedAt`. The status is not changed. Returns `true` on success. Throws `SchedulingException` if the time is in the past, the job does not exist, or the job is `Completed` or `Uploading` |
+| `CancelUploadAsync(uploadJobId, cancellationToken)` | `Task<bool>` | Sets the job's status to `Cancelled` and returns `true`. Throws `SchedulingException` if the job does not exist or is `Uploading`. Errors are wrapped a second time, so the message starts with `Failed to cancel upload:` |
+| `GetQueuedJobCountAsync(cancellationToken)` | `Task<int>` | Returns the number of jobs with `Queued` status. On failure it logs the error and rethrows the original exception without wrapping it |
+| `CalculateOptimalUploadTime(videoCreatedAt, estimatedProcessingMinutes)` | `TimeSpan` | Returns the delay from now until the suggested upload time. The suggestion is `videoCreatedAt` plus the processing minutes plus a 5-minute buffer. If that time has passed, the delay is 5 minutes. Pure calculation with no logging or I/O |
+| `IsWithinOptimalUploadWindow(scheduleTime)` | `bool` | Returns `true` when the time of day is between 09:00 and 23:00 inclusive. The date and `DateTimeKind` are ignored, so the time zone is whatever the `DateTime` carries |
+
+### Usage Example
+
+```csharp
+using YouTubeShortAutomator.Services;
+
+// SchedulingService is registered as scoped, so resolve it from the service provider
+SchedulingService schedulingService = serviceProvider.GetRequiredService<SchedulingService>();
+
+// Estimate a delay for a video created an hour ago that needs 15 minutes to process
+TimeSpan delay = schedulingService.CalculateOptimalUploadTime(DateTime.UtcNow.AddHours(-1), 15);
+DateTime uploadAt = DateTime.UtcNow.Add(delay);
+
+if (!schedulingService.IsWithinOptimalUploadWindow(uploadAt))
+{
+    uploadAt = uploadAt.Date.AddHours(9);
+}
+
+UploadJob job = await schedulingService.ScheduleUploadAsync(videoShortId: 42, scheduledTime: uploadAt);
+
+// Move the job later, or cancel it if it has not started uploading
+await schedulingService.RescheduleUploadAsync(job.Id, uploadAt.AddHours(2));
+
+IEnumerable<UploadJob> upcoming = await schedulingService.GetUpcomingJobsAsync(hoursAhead: 6);
+IEnumerable<UploadJob> overdue = await schedulingService.GetOverdueJobsAsync();
+int queued = await schedulingService.GetQueuedJobCountAsync();
+
+await schedulingService.CancelUploadAsync(job.Id);
+```
