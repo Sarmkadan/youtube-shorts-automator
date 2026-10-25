@@ -1726,3 +1726,59 @@ IEnumerable<DateTime> slots = await engine.RecommendPostingTimesAsync(channelId:
 // Extract seed keywords for a new description
 string[] keywords = engine.ExtractKeywords("Edit Shorts faster", "Batch editing tips for creators");
 ```
+
+## JobOrchestrationService
+
+`JobOrchestrationService` coordinates the full video pipeline for YouTube Shorts: processing and validation, thumbnail generation, analytics record creation, upload scheduling, upload and retry runs, and analytics sync (`src/Services/JobOrchestrationService.cs`, namespace `YouTubeShortAutomator.Services`). It is sealed and has no interface. Resolve it from the service provider, as `src/Program.cs` does, rather than constructing it by hand. The constructor throws `ArgumentNullException` for any `null` dependency.
+
+The public methods below catch their exceptions and report failures through their return values or result objects, so they do not throw for pipeline or upload errors. Each one logs its failures.
+
+### Public members
+
+| Member | Returns | Description |
+|--------|---------|-------------|
+| `ProcessFullPipelineAsync(videoShortId, processingProfile, channel, scheduledUploadTime, ct)` | `Task<Pipeline>` | Runs the pipeline for one video. Steps: load the video, validate its file, process it, generate a thumbnail at 2 seconds, apply the watermark and colour grading when the profile enables them, mark it processed, create an analytics record, and create an upload job for `scheduledUploadTime`. Returns `Status = "Failed"` with `Error` set if the video is missing, validation fails, processing does not complete, or an exception is thrown. Returns `Status = "Success"` with `UploadJobId`, `ScheduledUploadTime`, and `CompletedAt` set otherwise. `channel` is accepted but not used by the method body |
+| `ProcessReadyUploadsAsync(channel, ct)` | `Task<bool>` | Uploads up to `Constants.MAX_CONCURRENT_UPLOADS` (3) scheduled jobs. Jobs whose video no longer exists are skipped. Each job is saved after its attempt. A failure on one job is logged and does not stop the others. Returns `true` if at least one upload completed; `false` if none did or if the initial query failed |
+| `ProcessFailedRetriableJobsAsync(channel, ct)` | `Task<bool>` | Retries up to 3 failed upload jobs that are still eligible for retry. A job is saved only when its retry succeeds. Returns `true` when the batch finishes, even if no retry succeeded. Returns `false` only if the initial query failed |
+| `SyncAnalyticsAsync(channel, ct)` | `Task<SyncResult>` | Syncs analytics for every video in the channel by calling `AnalyticsService.SyncAnalyticsFromYouTubeAsync`. Counts successes in `SyncedCount` and failures in `FailedCount`. Sets `Error` if the video query fails. Sets `CompletedAt` when the loop finishes. `channel` is dereferenced before the `try` block, so a `null` channel throws `NullReferenceException` |
+
+Two public result types come with the service:
+
+- `Pipeline` holds `VideoShortId`, `UploadJobId`, `Status`, `Error`, `ProcessingCompleted`, `ScheduledUploadTime`, and `CompletedAt`.
+- `SyncResult` holds `Channel`, `SyncedCount`, `FailedCount`, `Error`, and `CompletedAt`.
+
+The `JobOrchestrationServiceExtensions` class adds per-video helpers for single-video calls: `ProcessReadyUploadForVideoShortAsync`, `ProcessFailedRetriableJobForVideoShortAsync`, `SyncAnalyticsForVideoShortAsync`, and `GetUploadJobIdForVideoShortAsync`.
+
+### Usage Example
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+using YouTubeShortAutomator.Services;
+
+// Resolve the orchestrator from the container
+JobOrchestrationService orchestrator = scope.ServiceProvider.GetRequiredService<JobOrchestrationService>();
+
+// Process one video and schedule its upload
+Pipeline pipeline = await orchestrator.ProcessFullPipelineAsync(
+    videoShortId: 42,
+    processingProfile: profile,
+    channel: channel,
+    scheduledUploadTime: DateTime.UtcNow.AddHours(4));
+
+if (pipeline.Status == "Success")
+{
+    Console.WriteLine($"Upload job {pipeline.UploadJobId} scheduled for {pipeline.ScheduledUploadTime:u}");
+}
+else
+{
+    Console.WriteLine($"Pipeline failed: {pipeline.Error}");
+}
+
+// Upload due jobs, then retry failed ones
+bool uploaded = await orchestrator.ProcessReadyUploadsAsync(channel);
+bool retried = await orchestrator.ProcessFailedRetriableJobsAsync(channel);
+
+// Refresh analytics for the whole channel
+SyncResult sync = await orchestrator.SyncAnalyticsAsync(channel);
+Console.WriteLine($"Synced {sync.SyncedCount}, failed {sync.FailedCount}");
+```
