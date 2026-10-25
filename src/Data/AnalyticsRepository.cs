@@ -112,6 +112,8 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         AnalyticsData entity,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(entity);
+
         // Inserts new analytics record
         var query = @"
             INSERT INTO AnalyticsData (VideoShortId, ViewCount, LikeCount, CommentCount, ShareCount, 
@@ -155,6 +157,8 @@ public class AnalyticsRepository : IRepository<AnalyticsData>
         AnalyticsData entity,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(entity);
+
         // Updates existing analytics record
         var query = @"
             UPDATE AnalyticsData 
