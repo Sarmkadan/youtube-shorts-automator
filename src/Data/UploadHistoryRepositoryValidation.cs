@@ -77,7 +77,13 @@ public static class UploadHistoryRepositoryValidation
     /// </summary>
     /// <param name="value">The entry to check.</param>
     /// <returns>True if valid; otherwise, false.</returns>
-    public static bool IsValid(this UploadHistoryEntry? value) => Validate(value).Count == 0;
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+    public static bool IsValid(this UploadHistoryEntry? value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        return Validate(value).Count == 0;
+    }
 
     /// <summary>
     /// Ensures that an <see cref="UploadHistoryEntry"/> instance is valid, throwing an
