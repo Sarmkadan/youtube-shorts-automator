@@ -35,6 +35,8 @@ public static class ContentCalendarRepositoryValidation
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this ContentCalendarRepository value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         return Validate(value).Count == 0;
     }
 
