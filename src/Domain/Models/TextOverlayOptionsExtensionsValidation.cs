@@ -68,6 +68,8 @@ public static class TextOverlayOptionsExtensionsValidation
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static bool IsValidExtension(this TextOverlayOptions value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         return value.ValidateExtension().Count == 0;
     }
 
