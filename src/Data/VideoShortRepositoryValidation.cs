@@ -38,6 +38,8 @@ public static class VideoShortRepositoryValidation
     /// <returns><c>true</c> if the repository instance is valid; otherwise, <c>false</c>.</returns>
     public static bool IsValid(this VideoShortRepository value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         return Validate(value).Count == 0;
     }
 
@@ -145,6 +147,8 @@ public static class VideoShortRepositoryValidation
     /// <returns><c>true</c> if the entity is valid; otherwise, <c>false</c>.</returns>
     public static bool IsValid(this VideoShort entity)
     {
+        ArgumentNullException.ThrowIfNull(entity);
+
         return Validate(entity).Count == 0;
     }
 
