@@ -1822,3 +1822,64 @@ if (channelService.IsChannelTokenValid(channel))
     Console.WriteLine(channelService.GetChannelStatusSummary(channel));
 }
 ```
+
+## AnalyticsService
+
+`AnalyticsService` tracks analytics records for a `VideoShort` and produces channel-level metrics and reports (`src/Services/AnalyticsService.cs`, namespace `YouTubeShortAutomator.Services`). It is not an interface-backed service. It takes an `AnalyticsRepository`, a `VideoShortRepository`, and an `ILogger<AnalyticsService>`, and throws `ArgumentNullException` if any of them is `null`. It is registered as scoped in `src/Configuration/DependencyInjection.cs`, so resolve it from the container rather than constructing it by hand. Every public method except the constructor is `virtual`, and a protected parameterless constructor exists for mocking frameworks. Extension methods for the service are in `AnalyticsServiceExtensions`.
+
+`SyncAnalyticsFromYouTubeAsync` does not call the YouTube API yet. It generates random mock metrics, so its values are not real channel data. `CalculateChannelGrowthAsync` and `GeneratePeriodReportAsync` aggregate over every stored analytics record, and neither filters by the arguments they receive (see the table).
+
+### Public members
+
+| Member | Returns | Description |
+|--------|---------|-------------|
+| `CreateAnalyticsRecordAsync(videoShortId, ct)` | `Task<AnalyticsData>` | Stores a new record for the video with all metrics set to `0`. Wraps any failure in `InvalidOperationException` |
+| `SyncAnalyticsFromYouTubeAsync(videoShortId, youtubeVideoId, channel, ct)` | `Task<AnalyticsData?>` | Generates mock views (`100` to `9,999`), likes (5%), comments (2%), shares (1%), average view duration (`15.5` s), and retention (`75.5%`). Creates the record if it does not exist, then saves the update. Throws `ArgumentNullException` for a blank `youtubeVideoId` or a `null` channel. `youtubeVideoId` is validated but not otherwise used. Wraps other failures in `InvalidOperationException` |
+| `GetVideoAnalyticsAsync(videoShortId, ct)` | `Task<AnalyticsData?>` | Returns the record for the video, or `null` if none exists. Logs and rethrows any exception |
+| `GetTopPerformingVideosAsync(limit = 10, ct)` | `Task<IEnumerable<AnalyticsData>>` | Returns up to `limit` top performers from the repository. Throws `ArgumentOutOfRangeException` when `limit` is `0` or negative. Logs and rethrows any exception |
+| `GeneratePeriodReportAsync(startDate, endDate, ct)` | `Task<AnalyticsReport>` | Aggregates all analytics records into an `AnalyticsReport` with totals for videos, views, likes, comments, shares, and subscribers gained, plus the average engagement rate (`0` when there are no records). `startDate` and `endDate` are copied into the report but do not filter the data. Throws `ArgumentException` when `startDate` is after `endDate`. Wraps other failures in `InvalidOperationException` |
+| `AnalyzePerformanceMetrics(analytics)` | `string` | Returns a multi-line performance summary with views, engagement rate, performance level, watch duration, and retention. Returns `"No performance data available yet."` when `HasValidData()` is `false`. Adds an "Excellent" status above `10%` engagement and a "Low engagement" status below `2%`. Throws `NullReferenceException` for a `null` argument |
+| `CalculateChannelGrowthAsync(channelId, ct)` | `Task<double>` | Returns total subscribers gained minus total subscribers lost across all records. `channelId` is not used for filtering. Logs and rethrows any exception |
+
+`AnalyticsReport` is a sealed class defined in the same file. It has the properties `PeriodStart`, `PeriodEnd`, `TotalVideos`, `TotalViews`, `TotalLikes`, `TotalComments`, `TotalShares`, `AverageEngagementRate`, `TotalSubscribersGained`, and `GeneratedAt`.
+
+### Usage Example
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+using YouTubeShortAutomator.Services;
+
+public class AnalyticsReporter
+{
+    private readonly AnalyticsService _analyticsService;
+
+    public AnalyticsReporter(AnalyticsService analyticsService)
+    {
+        _analyticsService = analyticsService;
+    }
+
+    public async Task<string> ReportAsync(int videoShortId, YouTubeChannel channel, CancellationToken cancellationToken = default)
+    {
+        // Creates the record on first sync; otherwise updates the existing one
+        AnalyticsData? analytics = await _analyticsService.SyncAnalyticsFromYouTubeAsync(
+            videoShortId, "dQw4w9WgXcQ", channel, cancellationToken);
+
+        if (analytics is null)
+        {
+            return "No analytics available.";
+        }
+
+        // Summary for one video
+        string summary = _analyticsService.AnalyzePerformanceMetrics(analytics);
+
+        // Totals across all stored records for the requested period
+        AnalyticsReport report = await _analyticsService.GeneratePeriodReportAsync(
+            DateTime.UtcNow.AddDays(-30), DateTime.UtcNow, cancellationToken);
+
+        // channelId is not used for filtering, so any value returns the same growth figure
+        double growth = await _analyticsService.CalculateChannelGrowthAsync(channel.Id, cancellationToken);
+
+        return $"{summary}\nVideos tracked: {report.TotalVideos}, net subscribers: {growth:F0}";
+    }
+}
+```
