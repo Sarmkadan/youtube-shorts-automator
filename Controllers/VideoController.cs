@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class VideoController : ControllerBase
+public sealed class VideoController : ControllerBase
 {
     private readonly IVideoRepository _videoRepository;
     private readonly IVideoProcessingService _processingService;
@@ -78,7 +78,7 @@ public class VideoController : ControllerBase
         try
         {
             var video = await _videoRepository.GetByIdAsync(videoId);
-            if (video == null)
+            if (video is null)
             {
                 return NotFound(new { success = false, message = "Video not found" });
             }
@@ -172,7 +172,7 @@ public class VideoController : ControllerBase
 
             var metric = await _analyticsService.GetVideoAnalyticsAsync(videoId, Domain.Models.MetricsPeriod.Daily);
 
-            if (metric == null)
+            if (metric is null)
             {
                 return NotFound(new { success = false, message = "No analytics data found" });
             }
@@ -220,7 +220,7 @@ public class VideoController : ControllerBase
             _logger.LogInformation("Publishing video {VideoId}", videoId);
 
             var video = await _videoRepository.GetByIdAsync(videoId);
-            if (video?.UploadResult == null)
+            if (video?.UploadResult is null)
             {
                 return BadRequest(new { success = false, message = "Video has not been uploaded yet" });
             }

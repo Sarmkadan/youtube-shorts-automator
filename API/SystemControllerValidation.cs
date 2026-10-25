@@ -76,7 +76,7 @@ public static class SystemControllerValidation
         }
 
         // Validate Checks
-        if (response.Checks == null)
+        if (response.Checks is null)
         {
             errors.Add("Checks dictionary must be initialized.");
         }
@@ -94,7 +94,7 @@ public static class SystemControllerValidation
                     break;
                 }
 
-                if (check.Value == null)
+                if (check.Value is null)
                 {
                     errors.Add($"Health check '{check.Key}' must be initialized.");
                     continue;
@@ -145,7 +145,7 @@ public static class SystemControllerValidation
         if (errors.Count > 0)
         {
             throw new ArgumentException(
-                $"HealthCheckResponse validation failed:{Environment.NewLine}- " + string.Join($"{Environment.NewLine}- ", errors));
+                $"HealthCheckResponse validation failed:{Environment.NewLine}- {string.Join($"{Environment.NewLine}- ", errors)}");
         }
     }
 
@@ -203,7 +203,7 @@ public static class SystemControllerValidation
         }
 
         // Validate SupportedApiVersions
-        if (info.SupportedApiVersions == null)
+        if (info.SupportedApiVersions is null)
         {
             errors.Add("SupportedApiVersions array must be initialized.");
         }
@@ -250,7 +250,7 @@ public static class SystemControllerValidation
         if (errors.Count > 0)
         {
             throw new ArgumentException(
-                $"VersionInfo validation failed:{Environment.NewLine}- " + string.Join($"{Environment.NewLine}- ", errors));
+                $"VersionInfo validation failed:{Environment.NewLine}- {string.Join($"{Environment.NewLine}- ", errors)}");
         }
     }
 
@@ -353,7 +353,7 @@ public static class SystemControllerValidation
         if (errors.Count > 0)
         {
             throw new ArgumentException(
-                $"SystemInfoResponse validation failed:{Environment.NewLine}- " + string.Join($"{Environment.NewLine}- ", errors));
+                $"SystemInfoResponse validation failed:{Environment.NewLine}- {string.Join($"{Environment.NewLine}- ", errors)}");
         }
     }
 
@@ -396,7 +396,7 @@ public static class SystemControllerValidation
         if (errors.Count > 0)
         {
             throw new ArgumentException(
-                $"FeaturesResponse validation failed:{Environment.NewLine}- " + string.Join($"{Environment.NewLine}- ", errors));
+                $"FeaturesResponse validation failed:{Environment.NewLine}- {string.Join($"{Environment.NewLine}- ", errors)}");
         }
     }
 }

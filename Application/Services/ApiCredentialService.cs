@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// Manages user API credentials and token refresh
 /// </summary>
-public class ApiCredentialService : IApiCredentialService
+public sealed class ApiCredentialService : IApiCredentialService
 {
     private readonly ILogger<ApiCredentialService> _logger;
     private readonly IApiCredentialRepository _credentialRepository;
@@ -38,7 +38,7 @@ public class ApiCredentialService : IApiCredentialService
             c.IsValid &&
             !c.IsAccessTokenExpired());
 
-        if (activeCredential != null)
+        if (activeCredential is not null)
         {
             if (activeCredential.NeedsRefresh())
             {
@@ -55,7 +55,7 @@ public class ApiCredentialService : IApiCredentialService
             c.IsValid &&
             c.IsAccessTokenExpired());
 
-        if (expiredCredential != null)
+        if (expiredCredential is not null)
         {
             if (expiredCredential.IsRefreshTokenExpired())
             {

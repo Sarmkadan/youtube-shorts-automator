@@ -17,7 +17,7 @@ namespace YouTubeShortsAutomator.API;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
-public class AnalyticsController : ControllerBase
+public sealed class AnalyticsController : ControllerBase
 {
     private readonly ILogger<AnalyticsController> _logger;
     private readonly JsonResponseFormatter _responseFormatter;
@@ -45,7 +45,7 @@ public class AnalyticsController : ControllerBase
         {
             // Try to get from cache first
             var cachedData = _cacheService.Get<VideoAnalyticsResponse>($"analytics:video:{videoId}");
-            if (cachedData != null)
+            if (cachedData is not null)
             {
                 return Ok(cachedData);
             }
@@ -93,7 +93,7 @@ public class AnalyticsController : ControllerBase
             }
 
             var cachedData = _cacheService.Get<AnalyticsSummaryResponse>($"analytics:summary:{days}days");
-            if (cachedData != null)
+            if (cachedData is not null)
             {
                 return Ok(cachedData);
             }
@@ -206,7 +206,7 @@ public class AnalyticsController : ControllerBase
 
 #region Response Models
 
-public class VideoAnalyticsResponse
+public sealed class VideoAnalyticsResponse
 {
     public Guid VideoId { get; set; }
     public string Title { get; set; } = string.Empty;
@@ -221,7 +221,7 @@ public class VideoAnalyticsResponse
     public DateTime UpdatedAtUtc { get; set; }
 }
 
-public class AnalyticsSummaryResponse
+public sealed class AnalyticsSummaryResponse
 {
     public int TotalVideos { get; set; }
     public int TotalViews { get; set; }
@@ -233,7 +233,7 @@ public class AnalyticsSummaryResponse
     public DateTime DateRangeEndUtc { get; set; }
 }
 
-public class VideoSummary
+public sealed class VideoSummary
 {
     public Guid VideoId { get; set; }
     public string Title { get; set; } = string.Empty;
@@ -241,14 +241,14 @@ public class VideoSummary
     public double EngagementRate { get; set; }
 }
 
-public class EngagementTrendResponse
+public sealed class EngagementTrendResponse
 {
     public TrendPoint[]? TrendPoints { get; set; }
     public DateTime DateRangeStartUtc { get; set; }
     public DateTime DateRangeEndUtc { get; set; }
 }
 
-public class TrendPoint
+public sealed class TrendPoint
 {
     public DateTime Date { get; set; }
     public int Views { get; set; }

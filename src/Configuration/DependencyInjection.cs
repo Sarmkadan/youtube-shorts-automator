@@ -23,12 +23,12 @@ public static class DependencyInjection
 
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, AppSettings appSettings)
     {
-        if (services == null)
+        if (services is null)
         {
             throw new ArgumentNullException(nameof(services));
         }
 
-        if (appSettings == null)
+        if (appSettings is null)
         {
             throw new ArgumentNullException(nameof(appSettings));
         }
@@ -97,7 +97,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         Action<ContentCalendarOptions>? configure = null)
     {
-        if (services == null)
+        if (services is null)
         {
             throw new ArgumentNullException(nameof(services));
         }
@@ -139,12 +139,12 @@ public static class DependencyInjection
     /// <c>VideoProcessor</c> and <c>ThumbnailGenerator</c> sections.</param>
     public static IServiceCollection AddMediaProcessingOptions(this IServiceCollection services, IConfiguration configuration)
     {
-        if (services == null)
+        if (services is null)
         {
             throw new ArgumentNullException(nameof(services));
         }
 
-        if (configuration == null)
+        if (configuration is null)
         {
             throw new ArgumentNullException(nameof(configuration));
         }
@@ -168,12 +168,12 @@ public static class DependencyInjection
     /// <summary>Configures the application logging pipeline.</summary>
     public static IServiceCollection AddApplicationLogging(this IServiceCollection services, AppSettings appSettings)
     {
-        if (services == null)
+        if (services is null)
         {
             throw new ArgumentNullException(nameof(services));
         }
 
-        if (appSettings == null)
+        if (appSettings is null)
         {
             throw new ArgumentNullException(nameof(appSettings));
         }

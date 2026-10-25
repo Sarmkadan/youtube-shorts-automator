@@ -1,4 +1,4 @@
-// =============================================================================
+﻿// =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
@@ -14,8 +14,10 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// Handles YouTube API interactions and video uploads
 /// </summary>
-public class YouTubeUploadService
+public sealed class YouTubeUploadService
 {
+    private const string YouTubeWatchUrlPrefix = "https://www.youtube.com/watch?v=";
+
     private readonly ILogger<YouTubeUploadService> _logger;
     private readonly IVideoRepository _videoRepository;
     private readonly IApiCredentialService _credentialService;
@@ -46,21 +48,8 @@ public class YouTubeUploadService
         var video = await _videoRepository.GetByIdAsync(videoId)
             ?? throw new ResourceNotFoundException("Video not found", videoId, "Video");
 
-        if (video.Status != VideoStatus.Processed && video.Status != VideoStatus.Processing)
-        {
-            throw new InvalidStateException(
-                "Video must be processed before upload",
-                video.Status.ToString(),
-                "Upload");
-        }
-
-        var credential = await _credentialService.GetActiveCredentialAsync(userId)
-            ?? throw new CredentialException("No valid YouTube credentials found");
-
-        if (!credential.IsValid)
-        {
-            throw new CredentialException("Credentials are invalid or expired");
-        }
+        EnsureVideoReadyForUpload(video);
+        var credential = await GetValidCredentialAsync(userId);
 
         var uploadResult = new UploadResult
         {
@@ -73,56 +62,89 @@ public class YouTubeUploadService
         try
         {
             var youtubeVideoId = await UploadToYouTubeAsync(video, credential);
-            var youtubeUrl = $"https://www.youtube.com/watch?v={youtubeVideoId}";
-
-            uploadResult.MarkAsCompleted(youtubeUrl);
-            uploadResult.YouTubeVideoId = youtubeVideoId;
-
-            video.MarkAsUploaded(youtubeVideoId);
-            video.UploadResult = uploadResult;
-
-            await _videoRepository.UpdateAsync(video);
-
-            _logger.LogInformation($"Video {videoId} uploaded successfully. YouTube ID: {youtubeVideoId}");
-
-            await PublishUploadWebhooksAsync("upload.success", new UploadWebhookPayload
-            {
-                VideoId = videoId,
-                Title = video.Title,
-                YouTubeVideoId = youtubeVideoId,
-                YouTubeUrl = youtubeUrl,
-                UploadedAtUtc = uploadResult.UploadedAt
-            });
-
-            return uploadResult;
+            return await CompleteUploadAsync(videoId, video, uploadResult, youtubeVideoId);
         }
         catch (OAuthTokenExpiredException)
         {
             // Bubble up without wrapping — callers must halt scheduling for this user
             // and prompt re-authorization.
-            uploadResult.RecordFailure("OAuth refresh token has expired; re-authorization required.");
-            await PublishUploadWebhooksAsync("upload.failure", new UploadFailureWebhookPayload
-            {
-                VideoId = videoId,
-                Title = video.Title,
-                ErrorMessage = "OAuth refresh token has expired; re-authorization required.",
-                FailedAtUtc = DateTime.UtcNow
-            });
+            const string message = "OAuth refresh token has expired; re-authorization required.";
+            uploadResult.RecordFailure(message);
+            await PublishUploadFailureAsync(videoId, video.Title, message);
             throw;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, $"YouTube upload failed for video {videoId}");
             uploadResult.RecordFailure(ex.Message);
-            await PublishUploadWebhooksAsync("upload.failure", new UploadFailureWebhookPayload
-            {
-                VideoId = videoId,
-                Title = video.Title,
-                ErrorMessage = ex.Message,
-                FailedAtUtc = DateTime.UtcNow
-            });
+            await PublishUploadFailureAsync(videoId, video.Title, ex.Message);
             throw new UploadException($"Upload failed: {ex.Message}");
         }
+    }
+
+    private static void EnsureVideoReadyForUpload(Video video)
+    {
+        if (video.Status != VideoStatus.Processed && video.Status != VideoStatus.Processing)
+        {
+            throw new InvalidStateException(
+                "Video must be processed before upload",
+                video.Status.ToString(),
+                "Upload");
+        }
+    }
+
+    private async Task<ApiCredential> GetValidCredentialAsync(Guid userId)
+    {
+        var credential = await _credentialService.GetActiveCredentialAsync(userId)
+            ?? throw new CredentialException("No valid YouTube credentials found");
+
+        if (!credential.IsValid)
+        {
+            throw new CredentialException("Credentials are invalid or expired");
+        }
+
+        return credential;
+    }
+
+    private async Task<UploadResult> CompleteUploadAsync(
+        Guid videoId,
+        Video video,
+        UploadResult uploadResult,
+        string youtubeVideoId)
+    {
+        var youtubeUrl = $"{YouTubeWatchUrlPrefix}{youtubeVideoId}";
+
+        uploadResult.MarkAsCompleted(youtubeUrl);
+        uploadResult.YouTubeVideoId = youtubeVideoId;
+
+        video.MarkAsUploaded(youtubeVideoId);
+        video.UploadResult = uploadResult;
+
+        await _videoRepository.UpdateAsync(video);
+
+        _logger.LogInformation($"Video {videoId} uploaded successfully. YouTube ID: {youtubeVideoId}");
+
+        await PublishUploadWebhooksAsync("upload.success", new UploadWebhookPayload
+        {
+            VideoId = videoId,
+            Title = video.Title,
+            YouTubeVideoId = youtubeVideoId,
+            YouTubeUrl = youtubeUrl,
+            UploadedAtUtc = uploadResult.UploadedAt
+        });
+
+        return uploadResult;
+    }
+
+    private Task PublishUploadFailureAsync(Guid videoId, string title, string errorMessage)
+    {
+        return PublishUploadWebhooksAsync("upload.failure", new UploadFailureWebhookPayload
+        {
+            VideoId = videoId,
+            Title = title,
+            ErrorMessage = errorMessage,
+            FailedAtUtc = DateTime.UtcNow
+        });
     }
 
     /// <summary>
@@ -353,7 +375,7 @@ public class YouTubeUploadService
     }
 }
 
-public class UploadWebhookPayload
+public sealed class UploadWebhookPayload
 {
     public Guid VideoId { get; set; }
     public string Title { get; set; } = string.Empty;
@@ -362,7 +384,7 @@ public class UploadWebhookPayload
     public DateTime UploadedAtUtc { get; set; }
 }
 
-public class UploadFailureWebhookPayload
+public sealed class UploadFailureWebhookPayload
 {
     public Guid VideoId { get; set; }
     public string Title { get; set; } = string.Empty;

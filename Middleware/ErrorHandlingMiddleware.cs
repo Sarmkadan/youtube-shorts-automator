@@ -1,4 +1,4 @@
-// =============================================================================
+﻿// =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Middleware;
 /// Global error handling middleware that catches all unhandled exceptions
 /// and returns consistent error responses to clients
 /// </summary>
-public class ErrorHandlingMiddleware
+public sealed class ErrorHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ErrorHandlingMiddleware> _logger;
@@ -40,67 +40,52 @@ public class ErrorHandlingMiddleware
     {
         context.Response.ContentType = "application/json";
 
-        var response = new ErrorResponse();
-
-        switch (exception)
-        {
-            case ArgumentNullException argNull:
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                response = new ErrorResponse
-                {
-                    Message = "Required parameter is missing",
-                    ErrorCode = "INVALID_PARAMETER",
-                    Details = argNull.ParamName
-                };
-                break;
-
-            case ArgumentException arg:
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                response = new ErrorResponse
-                {
-                    Message = "Invalid argument provided",
-                    ErrorCode = "INVALID_ARGUMENT",
-                    Details = arg.Message
-                };
-                break;
-
-            case FileNotFoundException fileNotFound:
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                response = new ErrorResponse
-                {
-                    Message = "File not found",
-                    ErrorCode = "FILE_NOT_FOUND",
-                    Details = fileNotFound.FileName
-                };
-                break;
-
-            case UnauthorizedAccessException unauthorized:
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                response = new ErrorResponse
-                {
-                    Message = "Unauthorized access",
-                    ErrorCode = "UNAUTHORIZED",
-                    Details = unauthorized.Message
-                };
-                break;
-
-            default:
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                response = new ErrorResponse
-                {
-                    Message = "An unexpected error occurred",
-                    ErrorCode = "INTERNAL_ERROR",
-                    Details = exception.Message
-                };
-                break;
-        }
+        var (statusCode, response) = MapException(exception);
+        context.Response.StatusCode = (int)statusCode;
 
         var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         return context.Response.WriteAsJsonAsync(response, jsonOptions);
     }
+
+    private static (HttpStatusCode StatusCode, ErrorResponse Response) MapException(Exception exception)
+    {
+        return exception switch
+        {
+            ArgumentNullException argNull => (HttpStatusCode.BadRequest, new ErrorResponse
+            {
+                Message = "Required parameter is missing",
+                ErrorCode = "INVALID_PARAMETER",
+                Details = argNull.ParamName
+            }),
+            ArgumentException arg => (HttpStatusCode.BadRequest, new ErrorResponse
+            {
+                Message = "Invalid argument provided",
+                ErrorCode = "INVALID_ARGUMENT",
+                Details = arg.Message
+            }),
+            FileNotFoundException fileNotFound => (HttpStatusCode.NotFound, new ErrorResponse
+            {
+                Message = "File not found",
+                ErrorCode = "FILE_NOT_FOUND",
+                Details = fileNotFound.FileName
+            }),
+            UnauthorizedAccessException unauthorized => (HttpStatusCode.Unauthorized, new ErrorResponse
+            {
+                Message = "Unauthorized access",
+                ErrorCode = "UNAUTHORIZED",
+                Details = unauthorized.Message
+            }),
+            _ => (HttpStatusCode.InternalServerError, new ErrorResponse
+            {
+                Message = "An unexpected error occurred",
+                ErrorCode = "INTERNAL_ERROR",
+                Details = exception.Message
+            })
+        };
+    }
 }
 
-public class ErrorResponse
+public sealed class ErrorResponse
 {
     public string Message { get; set; } = string.Empty;
     public string ErrorCode { get; set; } = string.Empty;

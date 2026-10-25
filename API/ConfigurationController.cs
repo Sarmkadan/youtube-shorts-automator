@@ -15,7 +15,7 @@ namespace YouTubeShortsAutomator.API;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
-public class ConfigurationController : ControllerBase
+public sealed class ConfigurationController : ControllerBase
 {
     private readonly ILogger<ConfigurationController> _logger;
     private readonly IConfiguration _configuration;
@@ -214,7 +214,7 @@ public class ConfigurationController : ControllerBase
 
 #region Configuration Models
 
-public class ConfigurationInfo
+public sealed class ConfigurationInfo
 {
     public string Version { get; set; } = string.Empty;
     public string Environment { get; set; } = string.Empty;
@@ -224,7 +224,7 @@ public class ConfigurationInfo
     public string[]? ProcessingProfiles { get; set; }
 }
 
-public class StorageConfig
+public sealed class StorageConfig
 {
     public string TempDirectoryPath { get; set; } = string.Empty;
     public string VideoDirectoryPath { get; set; } = string.Empty;
@@ -233,7 +233,7 @@ public class StorageConfig
     public int RetentionDays { get; set; }
 }
 
-public class ProcessingSettings
+public sealed class ProcessingSettings
 {
     public int ParallelJobLimit { get; set; }
     public int TimeoutMinutes { get; set; }
@@ -243,7 +243,7 @@ public class ProcessingSettings
     public bool EnableGPUAcceleration { get; set; }
 }
 
-public class YouTubeIntegrationStatus
+public sealed class YouTubeIntegrationStatus
 {
     public bool IsConfigured { get; set; }
     public string AuthMethod { get; set; } = string.Empty;
@@ -252,7 +252,7 @@ public class YouTubeIntegrationStatus
     public int UploadQuotaRemaining { get; set; }
 }
 
-public class HealthStatus
+public sealed class HealthStatus
 {
     public bool IsHealthy { get; set; }
     public string Uptime { get; set; } = string.Empty;
@@ -263,14 +263,14 @@ public class HealthStatus
     public DateTime LastCheckUtc { get; set; }
 }
 
-public class FormatsInfo
+public sealed class FormatsInfo
 {
     public Format[]? VideoFormats { get; set; }
     public Format[]? AudioFormats { get; set; }
     public string[]? Codecs { get; set; }
 }
 
-public class Format
+public sealed class Format
 {
     public string Name { get; set; } = string.Empty;
     public string Extension { get; set; } = string.Empty;

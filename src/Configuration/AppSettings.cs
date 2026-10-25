@@ -3,7 +3,7 @@ namespace YouTubeShortAutomator.Configuration;
 /// <summary>
 /// Configuration settings for the YouTube Shorts Automator application.
 /// </summary>
-public class AppSettings
+public sealed class AppSettings
 {
     /// <summary>
     /// The database connection string used by the application.

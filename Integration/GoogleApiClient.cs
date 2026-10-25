@@ -19,7 +19,7 @@ public interface IGoogleApiClient
     Task<List<string>> ListChannelsAsync();
 }
 
-public class GoogleApiClient : IGoogleApiClient
+public sealed class GoogleApiClient : IGoogleApiClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<GoogleApiClient> _logger;
@@ -140,7 +140,7 @@ public class GoogleApiClient : IGoogleApiClient
     }
 }
 
-public class VideoAnalytics
+public sealed class VideoAnalytics
 {
     public string VideoId { get; set; } = string.Empty;
     public int ViewCount { get; set; }

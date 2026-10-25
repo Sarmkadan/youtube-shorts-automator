@@ -39,7 +39,7 @@ public static class HttpClientUtility
 
     public static void AddAuthorizationHeader(HttpClient client, string scheme, string token)
     {
-        if (client == null)
+        if (client is null)
         {
             throw new ArgumentNullException(nameof(client));
         }
@@ -59,7 +59,7 @@ public static class HttpClientUtility
 
     public static void AddApiKeyHeader(HttpClient client, string apiKey)
     {
-        if (client == null)
+        if (client is null)
         {
             throw new ArgumentNullException(nameof(client));
         }
@@ -74,7 +74,7 @@ public static class HttpClientUtility
 
     public static void AddBearerToken(HttpClient client, string token)
     {
-        if (client == null)
+        if (client is null)
         {
             throw new ArgumentNullException(nameof(client));
         }
@@ -92,7 +92,7 @@ public static class HttpClientUtility
         string url,
         int maxRetries = 3)
     {
-        if (client == null)
+        if (client is null)
         {
             throw new ArgumentNullException(nameof(client));
         }
@@ -127,7 +127,7 @@ public static class HttpClientUtility
         T data,
         int maxRetries = 3)
     {
-        if (client == null)
+        if (client is null)
         {
             throw new ArgumentNullException(nameof(client));
         }
@@ -137,7 +137,7 @@ public static class HttpClientUtility
             throw new ArgumentException("URL cannot be null or empty.", nameof(url));
         }
 
-        if (data == null)
+        if (data is null)
         {
             throw new ArgumentNullException(nameof(data));
         }
@@ -162,7 +162,7 @@ public static class HttpClientUtility
         string url,
         int maxRetries = 3)
     {
-        if (client == null)
+        if (client is null)
         {
             throw new ArgumentNullException(nameof(client));
         }
@@ -193,7 +193,7 @@ public static class HttpClientUtility
         T data,
         int maxRetries = 3)
     {
-        if (client == null)
+        if (client is null)
         {
             throw new ArgumentNullException(nameof(client));
         }
@@ -203,7 +203,7 @@ public static class HttpClientUtility
             throw new ArgumentException("URL cannot be null or empty.", nameof(url));
         }
 
-        if (data == null)
+        if (data is null)
         {
             throw new ArgumentNullException(nameof(data));
         }
@@ -228,7 +228,7 @@ public static class HttpClientUtility
         string url,
         int maxRetries = 3)
     {
-        if (client == null)
+        if (client is null)
         {
             throw new ArgumentNullException(nameof(client));
         }

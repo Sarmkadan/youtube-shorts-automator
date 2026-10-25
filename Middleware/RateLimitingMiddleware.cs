@@ -13,7 +13,7 @@ namespace YouTubeShortsAutomator.Middleware;
 /// Implements token bucket rate limiting per IP address
 /// Prevents API abuse and ensures fair resource utilization
 /// </summary>
-public class RateLimitingMiddleware
+public sealed class RateLimitingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly RateLimitingOptions _options;
@@ -62,13 +62,13 @@ public class RateLimitingMiddleware
     }
 }
 
-public class RateLimitingOptions
+public sealed class RateLimitingOptions
 {
     public int RequestsPerWindow { get; set; } = 100;
     public int WindowSizeSeconds { get; set; } = 60;
 }
 
-public class RateLimitBucket
+public sealed class RateLimitBucket
 {
     private readonly object _sync = new();
     private readonly int _capacity;

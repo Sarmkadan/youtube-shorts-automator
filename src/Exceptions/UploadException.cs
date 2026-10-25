@@ -3,7 +3,7 @@ namespace YouTubeShortAutomator.Exceptions;
 /// <summary>
 /// Represents an exception that occurs during upload operations.
 /// </summary>
-public class UploadException : Exception
+public sealed class UploadException : Exception
 {
     /// <summary>
     /// Gets or sets the identifier of the upload job.

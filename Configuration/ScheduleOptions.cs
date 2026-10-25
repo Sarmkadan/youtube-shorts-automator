@@ -10,7 +10,7 @@ namespace YouTubeShortsAutomator.Configuration;
 /// <summary>
 /// Schedule settings, bound from the <c>Schedule</c> configuration section.
 /// </summary>
-public class ScheduleOptions
+public sealed class ScheduleOptions
 {
     /// <summary>Configuration section name.</summary>
     public const string SectionName = "Schedule";

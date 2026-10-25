@@ -136,7 +136,7 @@ public static class YouTubeChannelExtensions
 
         return channel.Description.Length <= maxLength
             ? channel.Description
-            : channel.Description[..maxLength] + "...";
+            : $"{channel.Description[..maxLength]}...";
     }
 
     /// <summary>
@@ -168,7 +168,7 @@ public static class YouTubeChannelExtensions
     {
         ArgumentNullException.ThrowIfNull(channel);
 
-        if (channel.VideoShorts == null || channel.VideoShorts.Count == 0)
+        if (channel.VideoShorts is null || channel.VideoShorts.Count == 0)
         {
             return Array.Empty<VideoShort>();
         }

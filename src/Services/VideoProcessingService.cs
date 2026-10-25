@@ -15,7 +15,7 @@ namespace YouTubeShortAutomator.Services;
 /// Service for processing video files for YouTube Shorts uploads.
 /// Handles video transcoding, watermark application, color grading, and thumbnail generation.
 /// </summary>
-public class VideoProcessingService
+public sealed class VideoProcessingService
 {
     private readonly VideoShortRepository _videoRepository;
     private readonly ILogger<VideoProcessingService> _logger;

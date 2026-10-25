@@ -14,7 +14,7 @@ namespace YouTubeShortAutomator.Services;
 /// <summary>
 /// Provides methods for managing YouTube channel status and credentials.
 /// </summary>
-public class ChannelService
+public sealed class ChannelService
 {
     private const string NullChannelMessage = "YouTube channel cannot be null.";
 
@@ -38,7 +38,7 @@ public class ChannelService
     public bool IsChannelTokenValid(YouTubeChannel channel)
     {
         // Checks if the channel's access token is still valid
-        if (channel == null)
+        if (channel is null)
         {
             return false;
         }
@@ -55,7 +55,7 @@ public class ChannelService
     public bool NeedsTokenRefresh(YouTubeChannel channel)
     {
         // Fix: Add null check for channel parameter.
-        if (channel == null)
+        if (channel is null)
         {
             throw new ArgumentNullException(nameof(channel), NullChannelMessage);
         }
@@ -71,7 +71,7 @@ public class ChannelService
     public void UpdateChannelStatus(YouTubeChannel channel, bool isActive)
     {
         // Fix: Add null check for channel parameter.
-        if (channel == null)
+        if (channel is null)
         {
             throw new ArgumentNullException(nameof(channel), NullChannelMessage);
         }
@@ -96,7 +96,7 @@ public class ChannelService
     public string GetChannelStatusSummary(YouTubeChannel channel)
     {
         // Fix: Add null check for channel parameter.
-        if (channel == null)
+        if (channel is null)
         {
             throw new ArgumentNullException(nameof(channel), NullChannelMessage);
         }
@@ -121,7 +121,7 @@ public class ChannelService
     public bool ValidateChannelCredentials(YouTubeChannel channel)
     {
         // Fix: Add null check for channel parameter.
-        if (channel == null)
+        if (channel is null)
         {
             throw new ArgumentNullException(nameof(channel), NullChannelMessage);
         }

@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Infrastructure.Repositories;
 /// <summary>
 /// Repository implementation for UploadSchedule entity
 /// </summary>
-public class ScheduleRepository : Repository<UploadSchedule>, IScheduleRepository
+public sealed class ScheduleRepository : Repository<UploadSchedule>, IScheduleRepository
 {
     public ScheduleRepository(ApplicationDbContext context, ILogger<ScheduleRepository> logger)
         : base(context, logger)

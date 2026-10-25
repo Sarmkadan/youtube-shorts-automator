@@ -15,7 +15,7 @@ namespace YouTubeShortsAutomator.API;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
-public class SystemController : ControllerBase
+public sealed class SystemController : ControllerBase
 {
     private readonly ILogger<SystemController> _logger;
     private readonly IConfiguration _configuration;
@@ -139,7 +139,7 @@ public class SystemController : ControllerBase
 
 #region System Response Models
 
-public class HealthCheckResponse
+public sealed class HealthCheckResponse
 {
     public string Status { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
@@ -148,13 +148,13 @@ public class HealthCheckResponse
     public Dictionary<string, HealthCheckDetail> Checks { get; set; } = new();
 }
 
-public class HealthCheckDetail
+public sealed class HealthCheckDetail
 {
     public string Status { get; set; } = string.Empty;
     public string ResponseTime { get; set; } = string.Empty;
 }
 
-public class VersionInfo
+public sealed class VersionInfo
 {
     public string ApiVersion { get; set; } = string.Empty;
     public string AppVersion { get; set; } = string.Empty;
@@ -164,7 +164,7 @@ public class VersionInfo
     public bool Deprecated { get; set; }
 }
 
-public class SystemInfoResponse
+public sealed class SystemInfoResponse
 {
     public string OperatingSystem { get; set; } = string.Empty;
     public string DotNetVersion { get; set; } = string.Empty;
@@ -174,7 +174,7 @@ public class SystemInfoResponse
     public string TimeZone { get; set; } = string.Empty;
 }
 
-public class FeaturesResponse
+public sealed class FeaturesResponse
 {
     public bool VideoProcessing { get; set; }
     public bool YouTubeIntegration { get; set; }

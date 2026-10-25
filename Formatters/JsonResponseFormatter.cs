@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Formatters;
 /// Standardizes JSON response formatting across the API
 /// Provides consistent response structure with metadata and error handling
 /// </summary>
-public class JsonResponseFormatter
+public sealed class JsonResponseFormatter
 {
     private readonly JsonSerializerOptions _options;
 
@@ -101,7 +101,7 @@ public class JsonResponseFormatter
     }
 }
 
-public class ApiResponse<T>
+public sealed class ApiResponse<T>
 {
     [JsonPropertyName("success")]
     public bool Success { get; set; }
@@ -116,7 +116,7 @@ public class ApiResponse<T>
     public DateTime Timestamp { get; set; }
 }
 
-public class ApiErrorResponse
+public sealed class ApiErrorResponse
 {
     [JsonPropertyName("success")]
     public bool Success { get; set; }
@@ -134,7 +134,7 @@ public class ApiErrorResponse
     public DateTime Timestamp { get; set; }
 }
 
-public class ApiPaginatedResponse<T>
+public sealed class ApiPaginatedResponse<T>
 {
     [JsonPropertyName("success")]
     public bool Success { get; set; }
@@ -149,7 +149,7 @@ public class ApiPaginatedResponse<T>
     public DateTime Timestamp { get; set; }
 }
 
-public class PaginationInfo
+public sealed class PaginationInfo
 {
     [JsonPropertyName("pageNumber")]
     public int PageNumber { get; set; }

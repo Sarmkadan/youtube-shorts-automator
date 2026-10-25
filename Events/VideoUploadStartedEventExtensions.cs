@@ -78,7 +78,7 @@ public static class VideoUploadStartedEventExtensions
             return @event.Title;
         }
 
-        return @event.Title[..(maxLength - 3)] + "...";
+        return $"{@event.Title[..(maxLength - 3)]}...";
     }
 
     /// <summary>

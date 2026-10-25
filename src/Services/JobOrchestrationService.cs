@@ -15,7 +15,7 @@ namespace YouTubeShortAutomator.Services;
 /// Orchestrates the complete video processing and upload pipeline for YouTube Shorts automation.
 /// Coordinates between video processing, upload scheduling, analytics tracking, and error recovery.
 /// </summary>
-public class JobOrchestrationService
+public sealed class JobOrchestrationService
 {
 	private const string FailedPipelineStatus = "Failed";
 	private const string SuccessfulPipelineStatus = "Success";
@@ -83,7 +83,7 @@ public class JobOrchestrationService
 
 			// Step 1: Retrieve video short
 			var videoShort = await _videoRepository.GetByIdAsync(videoShortId, cancellationToken);
-			if (videoShort == null)
+			if (videoShort is null)
 			{
 				result.Status = FailedPipelineStatus;
 				result.Error = "Video not found";
@@ -119,13 +119,13 @@ public class JobOrchestrationService
 			videoShort.ThumbnailPath = thumbnailPath;
 
 			// Step 5: Apply enhancements if configured
-			if (processingProfile.ApplyWatermark && processingProfile.WatermarkPath != null)
+			if (processingProfile.ApplyWatermark && processingProfile.WatermarkPath is not null)
 			{
 				await _processingService.ApplyWatermarkAsync(
 					videoShort.FilePath, videoShort.FilePath, processingProfile.WatermarkPath, cancellationToken);
 			}
 
-			if (processingProfile.ApplyColorGrading && processingProfile.ColorGradingProfile != null)
+			if (processingProfile.ApplyColorGrading && processingProfile.ColorGradingProfile is not null)
 			{
 				await _processingService.ApplyColorGradingAsync(
 					videoShort.FilePath, processingProfile.ColorGradingProfile, cancellationToken);
@@ -181,7 +181,7 @@ public class JobOrchestrationService
 				try
 				{
 					var video = await _videoRepository.GetByIdAsync(job.VideoShortId, cancellationToken);
-					if (video == null)
+					if (video is null)
                     {
                         continue;
                     }
@@ -230,7 +230,7 @@ public class JobOrchestrationService
 				try
 				{
 					var video = await _videoRepository.GetByIdAsync(job.VideoShortId, cancellationToken);
-					if (video == null)
+					if (video is null)
                     {
                         continue;
                     }
@@ -305,7 +305,7 @@ public class JobOrchestrationService
 /// Represents the result of a video processing pipeline execution.
 /// Contains status information, processing results, and any errors encountered.
 /// </summary>
-public class Pipeline
+public sealed class Pipeline
 {
 	/// <summary>Gets or sets the unique identifier of the video short being processed.</summary>
 	public int VideoShortId { get; set; }
@@ -333,7 +333,7 @@ public class Pipeline
 /// Represents the result of an analytics synchronization operation.
 /// Contains statistics about synced and failed videos during the sync process.
 /// </summary>
-public class SyncResult
+public sealed class SyncResult
 {
 	/// <summary>Gets or sets the name of the YouTube channel being synced.</summary>
 	public string Channel { get; set; } = string.Empty;

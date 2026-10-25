@@ -264,7 +264,7 @@ public static class AnalyticsControllerValidation
             for (int i = 0; i < value.TrendPoints.Length; i++)
             {
                 var point = value.TrendPoints[i];
-                if (point == null)
+                if (point is null)
                 {
                     problems.Add($"TrendPoints[{i}] is null.");
                     continue;

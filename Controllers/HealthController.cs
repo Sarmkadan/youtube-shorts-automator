@@ -11,7 +11,7 @@ namespace YouTubeShortsAutomator.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class HealthController : ControllerBase
+public sealed class HealthController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly ConfigurationService _configService;
@@ -124,7 +124,7 @@ public class HealthController : ControllerBase
     }
 }
 
-public class HealthStatus
+public sealed class HealthStatus
 {
     public string Status { get; set; } = string.Empty;
     public string Database { get; set; } = string.Empty;

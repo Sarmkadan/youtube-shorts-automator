@@ -9,7 +9,7 @@ namespace YouTubeShortsAutomator.BackgroundServices;
 /// Background service for updating analytics from YouTube API
 /// Periodically fetches metrics for uploaded videos
 /// </summary>
-public class AnalyticsBackgroundService : BackgroundService
+public sealed class AnalyticsBackgroundService : BackgroundService
 {
     private readonly ILogger<AnalyticsBackgroundService> _logger;
     private readonly IServiceProvider _serviceProvider;

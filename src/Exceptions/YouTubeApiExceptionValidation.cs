@@ -21,7 +21,7 @@ public static class YouTubeApiExceptionValidation
 
         var problems = new List<string>();
 
-        if (value.ChannelId == null)
+        if (value.ChannelId is null)
         {
             problems.Add("ChannelId is null.");
         }
@@ -35,7 +35,7 @@ public static class YouTubeApiExceptionValidation
             problems.Add("ApiErrorCode is null or empty.");
         }
 
-        if (value.HttpStatusCode == null)
+        if (value.HttpStatusCode is null)
         {
             problems.Add("HttpStatusCode is null.");
         }

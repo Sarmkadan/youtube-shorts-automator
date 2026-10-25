@@ -37,7 +37,7 @@ public static class YouTubeUploadServiceValidation
     /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
     public static bool IsValid(this YouTubeUploadService value)
     {
-        return value != null;
+        return value is not null;
     }
 
     /// <summary>

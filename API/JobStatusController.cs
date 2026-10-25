@@ -15,7 +15,7 @@ namespace YouTubeShortsAutomator.API;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
-public class JobStatusController : ControllerBase
+public sealed class JobStatusController : ControllerBase
 {
     private readonly ILogger<JobStatusController> _logger;
     private readonly ICacheService _cacheService;
@@ -39,7 +39,7 @@ public class JobStatusController : ControllerBase
         try
         {
             var job = _cacheService.Get<JobInfo>($"job:{jobId}");
-            if (job == null)
+            if (job is null)
             {
                 return NotFound(new { message = "Job not found" });
             }
@@ -75,7 +75,7 @@ public class JobStatusController : ControllerBase
         try
         {
             var jobResults = _cacheService.Get<JobResults>($"job:results:{jobId}");
-            if (jobResults == null)
+            if (jobResults is null)
             {
                 return NotFound(new { message = "Job results not found" });
             }
@@ -110,7 +110,7 @@ public class JobStatusController : ControllerBase
         try
         {
             var job = _cacheService.Get<JobInfo>($"job:{jobId}");
-            if (job == null)
+            if (job is null)
             {
                 return NotFound(new { message = "Job not found" });
             }
@@ -213,7 +213,7 @@ public class JobStatusController : ControllerBase
 
 #region Job Status Models
 
-public class JobInfo
+public sealed class JobInfo
 {
     public Guid JobId { get; set; }
     public string Status { get; set; } = "Pending"; // Pending, Running, Completed, Failed, Cancelled
@@ -224,7 +224,7 @@ public class JobInfo
     public string? ErrorMessage { get; set; }
 }
 
-public class JobResults
+public sealed class JobResults
 {
     public Guid JobId { get; set; }
     public int SuccessfulCount { get; set; }
@@ -233,7 +233,7 @@ public class JobResults
     public List<JobResultItem> Items { get; set; } = new();
 }
 
-public class JobResultItem
+public sealed class JobResultItem
 {
     public string Identifier { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
@@ -241,7 +241,7 @@ public class JobResultItem
     public string? ErrorMessage { get; set; }
 }
 
-public class JobStatusResponse
+public sealed class JobStatusResponse
 {
     public Guid JobId { get; set; }
     public string Status { get; set; } = string.Empty;
@@ -252,7 +252,7 @@ public class JobStatusResponse
     public string? ErrorMessage { get; set; }
 }
 
-public class JobResultsResponse
+public sealed class JobResultsResponse
 {
     public Guid JobId { get; set; }
     public int SuccessfulCount { get; set; }
@@ -261,7 +261,7 @@ public class JobResultsResponse
     public List<JobResultItem> Items { get; set; } = new();
 }
 
-public class JobListItem
+public sealed class JobListItem
 {
     public Guid JobId { get; set; }
     public string Status { get; set; } = string.Empty;
@@ -269,12 +269,12 @@ public class JobListItem
     public DateTime CreatedAtUtc { get; set; }
 }
 
-public class JobsListResponse
+public sealed class JobsListResponse
 {
     public List<JobListItem> Jobs { get; set; } = new();
 }
 
-public class JobStatsResponse
+public sealed class JobStatsResponse
 {
     public int TotalJobs { get; set; }
     public int CompletedJobs { get; set; }

@@ -11,7 +11,7 @@ namespace YouTubeShortsAutomator.Middleware;
 /// Middleware for logging HTTP request/response details
 /// Captures request body, response body, headers, and timing information
 /// </summary>
-public class RequestLoggingMiddleware
+public sealed class RequestLoggingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<RequestLoggingMiddleware> _logger;
@@ -103,6 +103,6 @@ public class RequestLoggingMiddleware
             return body;
         }
 
-        return body.Length > maxLength ? body[..maxLength] + "..." : body;
+        return body.Length > maxLength ? $"{body[..maxLength]}..." : body;
     }
 }

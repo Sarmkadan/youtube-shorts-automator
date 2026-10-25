@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Services;
 /// <summary>
 /// Represents an exception that occurs during scheduling.
 /// </summary>
-public class SchedulingException : Exception
+public sealed class SchedulingException : Exception
 {
     /// <summary>
     /// Gets the scheduled time of the job that failed.

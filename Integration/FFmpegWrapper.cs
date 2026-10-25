@@ -1,4 +1,4 @@
-// =============================================================================
+﻿// =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
@@ -19,7 +19,7 @@ public interface IFFmpegWrapper
     Task<bool> ExtractThumbnailAsync(string videoPath, string outputPath, int secondsOffset = 1, CancellationToken cancellationToken = default);
 }
 
-public class FFmpegWrapper : IFFmpegWrapper
+public sealed class FFmpegWrapper : IFFmpegWrapper
 {
     // FrozenDictionary provides O(1) lookup with no locking and is optimised
     // for read-heavy, write-never access patterns.  OrdinalIgnoreCase means
@@ -162,7 +162,7 @@ public class FFmpegWrapper : IFFmpegWrapper
         try
         {
             var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (directory != null && Directory.Exists(directory))
+            if (directory is not null && Directory.Exists(directory))
             {
                 return true;
             }
@@ -187,7 +187,7 @@ public class FFmpegWrapper : IFFmpegWrapper
         var processInfo = new ProcessStartInfo
         {
             FileName = executable,
-            Arguments = "-nostdin " + arguments,
+            Arguments = $"-nostdin {arguments}",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -198,7 +198,7 @@ public class FFmpegWrapper : IFFmpegWrapper
         try
         {
             using var process = Process.Start(processInfo);
-            if (process == null)
+            if (process is null)
             {
                 _logger.LogError("Failed to start FFmpeg process");
                 return false;
@@ -211,29 +211,7 @@ public class FFmpegWrapper : IFFmpegWrapper
             var stdoutTask = process.StandardOutput.ReadToEndAsync();
             var stderrTask = process.StandardError.ReadToEndAsync();
 
-            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(_timeoutSeconds));
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
-
-            try
-            {
-                await process.WaitForExitAsync(linkedCts.Token);
-            }
-            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
-            {
-                try { process.Kill(entireProcessTree: true); } catch { /* best-effort */ }
-                _logger.LogError(
-                    "FFmpeg process timed out after {Timeout}s and was terminated. Arguments: {Args}",
-                    _timeoutSeconds, arguments);
-                throw new TimeoutException(
-                    $"FFmpeg timed out after {_timeoutSeconds} seconds. " +
-                    "The input video may be missing an audio or video stream.");
-            }
-            catch (OperationCanceledException)
-            {
-                try { process.Kill(entireProcessTree: true); } catch { /* best-effort */ }
-                _logger.LogInformation("FFmpeg process was cancelled and terminated");
-                throw;
-            }
+            await WaitForFFmpegExitAsync(process, arguments, cancellationToken);
 
             var (_, stderr) = await ReadProcessOutputAsync(stdoutTask, stderrTask);
             if (process.ExitCode != 0)
@@ -255,6 +233,45 @@ public class FFmpegWrapper : IFFmpegWrapper
         }
     }
 
+    private async Task WaitForFFmpegExitAsync(Process process, string arguments, CancellationToken cancellationToken)
+    {
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(_timeoutSeconds));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+
+        try
+        {
+            await process.WaitForExitAsync(linkedCts.Token);
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+        {
+            TryKillProcessTree(process);
+            _logger.LogError(
+                "FFmpeg process timed out after {Timeout}s and was terminated. Arguments: {Args}",
+                _timeoutSeconds, arguments);
+            throw new TimeoutException(
+                $"FFmpeg timed out after {_timeoutSeconds} seconds. " +
+                "The input video may be missing an audio or video stream.");
+        }
+        catch (OperationCanceledException)
+        {
+            TryKillProcessTree(process);
+            _logger.LogInformation("FFmpeg process was cancelled and terminated");
+            throw;
+        }
+    }
+
+    private static void TryKillProcessTree(Process process)
+    {
+        try
+        {
+            process.Kill(entireProcessTree: true);
+        }
+        catch
+        {
+            // Best-effort: the process may have already exited.
+        }
+    }
+
     private async Task<string> ExecuteFFprobeAsync(
         string executable,
         string arguments,
@@ -273,7 +290,7 @@ public class FFmpegWrapper : IFFmpegWrapper
         try
         {
             using var process = Process.Start(processInfo);
-            if (process == null)
+            if (process is null)
             {
                 _logger.LogError("Failed to start FFprobe process");
                 return string.Empty;
@@ -291,7 +308,7 @@ public class FFmpegWrapper : IFFmpegWrapper
             }
             catch (OperationCanceledException)
             {
-                try { process.Kill(entireProcessTree: true); } catch { /* best-effort */ }
+                TryKillProcessTree(process);
                 _logger.LogWarning(
                     "FFprobe process {TerminationReason} and was terminated",
                     timeoutCts.IsCancellationRequested ? "timed out" : "was cancelled");
@@ -328,7 +345,7 @@ public class FFmpegWrapper : IFFmpegWrapper
     }
 }
 
-public class VideoMetadata
+public sealed class VideoMetadata
 {
     public string FilePath { get; set; } = string.Empty;
     public long FileSize { get; set; }

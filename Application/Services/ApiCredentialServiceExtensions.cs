@@ -31,7 +31,7 @@ public static class ApiCredentialServiceExtensions
 
         var credential = await service.GetActiveCredentialAsync(userId);
 
-        if (credential != null)
+        if (credential is not null)
         {
             return credential;
         }

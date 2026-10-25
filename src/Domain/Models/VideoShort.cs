@@ -5,7 +5,7 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// <summary>
 /// Represents a short video that can be processed and uploaded to YouTube.
 /// </summary>
-public class VideoShort
+public sealed class VideoShort
 {
     /// <summary>
     /// Gets or sets the unique identifier of the video short.
@@ -164,7 +164,7 @@ public class VideoShort
     /// <param name="error">An optional error message indicating why processing failed.</param>
     public void MarkAsProcessed(string? error = null)
     {
-        if (error != null)
+        if (error is not null)
         {
             Status = ProcessingStatus.Failed;
             ErrorMessage = error;

@@ -13,7 +13,7 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// Handles video processing, encoding, and optimization using FFmpeg
 /// </summary>
-public class VideoProcessingService : IVideoProcessingService
+public sealed class VideoProcessingService : IVideoProcessingService
 {
     private readonly ILogger<VideoProcessingService> _logger;
     private readonly IVideoRepository _videoRepository;

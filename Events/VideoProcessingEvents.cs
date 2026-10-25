@@ -10,7 +10,7 @@ namespace YouTubeShortsAutomator.Events;
 /// These events are published when key video processing milestones occur
 /// </summary>
 
-public class VideoUploadStartedEvent : DomainEvent
+public sealed class VideoUploadStartedEvent : DomainEvent
 {
     public Guid VideoId { get; set; }
     public string FileName { get; set; } = string.Empty;
@@ -20,7 +20,7 @@ public class VideoUploadStartedEvent : DomainEvent
     public override string EventType => nameof(VideoUploadStartedEvent);
 }
 
-public class VideoUploadCompletedEvent : DomainEvent
+public sealed class VideoUploadCompletedEvent : DomainEvent
 {
     public Guid VideoId { get; set; }
     public string YouTubeVideoId { get; set; } = string.Empty;
@@ -31,7 +31,7 @@ public class VideoUploadCompletedEvent : DomainEvent
     public override string EventType => nameof(VideoUploadCompletedEvent);
 }
 
-public class VideoUploadFailedEvent : DomainEvent
+public sealed class VideoUploadFailedEvent : DomainEvent
 {
     public Guid VideoId { get; set; }
     public string ErrorMessage { get; set; } = string.Empty;
@@ -41,7 +41,7 @@ public class VideoUploadFailedEvent : DomainEvent
     public override string EventType => nameof(VideoUploadFailedEvent);
 }
 
-public class VideoProcessingStartedEvent : DomainEvent
+public sealed class VideoProcessingStartedEvent : DomainEvent
 {
     public Guid VideoId { get; set; }
     public string InputFilePath { get; set; } = string.Empty;
@@ -50,7 +50,7 @@ public class VideoProcessingStartedEvent : DomainEvent
     public override string EventType => nameof(VideoProcessingStartedEvent);
 }
 
-public class VideoProcessingCompletedEvent : DomainEvent
+public sealed class VideoProcessingCompletedEvent : DomainEvent
 {
     public Guid VideoId { get; set; }
     public string OutputFilePath { get; set; } = string.Empty;
@@ -61,7 +61,7 @@ public class VideoProcessingCompletedEvent : DomainEvent
     public override string EventType => nameof(VideoProcessingCompletedEvent);
 }
 
-public class VideoProcessingFailedEvent : DomainEvent
+public sealed class VideoProcessingFailedEvent : DomainEvent
 {
     public Guid VideoId { get; set; }
     public string ErrorMessage { get; set; } = string.Empty;
@@ -70,7 +70,7 @@ public class VideoProcessingFailedEvent : DomainEvent
     public override string EventType => nameof(VideoProcessingFailedEvent);
 }
 
-public class AnalyticsUpdatedEvent : DomainEvent
+public sealed class AnalyticsUpdatedEvent : DomainEvent
 {
     public Guid VideoId { get; set; }
     public int ViewCount { get; set; }
@@ -82,7 +82,7 @@ public class AnalyticsUpdatedEvent : DomainEvent
     public override string EventType => nameof(AnalyticsUpdatedEvent);
 }
 
-public class ScheduledUploadEvent : DomainEvent
+public sealed class ScheduledUploadEvent : DomainEvent
 {
     public Guid ScheduleId { get; set; }
     public Guid VideoId { get; set; }

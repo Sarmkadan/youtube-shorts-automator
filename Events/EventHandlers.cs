@@ -13,7 +13,7 @@ namespace YouTubeShortsAutomator.Events;
 /// Implements business logic that responds to video processing events
 /// </summary>
 
-public class VideoUploadStartedEventHandler : IEventHandler<VideoUploadStartedEvent>
+public sealed class VideoUploadStartedEventHandler : IEventHandler<VideoUploadStartedEvent>
 {
     private readonly ILogger<VideoUploadStartedEventHandler> _logger;
 
@@ -32,7 +32,7 @@ public class VideoUploadStartedEventHandler : IEventHandler<VideoUploadStartedEv
     }
 }
 
-public class VideoUploadCompletedEventHandler : IEventHandler<VideoUploadCompletedEvent>
+public sealed class VideoUploadCompletedEventHandler : IEventHandler<VideoUploadCompletedEvent>
 {
     private readonly ILogger<VideoUploadCompletedEventHandler> _logger;
     private readonly IWebhookPublisher _webhookPublisher;
@@ -64,7 +64,7 @@ public class VideoUploadCompletedEventHandler : IEventHandler<VideoUploadComplet
     }
 }
 
-public class VideoProcessingCompletedEventHandler : IEventHandler<VideoProcessingCompletedEvent>
+public sealed class VideoProcessingCompletedEventHandler : IEventHandler<VideoProcessingCompletedEvent>
 {
     private readonly ILogger<VideoProcessingCompletedEventHandler> _logger;
 
@@ -83,7 +83,7 @@ public class VideoProcessingCompletedEventHandler : IEventHandler<VideoProcessin
     }
 }
 
-public class AnalyticsUpdatedEventHandler : IEventHandler<AnalyticsUpdatedEvent>
+public sealed class AnalyticsUpdatedEventHandler : IEventHandler<AnalyticsUpdatedEvent>
 {
     private readonly ILogger<AnalyticsUpdatedEventHandler> _logger;
     private readonly ICacheService _cacheService;
@@ -108,7 +108,7 @@ public class AnalyticsUpdatedEventHandler : IEventHandler<AnalyticsUpdatedEvent>
     }
 }
 
-public class VideoUploadFailedEventHandler : IEventHandler<VideoUploadFailedEvent>
+public sealed class VideoUploadFailedEventHandler : IEventHandler<VideoUploadFailedEvent>
 {
     private readonly ILogger<VideoUploadFailedEventHandler> _logger;
 

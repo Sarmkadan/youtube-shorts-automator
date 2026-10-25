@@ -11,7 +11,7 @@ namespace YouTubeShortsAutomator.CLI;
 /// Parses command-line arguments for CLI operations
 /// Supports flags, options, and positional arguments with validation
 /// </summary>
-public class CliArgumentParser
+public sealed class CliArgumentParser
 {
     private readonly Dictionary<string, CliCommand> _commands;
     private readonly Dictionary<string, string> _parsedArgs;
@@ -120,7 +120,7 @@ public class CliArgumentParser
     }
 }
 
-public class CliCommand
+public sealed class CliCommand
 {
     public string Description { get; set; } = string.Empty;
     public List<string> RequiredOptions { get; set; } = new();
@@ -128,7 +128,7 @@ public class CliCommand
     public Func<ParsedCliArguments, Task<int>>? Handler { get; set; }
 }
 
-public class ParsedCliArguments
+public sealed class ParsedCliArguments
 {
     public string Command { get; set; } = string.Empty;
     public Dictionary<string, string> Options { get; set; } = new();

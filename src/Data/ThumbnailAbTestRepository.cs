@@ -9,7 +9,7 @@ using YouTubeShortAutomator.Domain.Models;
 namespace YouTubeShortAutomator.Data;
 
 /// <summary>Provides data-access operations for <see cref="ThumbnailVariant"/> entities.</summary>
-public class ThumbnailAbTestRepository : IRepository<ThumbnailVariant>
+public sealed class ThumbnailAbTestRepository : IRepository<ThumbnailVariant>
 {
     private readonly DatabaseContext _context;
 

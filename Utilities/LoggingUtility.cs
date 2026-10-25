@@ -13,7 +13,7 @@ public static class LoggingUtility
 {
     public static void LogOperationStart(ILogger logger, string operationName, object? parameters = null)
     {
-        if (parameters != null)
+        if (parameters is not null)
         {
             logger.LogInformation("Starting operation: {OperationName} with parameters: {@Parameters}",
                 operationName, parameters);
@@ -30,7 +30,7 @@ public static class LoggingUtility
         long elapsedMilliseconds,
         object? result = null)
     {
-        if (result != null)
+        if (result is not null)
         {
             logger.LogInformation("Operation completed successfully: {OperationName} ({ElapsedMs}ms). Result: {@Result}",
                 operationName, elapsedMilliseconds, result);
@@ -91,7 +91,7 @@ public static class LoggingUtility
 /// <summary>
 /// Tracks operation execution time and logs results automatically
 /// </summary>
-public class OperationLogger : IDisposable
+public sealed class OperationLogger : IDisposable
 {
     private readonly ILogger _logger;
     private readonly string _operationName;

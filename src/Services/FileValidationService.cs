@@ -13,7 +13,7 @@ namespace YouTubeShortAutomator.Services;
 /// <summary>
 /// Provides file validation and manipulation services.
 /// </summary>
-public class FileValidationService
+public sealed class FileValidationService
 {
     private const string InvalidFilePathMessage = "File path cannot be null or whitespace.";
     private const int PlaceholderVideoDurationSeconds = 30;

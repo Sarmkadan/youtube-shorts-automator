@@ -52,7 +52,7 @@ return $"{totalSeconds / 60:00}:{totalSeconds % 60:00}";
         ArgumentNullException.ThrowIfNull(videoShort);
         ArgumentException.ThrowIfNullOrWhiteSpace(tag);
 
-        if (videoShort.Tags == null || videoShort.Tags.Length == 0)
+        if (videoShort.Tags is null || videoShort.Tags.Length == 0)
         {
             return false;
         }

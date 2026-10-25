@@ -75,7 +75,7 @@ public static class UploadJobExtensions
     {
         ArgumentNullException.ThrowIfNull(job);
 
-        if (job.UploadedBytes <= 0 || job.UploadedAt == null)
+        if (job.UploadedBytes <= 0 || job.UploadedAt is null)
         {
             return 0;
         }

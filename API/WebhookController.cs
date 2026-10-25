@@ -16,7 +16,7 @@ namespace YouTubeShortsAutomator.API;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
-public class WebhookController : ControllerBase
+public sealed class WebhookController : ControllerBase
 {
     private readonly ILogger<WebhookController> _logger;
     private readonly ICacheService _cacheService;
@@ -46,7 +46,7 @@ public class WebhookController : ControllerBase
                 return BadRequest(new { message = error });
             }
 
-            if (request.Events == null || request.Events.Length == 0)
+            if (request.Events is null || request.Events.Length == 0)
             {
                 return BadRequest(new { message = "At least one event type is required" });
             }
@@ -94,7 +94,7 @@ public class WebhookController : ControllerBase
         try
         {
             var webhook = _cacheService.Get<WebhookRegistration>($"webhook:{webhookId}");
-            if (webhook == null)
+            if (webhook is null)
             {
                 return NotFound();
             }
@@ -165,7 +165,7 @@ public class WebhookController : ControllerBase
         try
         {
             var webhook = _cacheService.Get<WebhookRegistration>($"webhook:{webhookId}");
-            if (webhook == null)
+            if (webhook is null)
             {
                 return NotFound();
             }
@@ -181,7 +181,7 @@ public class WebhookController : ControllerBase
                 webhook.Url = request.Url;
             }
 
-            if (request.Events != null && request.Events.Length > 0)
+            if (request.Events is not null && request.Events.Length > 0)
             {
                 webhook.Events = request.Events;
             }
@@ -228,27 +228,27 @@ public class WebhookController : ControllerBase
 
 #region Webhook Models
 
-public class RegisterWebhookRequest
+public sealed class RegisterWebhookRequest
 {
     public string Url { get; set; } = string.Empty;
     public string[] Events { get; set; } = Array.Empty<string>();
 }
 
-public class UpdateWebhookRequest
+public sealed class UpdateWebhookRequest
 {
     public string? Url { get; set; }
     public string[]? Events { get; set; }
     public bool? IsActive { get; set; }
 }
 
-public class WebhookRegistrationResponse
+public sealed class WebhookRegistrationResponse
 {
     public Guid WebhookId { get; set; }
     public string Url { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
 }
 
-public class WebhookRegistration
+public sealed class WebhookRegistration
 {
     public Guid WebhookId { get; set; }
     public string Url { get; set; } = string.Empty;
@@ -261,7 +261,7 @@ public class WebhookRegistration
     public int FailedDeliveries { get; set; }
 }
 
-public class WebhookDetails
+public sealed class WebhookDetails
 {
     public Guid WebhookId { get; set; }
     public string Url { get; set; } = string.Empty;
@@ -273,7 +273,7 @@ public class WebhookDetails
     public int FailedDeliveries { get; set; }
 }
 
-public class WebhookListItem
+public sealed class WebhookListItem
 {
     public Guid WebhookId { get; set; }
     public string Url { get; set; } = string.Empty;
@@ -281,7 +281,7 @@ public class WebhookListItem
     public DateTime CreatedAtUtc { get; set; }
 }
 
-public class WebhookListResponse
+public sealed class WebhookListResponse
 {
     public List<WebhookListItem> Webhooks { get; set; } = new();
     public int TotalCount { get; set; }

@@ -10,7 +10,7 @@ namespace YouTubeShortsAutomator.Models;
 /// Encapsulates success/failure state with optional data and error details
 /// </summary>
 
-public class ApiResult
+public sealed class ApiResult
 {
     public bool IsSuccess { get; set; }
     public string Message { get; set; } = string.Empty;
@@ -48,7 +48,7 @@ public class ApiResult
     }
 }
 
-public class ApiResult<T>
+public sealed class ApiResult<T>
 {
     public bool IsSuccess { get; set; }
     public T? Data { get; set; }
@@ -118,7 +118,7 @@ public class ApiResult<T>
     }
 }
 
-public class PagedResult<T>
+public sealed class PagedResult<T>
 {
     public List<T> Items { get; set; } = new();
     public int PageNumber { get; set; }
@@ -141,7 +141,7 @@ public class PagedResult<T>
     }
 }
 
-public class BulkOperationResult
+public sealed class BulkOperationResult
 {
     public int TotalItems { get; set; }
     public int SuccessfulItems { get; set; }
@@ -152,7 +152,7 @@ public class BulkOperationResult
     public double SuccessRate => TotalItems > 0 ? ((double)SuccessfulItems / TotalItems) * 100 : 0;
 }
 
-public class BulkItemResult
+public sealed class BulkItemResult
 {
     public string ItemIdentifier { get; set; } = string.Empty;
     public bool IsSuccess { get; set; }

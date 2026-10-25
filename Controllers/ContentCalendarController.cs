@@ -16,7 +16,7 @@ namespace YouTubeShortsAutomator.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/content-calendar")]
-public class ContentCalendarController : ControllerBase
+public sealed class ContentCalendarController : ControllerBase
 {
     private readonly IContentCalendarService _calendarService;
     private readonly ILogger<ContentCalendarController> _logger;

@@ -18,7 +18,7 @@ public interface IWebhookPublisher
     Task<bool> PublishBulkEventsAsync<T>(string eventType, IEnumerable<T> data, IEnumerable<string> webhookUrls);
 }
 
-public class WebhookPublisher : IWebhookPublisher
+public sealed class WebhookPublisher : IWebhookPublisher
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<WebhookPublisher> _logger;
@@ -109,7 +109,7 @@ public class WebhookPublisher : IWebhookPublisher
     }
 }
 
-public class WebhookPayload<T>
+public sealed class WebhookPayload<T>
 {
     public string EventType { get; set; } = string.Empty;
     public T? Data { get; set; }

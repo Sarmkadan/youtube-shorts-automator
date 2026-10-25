@@ -10,7 +10,7 @@ namespace YouTubeShortsAutomator.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AnalyticsController : ControllerBase
+public sealed class AnalyticsController : ControllerBase
 {
     private readonly AnalyticsService _analyticsService;
     private readonly ILogger<AnalyticsController> _logger;
@@ -180,7 +180,7 @@ public class AnalyticsController : ControllerBase
     }
 }
 
-public class RecordMetricsRequest
+public sealed class RecordMetricsRequest
 {
     public long ViewCount { get; set; }
     public long LikeCount { get; set; }

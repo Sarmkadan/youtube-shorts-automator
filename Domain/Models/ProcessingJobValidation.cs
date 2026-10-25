@@ -35,7 +35,7 @@ public static class ProcessingJobValidation
         }
 
         // Validate Video (if present)
-        if (value.Video != null)
+        if (value.Video is not null)
         {
             var videoValidation = value.Video.Validate();
             if (videoValidation.IsValid == false)
@@ -105,11 +105,11 @@ public static class ProcessingJobValidation
         }
 
         // Validate Steps
-        if (value.Steps == null)
+        if (value.Steps is null)
         {
             errors.Add("Steps collection cannot be null");
         }
-        else if (value.Steps.Any(s => s == null))
+        else if (value.Steps.Any(s => s is null))
         {
             errors.Add("Steps collection cannot contain null entries");
         }
@@ -119,11 +119,11 @@ public static class ProcessingJobValidation
         }
 
         // Validate Errors
-        if (value.Errors == null)
+        if (value.Errors is null)
         {
             errors.Add("Errors collection cannot be null");
         }
-        else if (value.Errors.Any(e => e == null))
+        else if (value.Errors.Any(e => e is null))
         {
             errors.Add("Errors collection cannot contain null entries");
         }

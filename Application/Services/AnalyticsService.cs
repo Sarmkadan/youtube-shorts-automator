@@ -123,7 +123,7 @@ public class AnalyticsService
         var metrics = await _analyticsRepository.GetByVideoIdAsync(videoId);
         var cumulative = metrics.FirstOrDefault(m => m.Period == MetricsPeriod.Cumulative);
 
-        if (cumulative == null)
+        if (cumulative is null)
         {
             cumulative = new AnalyticsMetric
             {
@@ -157,7 +157,7 @@ public class AnalyticsService
         var videos = await _videoRepository.GetByUserIdAsync(userId);
 
         var topVideos = videos
-            .Where(v => v.UploadResult != null && v.Metrics.Any())
+            .Where(v => v.UploadResult is not null && v.Metrics.Any())
             .OrderByDescending(v => v.Metrics.Sum(m => m.ViewCount))
             .Take(limit)
             .ToList();
@@ -261,7 +261,7 @@ public class AnalyticsService
             ?? throw new ResourceNotFoundException("Video not found", videoId, "Video");
 
         var currentMetric = video.Metrics.LastOrDefault();
-        if (currentMetric == null)
+        if (currentMetric is null)
         {
             return false;
         }
@@ -273,7 +273,7 @@ public class AnalyticsService
 /// <summary>
 /// Analytics report data model
 /// </summary>
-public class AnalyticsReport
+public sealed class AnalyticsReport
 {
     public DateTime GeneratedAt { get; set; }
     public Guid UserId { get; set; }

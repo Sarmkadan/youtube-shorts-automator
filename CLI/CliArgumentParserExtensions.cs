@@ -1,4 +1,4 @@
-// =============================================================================
+﻿// =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // Extension methods for CliArgumentParser to simplify common CLI operations
@@ -98,21 +98,27 @@ public static class CliArgumentParserExtensions
             return false;
         }
 
-        // Parse remaining arguments
+        ParseRemainingArguments(args, result);
+
+        return parser.ValidateArguments(result, cliCommand);
+    }
+
+    private static void ParseRemainingArguments(string[] args, ParsedCliArguments result)
+    {
         for (int i = 1; i < args.Length; i++)
         {
             var arg = args[i];
 
             if (arg.StartsWith("--"))
             {
-                var parts = arg.Substring(2).Split('=');
+                var parts = arg[2..].Split('=');
                 var key = parts[0];
                 var value = parts.Length > 1 ? parts[1] : (i + 1 < args.Length ? args[++i] : "true");
                 result.Options[key] = value;
             }
             else if (arg.StartsWith("-"))
             {
-                var key = arg.Substring(1);
+                var key = arg[1..];
                 var value = i + 1 < args.Length ? args[++i] : "true";
                 result.Options[key] = value;
             }
@@ -121,8 +127,6 @@ public static class CliArgumentParserExtensions
                 result.PositionalArguments.Add(arg);
             }
         }
-
-        return parser.ValidateArguments(result, cliCommand);
     }
 
     /// <summary>

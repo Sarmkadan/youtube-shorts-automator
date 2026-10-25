@@ -5,7 +5,7 @@
 
 namespace YouTubeShortsAutomator.Domain.Models;
 
-public class ApiCredential
+public sealed class ApiCredential
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }

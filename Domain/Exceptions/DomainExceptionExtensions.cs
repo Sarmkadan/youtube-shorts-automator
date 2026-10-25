@@ -47,7 +47,7 @@ public static class DomainExceptionExtensions
         ArgumentNullException.ThrowIfNull(exception);
         
         value = default;
-        if (exception.Context != null && exception.Context.TryGetValue(key, out var obj) && obj is T typedValue)
+        if (exception.Context is not null && exception.Context.TryGetValue(key, out var obj) && obj is T typedValue)
         {
             value = typedValue;
             return true;

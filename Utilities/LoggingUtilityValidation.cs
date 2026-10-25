@@ -392,7 +392,7 @@ public static class LoggingUtilityValidation
 
         if (problems.Count > 0)
         {
-            throw new ArgumentException("Logger is invalid for LoggingUtility operations: " + string.Join("; ", problems));
+            throw new ArgumentException($"Logger is invalid for LoggingUtility operations: {string.Join("; ", problems)}");
         }
     }
 
@@ -407,7 +407,7 @@ public static class LoggingUtilityValidation
 
         if (problems.Count > 0)
         {
-            throw new ArgumentException("Operation name is invalid: " + string.Join("; ", problems));
+            throw new ArgumentException($"Operation name is invalid: {string.Join("; ", problems)}");
         }
     }
 
@@ -423,7 +423,7 @@ public static class LoggingUtilityValidation
 
         if (problems.Count > 0)
         {
-            throw new ArgumentException("Operation name and parameters are invalid: " + string.Join("; ", problems));
+            throw new ArgumentException($"Operation name and parameters are invalid: {string.Join("; ", problems)}");
         }
     }
 
@@ -443,7 +443,7 @@ public static class LoggingUtilityValidation
 
         if (problems.Count > 0)
         {
-            throw new ArgumentException("Operation success parameters are invalid: " + string.Join("; ", problems));
+            throw new ArgumentException($"Operation success parameters are invalid: {string.Join("; ", problems)}");
         }
     }
 
@@ -463,7 +463,7 @@ public static class LoggingUtilityValidation
 
         if (problems.Count > 0)
         {
-            throw new ArgumentException("Operation failure parameters are invalid: " + string.Join("; ", problems));
+            throw new ArgumentException($"Operation failure parameters are invalid: {string.Join("; ", problems)}");
         }
     }
 
@@ -485,7 +485,7 @@ public static class LoggingUtilityValidation
 
         if (problems.Count > 0)
         {
-            throw new ArgumentException("API call parameters are invalid: " + string.Join("; ", problems));
+            throw new ArgumentException($"API call parameters are invalid: {string.Join("; ", problems)}");
         }
     }
 
@@ -507,7 +507,7 @@ public static class LoggingUtilityValidation
 
         if (problems.Count > 0)
         {
-            throw new ArgumentException("Database operation parameters are invalid: " + string.Join("; ", problems));
+            throw new ArgumentException($"Database operation parameters are invalid: {string.Join("; ", problems)}");
         }
     }
 
@@ -523,7 +523,7 @@ public static class LoggingUtilityValidation
 
         if (problems.Count > 0)
         {
-            throw new ArgumentException("Field name and error message are invalid: " + string.Join("; ", problems));
+            throw new ArgumentException($"Field name and error message are invalid: {string.Join("; ", problems)}");
         }
     }
 
@@ -539,7 +539,7 @@ public static class LoggingUtilityValidation
 
         if (problems.Count > 0)
         {
-            throw new ArgumentException("OperationLogger is invalid: " + string.Join("; ", problems));
+            throw new ArgumentException($"OperationLogger is invalid: {string.Join("; ", problems)}");
         }
     }
 }

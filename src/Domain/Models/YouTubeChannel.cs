@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// <summary>
 /// Represents a YouTube channel.
 /// </summary>
-public class YouTubeChannel
+public sealed class YouTubeChannel
 {
     /// <summary>
     /// Gets the unique identifier of the YouTube channel.

@@ -17,7 +17,7 @@ namespace YouTubeShortsAutomator.API;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
-public class ProcessingController : ControllerBase
+public sealed class ProcessingController : ControllerBase
 {
     private readonly ILogger<ProcessingController> _logger;
     private readonly JsonResponseFormatter _responseFormatter;
@@ -45,7 +45,7 @@ public class ProcessingController : ControllerBase
         try
         {
             // Validate request
-            if (request.File == null || request.File.Length == 0)
+            if (request.File is null || request.File.Length == 0)
             {
                 return BadRequest("No file provided");
             }
@@ -110,7 +110,7 @@ public class ProcessingController : ControllerBase
             var cacheKey = $"processing:{processingId}";
             var processingData = _cacheService.Get<dynamic>(cacheKey);
 
-            if (processingData == null)
+            if (processingData is null)
             {
                 _logger.LogWarning("Processing job not found. ProcessingId: {ProcessingId}", processingId);
                 return NotFound(new { message = "Processing job not found" });
@@ -211,7 +211,7 @@ public class ProcessingController : ControllerBase
 
 #region Request/Response Models
 
-public class SubmitVideoRequest
+public sealed class SubmitVideoRequest
 {
     public IFormFile? File { get; set; }
     public string Title { get; set; } = string.Empty;
@@ -219,14 +219,14 @@ public class SubmitVideoRequest
     public string ProcessingProfile { get; set; } = "standard";
 }
 
-public class ProcessingResponse
+public sealed class ProcessingResponse
 {
     public Guid ProcessingId { get; set; }
     public string Status { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
 }
 
-public class ProcessingStatusResponse
+public sealed class ProcessingStatusResponse
 {
     public Guid ProcessingId { get; set; }
     public string Status { get; set; } = string.Empty;
@@ -234,7 +234,7 @@ public class ProcessingStatusResponse
     public DateTime CreatedAtUtc { get; set; }
 }
 
-public class ProfileInfo
+public sealed class ProfileInfo
 {
     public string Name { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
@@ -243,7 +243,7 @@ public class ProfileInfo
     public int EstimatedProcessingTimeMinutes { get; set; }
 }
 
-public class ProfilesResponse
+public sealed class ProfilesResponse
 {
     public ProfileInfo[]? Profiles { get; set; }
 }

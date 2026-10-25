@@ -81,7 +81,7 @@ public static class CollectionUtilityValidation
         var problems = new List<string>();
 
         // Validate collection separately
-        if (collection == null)
+        if (collection is null)
         {
             problems.Add("Collection parameter cannot be null");
         }
@@ -110,7 +110,7 @@ public static class CollectionUtilityValidation
         var problems = new List<string>();
 
         // Validate collection separately
-        if (collection == null)
+        if (collection is null)
         {
             problems.Add("Collection parameter cannot be null");
         }
@@ -494,7 +494,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 
@@ -516,7 +516,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 
@@ -540,7 +540,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 
@@ -563,7 +563,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 
@@ -587,7 +587,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 
@@ -610,7 +610,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 
@@ -632,7 +632,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 
@@ -651,7 +651,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 
@@ -669,7 +669,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 
@@ -687,7 +687,7 @@ public static class CollectionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "Collection validation failed: " + string.Join("; ", problems));
+                $"Collection validation failed: {string.Join("; ", problems)}");
         }
     }
 }

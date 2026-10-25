@@ -23,12 +23,12 @@ public static class CollectionUtility
 
     public static bool IsNullOrEmpty<T>(IEnumerable<T>? collection)
     {
-        return collection == null || !collection.Any();
+        return collection is null || !collection.Any();
     }
 
     public static bool HasElements<T>(IEnumerable<T>? collection)
     {
-        return collection != null && collection.Any();
+        return collection is not null && collection.Any();
     }
 
     public static List<TOutput> SelectSafe<TInput, TOutput>(

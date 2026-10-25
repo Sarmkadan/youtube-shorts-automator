@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Infrastructure.Repositories;
 /// <summary>
 /// Repository implementation for ProcessingJob entity
 /// </summary>
-public class ProcessingJobRepository : Repository<ProcessingJob>, IProcessingJobRepository
+public sealed class ProcessingJobRepository : Repository<ProcessingJob>, IProcessingJobRepository
 {
     public ProcessingJobRepository(ApplicationDbContext context, ILogger<ProcessingJobRepository> logger)
         : base(context, logger)

@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Exceptions;
 /// <summary>
 /// Represents errors that occur during configuration loading or validation.
 /// </summary>
-public class ConfigurationException : YoutubeShortsAutomatorException
+public sealed class ConfigurationException : YoutubeShortsAutomatorException
 {
     public ConfigurationException(string message) : base(message) { }
 

@@ -10,7 +10,7 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// <summary>
 /// Represents a job to upload a video to YouTube.
 /// </summary>
-public class UploadJob
+public sealed class UploadJob
 {
     /// <summary>
     /// Gets the unique identifier of the upload job.

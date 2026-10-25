@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Formatters;
 /// Formats data as CSV for export operations
 /// Handles escaping, encoding, and dynamic property extraction
 /// </summary>
-public class CsvExportFormatter
+public sealed class CsvExportFormatter
 {
     private readonly char _delimiter;
     private readonly Encoding _encoding;
@@ -38,7 +38,7 @@ public class CsvExportFormatter
             var values = columns.Select(col =>
             {
                 var property = properties.FirstOrDefault(p => p.Name.Equals(col, StringComparison.OrdinalIgnoreCase));
-                if (property == null)
+                if (property is null)
                 {
                     return string.Empty;
                 }

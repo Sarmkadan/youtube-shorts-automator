@@ -169,7 +169,7 @@ public static class JobStatusControllerValidation
             for (int i = 0; i < value.Items.Count; i++)
             {
                 var item = value.Items[i];
-                if (item == null)
+                if (item is null)
                 {
                     problems.Add($"Items[{i}] is null.");
                     continue;

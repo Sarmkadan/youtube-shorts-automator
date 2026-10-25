@@ -42,7 +42,7 @@ public static class WebhookControllerValidation
         }
 
         // Validate Events array (required field)
-        if (value.Events == null)
+        if (value.Events is null)
         {
             errors.Add("Events collection cannot be null");
         }
@@ -101,7 +101,7 @@ public static class WebhookControllerValidation
         }
 
         // Validate Events array (required field)
-        if (value.Events == null)
+        if (value.Events is null)
         {
             errors.Add("Events collection cannot be null");
         }

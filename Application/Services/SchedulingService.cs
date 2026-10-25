@@ -1,4 +1,4 @@
-// =============================================================================
+﻿// =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
@@ -209,28 +209,9 @@ public class SchedulingService
 
             foreach (var upload in pendingUploads)
             {
-                try
+                if (await ExecutePendingUploadAsync(upload, schedule.UserId))
                 {
-                    if (upload.VideoId.HasValue)
-                    {
-                        upload.Status = ScheduledUploadStatus.InProgress;
-                        await _scheduleRepository.UpdateScheduledUploadAsync(upload);
-
-                        // Execute the upload
-                        var uploadResult = await _uploadService.UploadVideoAsync(upload.VideoId.Value, schedule.UserId);
-
-                        upload.Status = ScheduledUploadStatus.Completed;
-                        upload.ExecutedAt = DateTime.UtcNow;
-
-                        _logger.LogInformation($"Scheduled upload executed: {upload.Id}");
-                        executedUploads.Add(upload);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to execute scheduled upload {upload.Id}");
-                    upload.Status = ScheduledUploadStatus.Failed;
-                    upload.ExecutionError = ex.Message;
+                    executedUploads.Add(upload);
                 }
 
                 await _scheduleRepository.UpdateScheduledUploadAsync(upload);
@@ -242,6 +223,39 @@ public class SchedulingService
         }
 
         return executedUploads;
+    }
+
+    /// <summary>
+    /// Runs a single due upload and records its outcome on the entity.
+    /// Returns true when the upload completed successfully.
+    /// </summary>
+    private async Task<bool> ExecutePendingUploadAsync(ScheduledUpload upload, Guid userId)
+    {
+        try
+        {
+            if (!upload.VideoId.HasValue)
+            {
+                return false;
+            }
+
+            upload.Status = ScheduledUploadStatus.InProgress;
+            await _scheduleRepository.UpdateScheduledUploadAsync(upload);
+
+            await _uploadService.UploadVideoAsync(upload.VideoId.Value, userId);
+
+            upload.Status = ScheduledUploadStatus.Completed;
+            upload.ExecutedAt = DateTime.UtcNow;
+
+            _logger.LogInformation($"Scheduled upload executed: {upload.Id}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to execute scheduled upload {upload.Id}");
+            upload.Status = ScheduledUploadStatus.Failed;
+            upload.ExecutionError = ex.Message;
+            return false;
+        }
     }
 
     /// <summary>

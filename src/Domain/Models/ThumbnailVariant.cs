@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// <summary>
 /// Represents a single thumbnail variant used in an A/B split test for a <see cref="VideoShort"/>.
 /// </summary>
-public class ThumbnailVariant
+public sealed class ThumbnailVariant
 {
     /// <summary>Gets or sets the primary key.</summary>
     public int Id { get; set; }

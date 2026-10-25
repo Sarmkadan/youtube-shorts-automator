@@ -3,7 +3,6 @@
 // CTO & Software Architect
 // =============================================================================
 
-#nullable enable
 
 using Microsoft.EntityFrameworkCore;
 using YouTubeShortsAutomator.Application.Repositories;
@@ -14,7 +13,7 @@ namespace YouTubeShortsAutomator.Infrastructure.Repositories;
 /// <summary>
 /// Repository implementation for ApiCredential entity
 /// </summary>
-public class ApiCredentialRepository : Repository<ApiCredential>, IApiCredentialRepository
+public sealed class ApiCredentialRepository : Repository<ApiCredential>, IApiCredentialRepository
 {
     public ApiCredentialRepository(ApplicationDbContext context, ILogger<ApiCredentialRepository> logger)
         : base(context, logger)

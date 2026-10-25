@@ -16,7 +16,7 @@ namespace YouTubeShortAutomator.Data;
 /// <summary>
 /// Represents a database context for interacting with the database.
 /// </summary>
-public class DatabaseContext : IAsyncDisposable
+public sealed class DatabaseContext : IAsyncDisposable
 {
     private readonly string _connectionString;
     private SqlConnection? _connection;
@@ -38,7 +38,7 @@ public class DatabaseContext : IAsyncDisposable
     public async Task<SqlConnection> GetConnectionAsync()
     {
         // Opens and returns a database connection
-        if (_connection == null)
+        if (_connection is null)
         {
             _connection = new SqlConnection(_connectionString);
             await _connection.OpenAsync();
@@ -70,7 +70,7 @@ public class DatabaseContext : IAsyncDisposable
                 CommandTimeout = 30
             };
 
-            if (parameters != null)
+            if (parameters is not null)
             {
                 foreach (var param in parameters)
                 {
@@ -114,7 +114,7 @@ public class DatabaseContext : IAsyncDisposable
                 CommandTimeout = 30
             };
 
-            if (parameters != null)
+            if (parameters is not null)
             {
                 foreach (var param in parameters)
                 {
@@ -123,7 +123,7 @@ public class DatabaseContext : IAsyncDisposable
             }
 
             var result = await command.ExecuteScalarAsync();
-            return result != null && result != DBNull.Value
+            return result is not null && result != DBNull.Value
                 ? (T?)Convert.ChangeType(result, typeof(T))
                 : default;
         }
@@ -161,7 +161,7 @@ public class DatabaseContext : IAsyncDisposable
                 CommandTimeout = 30
             };
 
-            if (parameters != null)
+            if (parameters is not null)
             {
                 foreach (var param in parameters)
                 {
@@ -195,7 +195,7 @@ public class DatabaseContext : IAsyncDisposable
             return;
         }
 
-        if (_connection != null)
+        if (_connection is not null)
         {
             if (_connection.State == ConnectionState.Open)
             {

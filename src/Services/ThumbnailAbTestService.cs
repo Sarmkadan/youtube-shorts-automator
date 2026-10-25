@@ -15,7 +15,7 @@ namespace YouTubeShortAutomator.Services;
 /// Manages A/B thumbnail split tests for <see cref="VideoShort"/> uploads, tracking
 /// per-variant impression and click-through view rates to identify the best-performing thumbnail.
 /// </summary>
-public class ThumbnailAbTestService
+public sealed class ThumbnailAbTestService
 {
     private const string VariantALabel = "A";
     private const string VariantBLabel = "B";
@@ -152,7 +152,7 @@ public class ThumbnailAbTestService
         IDictionary<string, (long Impressions, long Clicks)> analyticsData,
         CancellationToken cancellationToken = default)
     {
-        if (analyticsData == null)
+        if (analyticsData is null)
         {
             throw new ArgumentNullException(nameof(analyticsData));
         }
@@ -248,14 +248,14 @@ public class ThumbnailAbTestService
             VideoShortId = videoShortId,
             Variants     = variants,
             WinnerLabel  = winner?.Label,
-            IsComplete   = winner != null,
+            IsComplete   = winner is not null,
             GeneratedAt  = DateTime.UtcNow
         };
     }
 }
 
 /// <summary>Encapsulates a point-in-time snapshot of a thumbnail A/B test's results.</summary>
-public class ThumbnailAbTestResult
+public sealed class ThumbnailAbTestResult
 {
     private const int MinimumVariantsForComparison = 2;
 

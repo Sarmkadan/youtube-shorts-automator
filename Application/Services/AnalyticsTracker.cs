@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// Tracks and aggregates video performance analytics from YouTube API data
 /// </summary>
-public class AnalyticsTracker
+public sealed class AnalyticsTracker
 {
     private readonly ILogger<AnalyticsTracker> _logger;
     private readonly IAnalyticsRepository _analyticsRepository;

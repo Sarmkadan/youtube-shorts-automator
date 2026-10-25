@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Infrastructure.Repositories;
 /// <summary>
 /// Repository implementation for Video entity
 /// </summary>
-public class VideoRepository : Repository<Video>, IVideoRepository
+public sealed class VideoRepository : Repository<Video>, IVideoRepository
 {
     public VideoRepository(ApplicationDbContext context, ILogger<VideoRepository> logger)
         : base(context, logger)

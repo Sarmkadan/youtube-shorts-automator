@@ -461,7 +461,7 @@ public static class HttpClientUtilityValidation
     {
         var problems = new List<string>();
 
-        if (userAgent != null && userAgent.Length > 500)
+        if (userAgent is not null && userAgent.Length > 500)
         {
             problems.Add("User agent cannot exceed 500 characters.");
         }

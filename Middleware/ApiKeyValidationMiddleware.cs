@@ -11,7 +11,7 @@ namespace YouTubeShortsAutomator.Middleware;
 /// Validates API keys from request headers
 /// Supports X-API-Key header and Authorization Bearer token validation
 /// </summary>
-public class ApiKeyValidationMiddleware
+public sealed class ApiKeyValidationMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ApiKeyValidationMiddleware> _logger;

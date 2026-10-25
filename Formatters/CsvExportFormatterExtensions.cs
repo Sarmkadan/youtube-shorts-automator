@@ -53,7 +53,7 @@ public static class CsvExportFormatterExtensions
             var values = columns.Select(col =>
             {
                 var property = properties.FirstOrDefault(p => p.Name.Equals(col, StringComparison.OrdinalIgnoreCase));
-                if (property == null)
+                if (property is null)
                 {
                     return string.Empty;
                 }
@@ -103,7 +103,7 @@ public static class CsvExportFormatterExtensions
             var values = columns.Select(col =>
             {
                 var property = properties.FirstOrDefault(p => p.Name.Equals(col, StringComparison.OrdinalIgnoreCase));
-                if (property == null)
+                if (property is null)
                 {
                     return string.Empty;
                 }
@@ -150,13 +150,13 @@ public static class CsvExportFormatterExtensions
             var values = columns.Select(col =>
             {
                 var property = properties.FirstOrDefault(p => p.Name.Equals(col, StringComparison.OrdinalIgnoreCase));
-                if (property == null)
+                if (property is null)
                 {
                     return string.Empty;
                 }
 
                 var value = property.GetValue(item);
-                if (value != null && double.TryParse(value.ToString(), out var number))
+                if (value is not null && double.TryParse(value.ToString(), out var number))
                 {
                     return formatter.EscapeCsvField(number.ToString(cultureInfo));
                 }
@@ -200,7 +200,7 @@ public static class CsvExportFormatterExtensions
         ArgumentNullException.ThrowIfNull(formatter);
 
         var field = typeof(CsvExportFormatter).GetField("_delimiter", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (field == null)
+        if (field is null)
         {
             throw new InvalidOperationException("Delimiter field not found in CsvExportFormatter");
         }
@@ -219,7 +219,7 @@ public static class CsvExportFormatterExtensions
         ArgumentNullException.ThrowIfNull(formatter);
 
         var field = typeof(CsvExportFormatter).GetField("_encoding", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (field == null)
+        if (field is null)
         {
             throw new InvalidOperationException("Encoding field not found in CsvExportFormatter");
         }

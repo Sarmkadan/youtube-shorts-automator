@@ -155,7 +155,7 @@ public class SchedulingService
         try
         {
             var job = await _uploadRepository.GetByIdAsync(uploadJobId, cancellationToken);
-            if (job == null)
+            if (job is null)
             {
                 throw new SchedulingException($"Upload job {uploadJobId} not found");
             }
@@ -185,7 +185,7 @@ public class SchedulingService
         try
         {
             var job = await _uploadRepository.GetByIdAsync(uploadJobId, cancellationToken);
-            if (job == null)
+            if (job is null)
             {
                 throw new SchedulingException($"Upload job {uploadJobId} not found");
             }

@@ -3,7 +3,6 @@
 // CTO & Software Architect
 // =============================================================================
 
-#nullable enable
 
 using Microsoft.EntityFrameworkCore;
 using YouTubeShortsAutomator.Application.Repositories;

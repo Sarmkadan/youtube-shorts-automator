@@ -35,7 +35,7 @@ public class DomainException : Exception
 /// <summary>
 /// Thrown when video validation fails
 /// </summary>
-public class VideoValidationException : DomainException
+public sealed class VideoValidationException : DomainException
 {
     public List<string> ValidationErrors { get; set; } = new();
 
@@ -49,7 +49,7 @@ public class VideoValidationException : DomainException
 /// <summary>
 /// Thrown when processing job fails
 /// </summary>
-public class ProcessingJobException : DomainException
+public sealed class ProcessingJobException : DomainException
 {
     public Guid JobId { get; set; }
     public ProcessingJobException(string message, Guid jobId)
@@ -62,7 +62,7 @@ public class ProcessingJobException : DomainException
 /// <summary>
 /// Thrown when upload fails
 /// </summary>
-public class UploadException : DomainException
+public sealed class UploadException : DomainException
 {
     public string? YouTubeErrorCode { get; set; }
 
@@ -85,7 +85,7 @@ public class CredentialException : DomainException
 /// Thrown when an OAuth refresh token has expired and re-authorization is required.
 /// Unlike transient refresh failures this is terminal: the scheduler must not retry.
 /// </summary>
-public class OAuthTokenExpiredException : CredentialException
+public sealed class OAuthTokenExpiredException : CredentialException
 {
     public Guid CredentialId { get; }
 
@@ -102,7 +102,7 @@ public class OAuthTokenExpiredException : CredentialException
 /// <summary>
 /// Thrown when API call fails
 /// </summary>
-public class ApiException : DomainException
+public sealed class ApiException : DomainException
 {
     public int? HttpStatusCode { get; set; }
     public string? ApiResponse { get; set; }
@@ -117,7 +117,7 @@ public class ApiException : DomainException
 /// <summary>
 /// Thrown when user quota is exceeded
 /// </summary>
-public class QuotaExceededException : DomainException
+public sealed class QuotaExceededException : DomainException
 {
     public long CurrentUsageBytes { get; set; }
     public long QuotaBytes { get; set; }
@@ -133,7 +133,7 @@ public class QuotaExceededException : DomainException
 /// <summary>
 /// Thrown when resource is not found
 /// </summary>
-public class ResourceNotFoundException : DomainException
+public sealed class ResourceNotFoundException : DomainException
 {
     public Guid ResourceId { get; set; }
     public string ResourceType { get; set; } = string.Empty;
@@ -149,7 +149,7 @@ public class ResourceNotFoundException : DomainException
 /// <summary>
 /// Thrown when operation is invalid for current state
 /// </summary>
-public class InvalidStateException : DomainException
+public sealed class InvalidStateException : DomainException
 {
     public string CurrentState { get; set; } = string.Empty;
     public string RequestedOperation { get; set; } = string.Empty;

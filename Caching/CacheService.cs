@@ -25,7 +25,7 @@ public interface ICacheService
     bool Exists(string key);
 }
 
-public class CacheService : ICacheService
+public sealed class CacheService : ICacheService
 {
     private readonly IMemoryCache _memoryCache;
     private readonly ILogger<CacheService> _logger;

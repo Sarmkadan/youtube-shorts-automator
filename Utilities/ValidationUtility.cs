@@ -216,7 +216,7 @@ public static class ValidationUtility
 
     public static (bool IsValid, string? Error) ValidateVideoTags(string[] tags)
     {
-        if (tags == null || tags.Length == 0)
+        if (tags is null || tags.Length == 0)
         {
             return (false, "At least one tag is required");
         }

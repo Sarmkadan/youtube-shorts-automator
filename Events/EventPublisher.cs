@@ -28,7 +28,7 @@ public interface IEventHandler<TEvent> where TEvent : class, IEvent
     Task HandleAsync(TEvent @event);
 }
 
-public class EventPublisher : IEventPublisher
+public sealed class EventPublisher : IEventPublisher
 {
     private readonly Dictionary<Type, List<Delegate>> _subscribers = new();
     private readonly ILogger<EventPublisher> _logger;
@@ -58,7 +58,7 @@ public class EventPublisher : IEventPublisher
         if (_subscribers.TryGetValue(eventType, out var handlers))
         {
             var methodToRemove = handlers.FirstOrDefault(h => h.Target == handler);
-            if (methodToRemove != null)
+            if (methodToRemove is not null)
             {
                 handlers.Remove(methodToRemove);
                 _logger.LogDebug("Subscriber unregistered for event: {EventType}", eventType.Name);

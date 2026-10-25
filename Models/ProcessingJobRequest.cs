@@ -10,7 +10,7 @@ namespace YouTubeShortsAutomator.Models;
 /// Represents the complete request lifecycle for video processing operations
 /// </summary>
 
-public class ProcessingJobRequest
+public sealed class ProcessingJobRequest
 {
     public Guid RequestId { get; set; } = Guid.NewGuid();
     public string VideoFilePath { get; set; } = string.Empty;
@@ -23,7 +23,7 @@ public class ProcessingJobRequest
     public string RequestedBy { get; set; } = string.Empty;
 }
 
-public class ProcessingOptions
+public sealed class ProcessingOptions
 {
     public bool EnableWatermark { get; set; }
     public string? WatermarkImagePath { get; set; }
@@ -35,7 +35,7 @@ public class ProcessingOptions
     public bool EnableAudioNormalization { get; set; } = true;
 }
 
-public class VideoUploadRequest
+public sealed class VideoUploadRequest
 {
     public Guid VideoId { get; set; }
     public string Title { get; set; } = string.Empty;
@@ -49,7 +49,7 @@ public class VideoUploadRequest
     public bool AllowEmbedding { get; set; } = true;
 }
 
-public class ProcessingResult
+public sealed class ProcessingResult
 {
     public Guid RequestId { get; set; }
     public bool IsSuccessful { get; set; }
@@ -63,7 +63,7 @@ public class ProcessingResult
     public DateTime CompletedAtUtc { get; set; } = DateTime.UtcNow;
 }
 
-public class UploadMetadata
+public sealed class UploadMetadata
 {
     public Guid VideoId { get; set; }
     public string YouTubeVideoId { get; set; } = string.Empty;
@@ -76,7 +76,7 @@ public class UploadMetadata
     public double EngagementRate { get; set; }
 }
 
-public class BatchProcessingRequest
+public sealed class BatchProcessingRequest
 {
     public Guid BatchId { get; set; } = Guid.NewGuid();
     public List<ProcessingJobRequest> Jobs { get; set; } = new();
@@ -85,7 +85,7 @@ public class BatchProcessingRequest
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 }
 
-public class BatchProcessingResult
+public sealed class BatchProcessingResult
 {
     public Guid BatchId { get; set; }
     public int TotalJobs { get; set; }

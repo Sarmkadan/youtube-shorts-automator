@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// High-level schedule management: queueing, activation, pausing, due-upload dispatch, and bulk operations
 /// </summary>
-public class ScheduleManager
+public sealed class ScheduleManager
 {
     private readonly ILogger<ScheduleManager> _logger;
     private readonly IScheduleRepository _scheduleRepository;
@@ -243,7 +243,7 @@ public class ScheduleManager
 /// <summary>
 /// Summary statistics for schedules
 /// </summary>
-public class ScheduleSummary
+public sealed class ScheduleSummary
 {
     /// <summary>Total number of schedules</summary>
     public int TotalSchedules { get; set; }

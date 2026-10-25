@@ -97,7 +97,7 @@ public static class UploadResultExtensions
             report.AppendLine($"Duration: {uploadResult.GetDurationFormatted()}");
             report.AppendLine($"Average Speed: {uploadResult.GetUploadSpeedFormatted()}");
 
-            if (uploadResult.UploadJob != null)
+            if (uploadResult.UploadJob is not null)
             {
                 report.AppendLine($"Job ID: {uploadResult.UploadJob.Id}");
                 report.AppendLine($"Video Short ID: {uploadResult.UploadJob.VideoShortId}");

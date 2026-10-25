@@ -15,7 +15,7 @@ namespace YouTubeShortsAutomator.API;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
-public class MetricsController : ControllerBase
+public sealed class MetricsController : ControllerBase
 {
     private readonly ILogger<MetricsController> _logger;
     private readonly IMetricsCollector _metricsCollector;
@@ -178,7 +178,7 @@ public class MetricsController : ControllerBase
 
 #region Metrics Response Models
 
-public class SystemMetricsResponse
+public sealed class SystemMetricsResponse
 {
     public DateTime CapturedAtUtc { get; set; }
     public int TotalApiCalls { get; set; }
@@ -186,7 +186,7 @@ public class SystemMetricsResponse
     public Dictionary<string, int> ErrorCounts { get; set; } = new();
 }
 
-public class ProcessingMetricResponse
+public sealed class ProcessingMetricResponse
 {
     public string ProcessType { get; set; } = string.Empty;
     public int Count { get; set; }
@@ -196,13 +196,13 @@ public class ProcessingMetricResponse
     public long TotalBytesProcessed { get; set; }
 }
 
-public class ApiCallsResponse
+public sealed class ApiCallsResponse
 {
     public int TotalCalls { get; set; }
     public List<ApiCallGroup> Groups { get; set; } = new();
 }
 
-public class ApiCallGroup
+public sealed class ApiCallGroup
 {
     public string Endpoint { get; set; } = string.Empty;
     public int CallCount { get; set; }
@@ -210,20 +210,20 @@ public class ApiCallGroup
     public double SuccessRate { get; set; }
 }
 
-public class ErrorStatsResponse
+public sealed class ErrorStatsResponse
 {
     public int TotalErrors { get; set; }
     public List<ErrorCount> ErrorsByCode { get; set; } = new();
 }
 
-public class ErrorCount
+public sealed class ErrorCount
 {
     public string ErrorCode { get; set; } = string.Empty;
     public int Count { get; set; }
     public double Percentage { get; set; }
 }
 
-public class ProcessingPerformanceResponse
+public sealed class ProcessingPerformanceResponse
 {
     public List<ProcessingMetricResponse> Metrics { get; set; } = new();
     public DateTime CapturedAtUtc { get; set; }

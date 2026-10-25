@@ -15,7 +15,7 @@ public static class ConversionUtility
 {
     public static int ToInt(object? value, int defaultValue = 0)
     {
-        if (value == null)
+        if (value is null)
         {
             return defaultValue;
         }
@@ -30,7 +30,7 @@ public static class ConversionUtility
 
     public static long ToLong(object? value, long defaultValue = 0)
     {
-        if (value == null)
+        if (value is null)
         {
             return defaultValue;
         }
@@ -45,7 +45,7 @@ public static class ConversionUtility
 
     public static decimal ToDecimal(object? value, decimal defaultValue = 0)
     {
-        if (value == null)
+        if (value is null)
         {
             return defaultValue;
         }
@@ -60,7 +60,7 @@ public static class ConversionUtility
 
     public static double ToDouble(object? value, double defaultValue = 0)
     {
-        if (value == null)
+        if (value is null)
         {
             return defaultValue;
         }
@@ -75,7 +75,7 @@ public static class ConversionUtility
 
     public static float ToFloat(object? value, float defaultValue = 0)
     {
-        if (value == null)
+        if (value is null)
         {
             return defaultValue;
         }
@@ -90,7 +90,7 @@ public static class ConversionUtility
 
     public static bool ToBoolean(object? value, bool defaultValue = false)
     {
-        if (value == null)
+        if (value is null)
         {
             return defaultValue;
         }
@@ -101,7 +101,7 @@ public static class ConversionUtility
 
     public static DateTime ToDateTime(object? value, DateTime? defaultValue = null)
     {
-        if (value == null)
+        if (value is null)
         {
             return defaultValue ?? DateTime.MinValue;
         }
@@ -116,7 +116,7 @@ public static class ConversionUtility
 
     public static Guid ToGuid(object? value, Guid? defaultValue = null)
     {
-        if (value == null)
+        if (value is null)
         {
             return defaultValue ?? Guid.Empty;
         }
@@ -131,7 +131,7 @@ public static class ConversionUtility
 
     public static T? ToEnum<T>(object? value, T? defaultValue = null) where T : struct, Enum
     {
-        if (value == null)
+        if (value is null)
         {
             return defaultValue;
         }
@@ -151,7 +151,7 @@ public static class ConversionUtility
 
     public static byte[] ToByteArray(object? value)
     {
-        if (value == null)
+        if (value is null)
         {
             return Array.Empty<byte>();
         }
@@ -195,7 +195,7 @@ public static class ConversionUtility
 
     public static List<T> ToList<T>(object? value) where T : notnull
     {
-        if (value == null)
+        if (value is null)
         {
             return new List<T>();
         }
@@ -215,7 +215,7 @@ public static class ConversionUtility
 
     public static Dictionary<string, object?> ObjectToDictionary(object? obj)
     {
-        if (obj == null)
+        if (obj is null)
         {
             return new Dictionary<string, object?>();
         }

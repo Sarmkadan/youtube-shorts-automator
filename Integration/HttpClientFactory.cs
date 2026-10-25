@@ -19,7 +19,7 @@ public interface IHttpClientFactory
     HttpClient CreateAnalyticsClient();
 }
 
-public class DefaultHttpClientFactory : IHttpClientFactory
+public sealed class DefaultHttpClientFactory : IHttpClientFactory
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<DefaultHttpClientFactory> _logger;
@@ -36,7 +36,7 @@ public class DefaultHttpClientFactory : IHttpClientFactory
 
     public HttpClient CreateYouTubeApiClient()
     {
-        if (_youtubeClient != null)
+        if (_youtubeClient is not null)
         {
             return _youtubeClient;
         }
@@ -59,7 +59,7 @@ public class DefaultHttpClientFactory : IHttpClientFactory
 
     public HttpClient CreateStorageClient()
     {
-        if (_storageClient != null)
+        if (_storageClient is not null)
         {
             return _storageClient;
         }
@@ -82,7 +82,7 @@ public class DefaultHttpClientFactory : IHttpClientFactory
 
     public HttpClient CreateWebhookClient()
     {
-        if (_webhookClient != null)
+        if (_webhookClient is not null)
         {
             return _webhookClient;
         }
@@ -99,7 +99,7 @@ public class DefaultHttpClientFactory : IHttpClientFactory
 
     public HttpClient CreateAnalyticsClient()
     {
-        if (_analyticsClient != null)
+        if (_analyticsClient is not null)
         {
             return _analyticsClient;
         }

@@ -37,7 +37,7 @@ public static class MetadataServiceExtensions
 
         video.Title = metadataService.SanitizeTitle(video.Title);
         video.Description = metadataService.SanitizeDescription(video.Description);
-        if (video.Tags != null)
+        if (video.Tags is not null)
         {
             video.Tags = metadataService.SanitizeTags(video.Tags);
         }

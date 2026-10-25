@@ -123,7 +123,7 @@ public static class AnalyticsMetricValidation
         }
 
         // Validate Demographics
-        if (value.Demographics == null)
+        if (value.Demographics is null)
         {
             problems.Add("Demographics collection must not be null");
         }
@@ -132,7 +132,7 @@ public static class AnalyticsMetricValidation
             for (var i = 0; i < value.Demographics.Count; i++)
             {
                 var demographic = value.Demographics[i];
-                if (demographic == null)
+                if (demographic is null)
                 {
                     problems.Add($"Demographics[{i}] must not be null");
                 }

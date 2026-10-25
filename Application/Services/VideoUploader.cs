@@ -16,7 +16,7 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// Orchestrates video upload workflows including validation, retry logic, and status tracking
 /// </summary>
-public class VideoUploader : IVideoUploader
+public sealed class VideoUploader : IVideoUploader
 {
     private readonly ILogger<VideoUploader> _logger;
     private readonly IVideoRepository _videoRepository;

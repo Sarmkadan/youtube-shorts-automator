@@ -135,7 +135,7 @@ public static class ThumbnailAbTestServiceValidation
             errors.Add("VideoShortId must be a positive integer.");
         }
 
-        if (analyticsData == null)
+        if (analyticsData is null)
         {
             errors.Add("Analytics data cannot be null.");
         }
@@ -199,7 +199,7 @@ public static class ThumbnailAbTestServiceValidation
             errors.Add("VideoShortId must be a positive integer.");
         }
 
-        if (result.Variants == null)
+        if (result.Variants is null)
         {
             errors.Add("Variants collection cannot be null.");
         }

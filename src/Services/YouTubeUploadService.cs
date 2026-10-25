@@ -14,7 +14,7 @@ namespace YouTubeShortAutomator.Services;
 /// <summary>
 /// Provides functionality for uploading videos to YouTube.
 /// </summary>
-public class YouTubeUploadService
+public sealed class YouTubeUploadService
 {
     private readonly UploadJobRepository _uploadRepository;
     private readonly UploadHistoryRepository _historyRepository;

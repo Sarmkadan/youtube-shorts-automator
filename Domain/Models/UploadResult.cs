@@ -5,7 +5,7 @@
 
 namespace YouTubeShortsAutomator.Domain.Models;
 
-public class UploadResult
+public sealed class UploadResult
 {
     public Guid Id { get; set; }
     public Guid VideoId { get; set; }
@@ -136,7 +136,7 @@ public enum UploadQuality
     Optimal = 3
 }
 
-public class UploadMetadata
+public sealed class UploadMetadata
 {
     public Guid Id { get; set; }
     public Guid UploadResultId { get; set; }

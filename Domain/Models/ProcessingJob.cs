@@ -5,7 +5,7 @@
 
 namespace YouTubeShortsAutomator.Domain.Models;
 
-public class ProcessingJob
+public sealed class ProcessingJob
 {
     public Guid Id { get; set; }
     public Guid VideoId { get; set; }
@@ -86,7 +86,7 @@ public class ProcessingJob
     public void CompleteCurrentStep(string? output = null)
     {
         var currentStep = Steps.FirstOrDefault(s => s.Status == StepStatus.InProgress);
-        if (currentStep != null)
+        if (currentStep is not null)
         {
             currentStep.CompletedAt = DateTime.UtcNow;
             currentStep.Status = StepStatus.Completed;
@@ -160,7 +160,7 @@ public enum ProcessingStepType
     Finalization = 6
 }
 
-public class ProcessingStep
+public sealed class ProcessingStep
 {
     public Guid Id { get; set; }
     public Guid JobId { get; set; }

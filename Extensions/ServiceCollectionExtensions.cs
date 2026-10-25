@@ -93,7 +93,7 @@ public static class ServiceCollectionExtensions
 /// <summary>
 /// Configuration options for <see cref="ServiceCollectionExtensions.AddYouTubeShortsAutomator"/>.
 /// </summary>
-public class YouTubeShortsAutomatorOptions
+public sealed class YouTubeShortsAutomatorOptions
 {
     public string? ApiKey { get; set; }
     public string? ConnectionString { get; set; }

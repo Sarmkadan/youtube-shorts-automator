@@ -43,7 +43,7 @@ public static class AnalyticsControllerExtensions
     public static string GetEngagementRatePercentage(this VideoAnalyticsResponse response)
     {
         ArgumentNullException.ThrowIfNull(response);
-        return response.EngagementRate.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+        return $"{response.EngagementRate.ToString("0.0", CultureInfo.InvariantCulture)}%";
     }
 
     /// <summary>

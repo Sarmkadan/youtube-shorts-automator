@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ScheduleController : ControllerBase
+public sealed class ScheduleController : ControllerBase
 {
     private readonly SchedulingService _schedulingService;
     private readonly ILogger<ScheduleController> _logger;
@@ -91,7 +91,7 @@ public class ScheduleController : ControllerBase
         {
             var schedule = await _schedulingService.GetScheduleAsync(scheduleId);
 
-            if (schedule == null)
+            if (schedule is null)
             {
                 return NotFound(new { success = false, message = "Schedule not found" });
             }
@@ -239,7 +239,7 @@ public class ScheduleController : ControllerBase
     }
 }
 
-public class CreateScheduleRequest
+public sealed class CreateScheduleRequest
 {
     public Guid UserId { get; set; }
     public string ScheduleName { get; set; } = string.Empty;
@@ -250,7 +250,7 @@ public class CreateScheduleRequest
     public string TimeZoneId { get; set; } = "UTC";
 }
 
-public class ScheduleVideoRequest
+public sealed class ScheduleVideoRequest
 {
     public Guid VideoId { get; set; }
     public DateTime ScheduledFor { get; set; }

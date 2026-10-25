@@ -31,7 +31,7 @@ public static class StringUtilityValidation
         // Validate Truncate behavior
         // Truncate should handle null/empty input gracefully
         var truncateNull = StringUtility.Truncate(null, 10);
-        if (truncateNull != null)
+        if (truncateNull is not null)
         {
             problems.Add("StringUtility.Truncate(null, maxLength) should return null, but returned non-null value.");
         }
@@ -44,7 +44,7 @@ public static class StringUtilityValidation
 
         // Validate TruncateWords behavior
         var truncateWordsNull = StringUtility.TruncateWords(null, 5);
-        if (truncateWordsNull != null)
+        if (truncateWordsNull is not null)
         {
             problems.Add("StringUtility.TruncateWords(null, wordCount) should return null, but returned non-null value.");
         }
@@ -76,7 +76,7 @@ public static class StringUtilityValidation
 
         // Validate ToCamelCase behavior
         var toCamelCaseNull = StringUtility.ToCamelCase(null);
-        if (toCamelCaseNull != null)
+        if (toCamelCaseNull is not null)
         {
             problems.Add("StringUtility.ToCamelCase(null) should return null, but returned non-null value.");
         }
@@ -89,7 +89,7 @@ public static class StringUtilityValidation
 
         // Validate ToPascalCase behavior
         var toPascalCaseNull = StringUtility.ToPascalCase(null);
-        if (toPascalCaseNull != null)
+        if (toPascalCaseNull is not null)
         {
             problems.Add("StringUtility.ToPascalCase(null) should return null, but returned non-null value.");
         }
@@ -102,7 +102,7 @@ public static class StringUtilityValidation
 
         // Validate ToSnakeCase behavior
         var toSnakeCaseNull = StringUtility.ToSnakeCase(null);
-        if (toSnakeCaseNull != null)
+        if (toSnakeCaseNull is not null)
         {
             problems.Add("StringUtility.ToSnakeCase(null) should return null, but returned non-null value.");
         }
@@ -154,7 +154,7 @@ public static class StringUtilityValidation
 
         // Validate RemoveWhitespace behavior
         var removeWhitespaceNull = StringUtility.RemoveWhitespace(null);
-        if (removeWhitespaceNull != null)
+        if (removeWhitespaceNull is not null)
         {
             problems.Add("StringUtility.RemoveWhitespace(null) should return null, but returned non-null value.");
         }
@@ -167,7 +167,7 @@ public static class StringUtilityValidation
 
         // Validate NormalizeWhitespace behavior
         var normalizeWhitespaceNull = StringUtility.NormalizeWhitespace(null);
-        if (normalizeWhitespaceNull != null)
+        if (normalizeWhitespaceNull is not null)
         {
             problems.Add("StringUtility.NormalizeWhitespace(null) should return null, but returned non-null value.");
         }
@@ -180,7 +180,7 @@ public static class StringUtilityValidation
 
         // Validate RemoveSpecialCharacters behavior
         var removeSpecialCharsNull = StringUtility.RemoveSpecialCharacters(null);
-        if (removeSpecialCharsNull != null)
+        if (removeSpecialCharsNull is not null)
         {
             problems.Add("StringUtility.RemoveSpecialCharacters(null) should return null, but returned non-null value.");
         }
@@ -218,32 +218,32 @@ public static class StringUtilityValidation
 
         // Validate SplitByLength behavior
         var splitByLengthNull = StringUtility.SplitByLength(null, 5);
-        if (splitByLengthNull == null || splitByLengthNull.Length != 0)
+        if (splitByLengthNull is null || splitByLengthNull.Length != 0)
         {
             problems.Add("StringUtility.SplitByLength(null, length) should return empty array, but returned non-empty array.");
         }
 
         var splitByLengthEmpty = StringUtility.SplitByLength(string.Empty, 5);
-        if (splitByLengthEmpty == null || splitByLengthEmpty.Length != 0)
+        if (splitByLengthEmpty is null || splitByLengthEmpty.Length != 0)
         {
             problems.Add("StringUtility.SplitByLength(string.Empty, length) should return empty array, but returned non-empty array.");
         }
 
         var splitByLengthInvalidLength = StringUtility.SplitByLength("test", 0);
-        if (splitByLengthInvalidLength == null || splitByLengthInvalidLength.Length != 0)
+        if (splitByLengthInvalidLength is null || splitByLengthInvalidLength.Length != 0)
         {
             problems.Add("StringUtility.SplitByLength(text, 0) should return empty array, but returned non-empty array.");
         }
 
         var splitByLengthNegativeLength = StringUtility.SplitByLength("test", -1);
-        if (splitByLengthNegativeLength == null || splitByLengthNegativeLength.Length != 0)
+        if (splitByLengthNegativeLength is null || splitByLengthNegativeLength.Length != 0)
         {
             problems.Add("StringUtility.SplitByLength(text, negativeLength) should return empty array, but returned non-empty array.");
         }
 
         // Validate ReverseString behavior
         var reverseStringNull = StringUtility.ReverseString(null);
-        if (reverseStringNull != null)
+        if (reverseStringNull is not null)
         {
             problems.Add("StringUtility.ReverseString(null) should return null, but returned non-null value.");
         }
@@ -322,8 +322,7 @@ public static class StringUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "StringUtility validation failed:" + Environment.NewLine + "- " +
-                string.Join(Environment.NewLine + "- ", problems));
+                $"StringUtility validation failed:{Environment.NewLine}- {string.Join($"{Environment.NewLine}- ", problems)}");
         }
     }
 }

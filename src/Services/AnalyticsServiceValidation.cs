@@ -121,7 +121,7 @@ public static class AnalyticsServiceValidation
         {
             throw new ArgumentException(
                 $"AnalyticsReport validation failed:{Environment.NewLine}- {
-                    string.Join(Environment.NewLine + "- ", problems)
+                    string.Join($"{Environment.NewLine}- ", problems)
                 }",
                 nameof(value)
             );

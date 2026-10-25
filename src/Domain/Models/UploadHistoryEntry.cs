@@ -16,7 +16,7 @@ public enum UploadHistoryStatus
 /// <summary>
 /// Immutable record of a single upload attempt, persisted to the UploadHistory table.
 /// </summary>
-public class UploadHistoryEntry
+public sealed class UploadHistoryEntry
 {
     public int Id { get; set; }
 

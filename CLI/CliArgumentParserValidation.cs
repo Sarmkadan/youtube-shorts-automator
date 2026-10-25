@@ -52,7 +52,7 @@ public static class CliArgumentParserValidation
         }
 
         // Validate options dictionary
-        if (value.Options == null)
+        if (value.Options is null)
         {
             problems.Add("Options dictionary cannot be null");
         }
@@ -65,7 +65,7 @@ public static class CliArgumentParserValidation
                     problems.Add("Option key cannot be null or empty");
                 }
 
-                if (option.Value == null)
+                if (option.Value is null)
                 {
                     problems.Add($"Option '{option.Key}' value cannot be null");
                 }

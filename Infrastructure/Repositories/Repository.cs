@@ -87,7 +87,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
         _logger.LogDebug($"Deleting entity of type {typeof(TEntity).Name} with ID {id}");
         var entity = await GetByIdAsync(id);
-        if (entity != null)
+        if (entity is not null)
         {
             _dbSet.Remove(entity);
             await SaveChangesAsync();
@@ -103,7 +103,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         foreach (var id in ids)
         {
             var entity = await GetByIdAsync(id);
-            if (entity != null)
+            if (entity is not null)
             {
                 entities.Add(entity);
             }

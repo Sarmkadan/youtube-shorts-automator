@@ -5,7 +5,7 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// <summary>
 /// Represents a task that processes a <see cref="VideoShort"/>.
 /// </summary>
-public class ProcessingTask
+public sealed class ProcessingTask
 {
     /// <summary>
     /// Gets or sets the unique identifier of the task.

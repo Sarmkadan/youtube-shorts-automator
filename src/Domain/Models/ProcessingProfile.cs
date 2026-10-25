@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// <summary>
 /// Represents a processing profile for video processing tasks.
 /// </summary>
-public class ProcessingProfile
+public sealed class ProcessingProfile
 {
     /// <summary>
     /// Gets or sets the unique identifier of the processing profile.

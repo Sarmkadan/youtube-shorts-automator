@@ -5,7 +5,7 @@
 
 namespace YouTubeShortsAutomator.Domain.Models;
 
-public class ProcessingError
+public sealed class ProcessingError
 {
     public Guid Id { get; set; }
     public Guid JobId { get; set; }

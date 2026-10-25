@@ -12,7 +12,7 @@ namespace YouTubeShortAutomator.Data;
 /// Persists and queries upload history entries so the application can avoid
 /// duplicate uploads and expose a history view via the CLI.
 /// </summary>
-public class UploadHistoryRepository
+public sealed class UploadHistoryRepository
 {
     private readonly DatabaseContext _context;
 

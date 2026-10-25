@@ -86,7 +86,7 @@ public static class UploadScheduleValidation
             errors.Add("Created date is required");
         }
 
-        if (value.ScheduledUploads == null)
+        if (value.ScheduledUploads is null)
         {
             errors.Add("Scheduled uploads collection is required");
         }

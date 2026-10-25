@@ -244,8 +244,7 @@ public static class DateTimeUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "DateTimeUtility validation failed:" + Environment.NewLine + "- " +
-                string.Join(Environment.NewLine + "- ", problems));
+                $"DateTimeUtility validation failed:{Environment.NewLine}- {string.Join($"{Environment.NewLine}- ", problems)}");
         }
     }
 }

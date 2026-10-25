@@ -32,7 +32,7 @@ public static class JobStatusControllerExtensions
         }
 
         var jobStatus = okResult.Value as JobStatusResponse;
-        if (jobStatus == null)
+        if (jobStatus is null)
         {
             return false;
         }
@@ -60,12 +60,12 @@ public static class JobStatusControllerExtensions
         }
 
         var jobStatus = okResult.Value as JobStatusResponse;
-        if (jobStatus == null)
+        if (jobStatus is null)
         {
             return "N/A";
         }
 
-        if (jobStatus.StartedAtUtc == null || jobStatus.CompletedAtUtc == null)
+        if (jobStatus.StartedAtUtc is null || jobStatus.CompletedAtUtc is null)
         {
             return "N/A";
         }
@@ -92,7 +92,7 @@ public static class JobStatusControllerExtensions
         }
 
         var jobStatus = okResult.Value as JobStatusResponse;
-        if (jobStatus == null)
+        if (jobStatus is null)
         {
             return "0%";
         }
@@ -122,7 +122,7 @@ public static class JobStatusControllerExtensions
         }
 
         var jobResults = okResult.Value as JobResultsResponse;
-        if (jobResults == null)
+        if (jobResults is null)
         {
             return (0, 0, 0);
         }

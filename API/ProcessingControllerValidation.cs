@@ -47,7 +47,7 @@ public static class ProcessingControllerValidation
         var errors = new List<string>();
 
         // Validate File
-        if (file == null)
+        if (file is null)
         {
             errors.Add("File cannot be null");
         }
@@ -63,7 +63,7 @@ public static class ProcessingControllerValidation
         }
 
         // Validate Description
-        if (description != null && description.Length > 5000)
+        if (description is not null && description.Length > 5000)
         {
             errors.Add("Description cannot exceed 5000 characters");
         }
@@ -99,7 +99,7 @@ public static class ProcessingControllerValidation
         }
 
         // Validate Message
-        if (message != null && message.Length > 1000)
+        if (message is not null && message.Length > 1000)
         {
             errors.Add("Message cannot exceed 1000 characters");
         }

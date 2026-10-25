@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Exceptions;
 /// <summary>
 /// Thrown when validation of input data fails.
 /// </summary>
-public class ValidationException : YoutubeShortsAutomatorException
+public sealed class ValidationException : YoutubeShortsAutomatorException
 {
     public string? FieldName { get; set; }
     public string? FieldValue { get; set; }

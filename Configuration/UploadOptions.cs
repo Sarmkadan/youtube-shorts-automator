@@ -10,7 +10,7 @@ namespace YouTubeShortsAutomator.Configuration;
 /// <summary>
 /// Upload settings, bound from the <c>Upload</c> configuration section.
 /// </summary>
-public class UploadOptions
+public sealed class UploadOptions
 {
     /// <summary>Configuration section name.</summary>
     public const string SectionName = "Upload";

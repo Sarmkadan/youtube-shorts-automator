@@ -128,7 +128,7 @@ public sealed record TitleOptimizationResult(
 /// Represents a planned piece of short-form content in the publishing calendar,
 /// encapsulating draft metadata, optimisation history and scheduling linkage.
 /// </summary>
-public class ContentCalendarEntry
+public sealed class ContentCalendarEntry
 {
     /// <summary>Auto-generated primary key.</summary>
     public int Id { get; set; }

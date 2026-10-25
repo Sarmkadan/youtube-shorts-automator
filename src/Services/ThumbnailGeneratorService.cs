@@ -358,7 +358,7 @@ public sealed class ThumbnailGeneratorService : IThumbnailGeneratorService
         var startInfo = new ProcessStartInfo
         {
             FileName = _ffmpegPath,
-            Arguments = "-nostdin " + arguments,
+            Arguments = $"-nostdin {arguments}",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,

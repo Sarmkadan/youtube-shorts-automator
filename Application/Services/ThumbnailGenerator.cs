@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// Generates and manages video thumbnails using FFmpeg extraction and image processing
 /// </summary>
-public class ThumbnailGenerator
+public sealed class ThumbnailGenerator
 {
     private readonly ILogger<ThumbnailGenerator> _logger;
     private readonly IVideoRepository _videoRepository;

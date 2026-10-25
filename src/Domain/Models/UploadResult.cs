@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// <summary>
 /// Represents the result of an upload operation.
 /// </summary>
-public class UploadResult
+public sealed class UploadResult
 {
     /// <summary>
     /// Gets the unique identifier of the upload result.

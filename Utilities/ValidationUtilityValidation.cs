@@ -32,7 +32,7 @@ public static class ValidationUtilityValidation
         if (!string.IsNullOrWhiteSpace(value.Email))
         {
             var (isValid, error) = ValidationUtility.ValidateEmail(value.Email);
-            if (!isValid && error != null)
+            if (!isValid && error is not null)
             {
                 problems.Add(error);
             }
@@ -42,7 +42,7 @@ public static class ValidationUtilityValidation
         if (!string.IsNullOrWhiteSpace(value.Url))
         {
             var (isValid, error) = ValidationUtility.ValidateUrl(value.Url);
-            if (!isValid && error != null)
+            if (!isValid && error is not null)
             {
                 problems.Add(error);
             }
@@ -52,7 +52,7 @@ public static class ValidationUtilityValidation
         if (!string.IsNullOrWhiteSpace(value.YouTubeChannelId))
         {
             var (isValid, error) = ValidationUtility.ValidateYouTubeChannelId(value.YouTubeChannelId);
-            if (!isValid && error != null)
+            if (!isValid && error is not null)
             {
                 problems.Add(error);
             }
@@ -62,7 +62,7 @@ public static class ValidationUtilityValidation
         if (!string.IsNullOrWhiteSpace(value.YouTubeVideoId))
         {
             var (isValid, error) = ValidationUtility.ValidateYouTubeVideoId(value.YouTubeVideoId);
-            if (!isValid && error != null)
+            if (!isValid && error is not null)
             {
                 problems.Add(error);
             }
@@ -72,7 +72,7 @@ public static class ValidationUtilityValidation
         if (!string.IsNullOrWhiteSpace(value.VideoTitle))
         {
             var (isValid, error) = ValidationUtility.ValidateVideoTitle(value.VideoTitle);
-            if (!isValid && error != null)
+            if (!isValid && error is not null)
             {
                 problems.Add(error);
             }
@@ -82,17 +82,17 @@ public static class ValidationUtilityValidation
         if (!string.IsNullOrWhiteSpace(value.VideoDescription))
         {
             var (isValid, error) = ValidationUtility.ValidateVideoDescription(value.VideoDescription);
-            if (!isValid && error != null)
+            if (!isValid && error is not null)
             {
                 problems.Add(error);
             }
         }
 
         // Validate VideoTags
-        if (value.VideoTags != null && value.VideoTags.Length > 0)
+        if (value.VideoTags is not null && value.VideoTags.Length > 0)
         {
             var (isValid, error) = ValidationUtility.ValidateVideoTags(value.VideoTags);
-            if (!isValid && error != null)
+            if (!isValid && error is not null)
             {
                 problems.Add(error);
             }
@@ -102,7 +102,7 @@ public static class ValidationUtilityValidation
         if (!string.IsNullOrWhiteSpace(value.FilePath))
         {
             var (isValid, error) = ValidationUtility.ValidateVideoFile(value.FilePath, value.MaxFileSizeBytes);
-            if (!isValid && error != null)
+            if (!isValid && error is not null)
             {
                 problems.Add(error);
             }
@@ -124,7 +124,7 @@ public static class ValidationUtilityValidation
         if (!string.IsNullOrWhiteSpace(value.ScheduledTime))
         {
             var (isValid, error) = ValidationUtility.ValidateScheduleTime(value.ScheduledTime);
-            if (!isValid && error != null)
+            if (!isValid && error is not null)
             {
                 problems.Add(error);
             }

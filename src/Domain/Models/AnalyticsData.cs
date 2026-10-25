@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// <summary>
 /// Represents analytics data for a video short.
 /// </summary>
-public class AnalyticsData
+public sealed class AnalyticsData
 {
     /// <summary>
     /// Gets the unique identifier for the analytics data.

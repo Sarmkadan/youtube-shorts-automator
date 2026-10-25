@@ -12,7 +12,7 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// End-to-end content pipeline: ingests raw video, processes it, generates thumbnail, and uploads
 /// </summary>
-public class ContentPipeline
+public sealed class ContentPipeline
 {
     private readonly ILogger<ContentPipeline> _logger;
     private readonly IVideoRepository _videoRepository;

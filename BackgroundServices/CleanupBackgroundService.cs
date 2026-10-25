@@ -11,7 +11,7 @@ namespace YouTubeShortsAutomator.BackgroundServices;
 /// Background service for cleanup operations
 /// Removes old files, logs, and expired cache entries
 /// </summary>
-public class CleanupBackgroundService : BackgroundService
+public sealed class CleanupBackgroundService : BackgroundService
 {
     private readonly ILogger<CleanupBackgroundService> _logger;
     private readonly IConfiguration _configuration;

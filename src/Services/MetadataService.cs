@@ -14,7 +14,7 @@ namespace YouTubeShortAutomator.Services;
 /// Validates and sanitizes YouTube Shorts video metadata (titles, descriptions, tags)
 /// according to YouTube platform rules and length constraints.
 /// </summary>
-public class MetadataService
+public sealed class MetadataService
 {
     private readonly ILogger<MetadataService> _logger;
 
@@ -172,7 +172,7 @@ public class MetadataService
             errors["description"] = "Description exceeds maximum length";
         }
 
-        if (video.Tags != null && !ValidateTags(video.Tags))
+        if (video.Tags is not null && !ValidateTags(video.Tags))
         {
             errors["tags"] = "Invalid tags";
         }

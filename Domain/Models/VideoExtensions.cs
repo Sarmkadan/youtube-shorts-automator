@@ -63,7 +63,7 @@ public static class VideoExtensions
     {
         ArgumentNullException.ThrowIfNull(video);
 
-        if (video.ProcessingJobs == null || video.ProcessingJobs.Count == 0)
+        if (video.ProcessingJobs is null || video.ProcessingJobs.Count == 0)
         {
             return 0;
         }
@@ -83,7 +83,7 @@ public static class VideoExtensions
     {
         ArgumentNullException.ThrowIfNull(video);
 
-        if (video.Metrics == null || video.Metrics.Count == 0)
+        if (video.Metrics is null || video.Metrics.Count == 0)
         {
             return 0;
         }
@@ -101,7 +101,7 @@ public static class VideoExtensions
     {
         ArgumentNullException.ThrowIfNull(video);
 
-        if (video.Metrics == null || video.Metrics.Count == 0)
+        if (video.Metrics is null || video.Metrics.Count == 0)
         {
             return 0;
         }

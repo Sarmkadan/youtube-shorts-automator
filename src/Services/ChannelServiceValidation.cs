@@ -94,7 +94,7 @@ public static class ChannelServiceValidation
     /// <exception cref="ArgumentNullException">Thrown if value is null.</exception>
     public static bool IsValid(this ChannelService value)
     {
-        return value != null;
+        return value is not null;
     }
 
     /// <summary>
@@ -112,7 +112,7 @@ public static class ChannelServiceValidation
         this ChannelService value,
         YouTubeChannel channel)
     {
-        return value.IsValid() && channel != null && !channel.IsTokenExpired() && channel.IsActive;
+        return value.IsValid() && channel is not null && !channel.IsTokenExpired() && channel.IsActive;
     }
 
     /// <summary>

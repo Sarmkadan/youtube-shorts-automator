@@ -18,7 +18,7 @@ namespace YouTubeShortAutomator.Services;
 /// trims it to fewer than 60 seconds, center-crops it to 9:16, scales it to 1080x1920
 /// and re-encodes it to H.264/AAC.
 /// </summary>
-public class VideoProcessor
+public sealed class VideoProcessor
 {
     /// <summary>Output duration cap. Shorts must be under 60s, so the trim stays one second short of the limit.</summary>
     public const int MaxOutputSeconds = Constants.Constants.MAX_DURATION_SECONDS - 1;

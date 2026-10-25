@@ -11,7 +11,7 @@ namespace YouTubeShortsAutomator.Infrastructure.Repositories;
 /// <summary>
 /// Entity Framework Core database context for the application
 /// </summary>
-public class ApplicationDbContext : DbContext
+public sealed class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {

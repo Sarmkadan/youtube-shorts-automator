@@ -5,7 +5,7 @@
 
 namespace YouTubeShortsAutomator.Domain.Models;
 
-public class AnalyticsMetric
+public sealed class AnalyticsMetric
 {
     public Guid Id { get; set; }
     public Guid VideoId { get; set; }
@@ -63,7 +63,7 @@ public class AnalyticsMetric
     /// </summary>
     public MetricsTrend CompareTo(AnalyticsMetric? previous)
     {
-        if (previous == null)
+        if (previous is null)
         {
             return MetricsTrend.Neutral;
         }
@@ -138,7 +138,7 @@ public enum MetricsTrend
     Declining = -1
 }
 
-public class DemographicMetric
+public sealed class DemographicMetric
 {
     public Guid Id { get; set; }
     public Guid MetricId { get; set; }

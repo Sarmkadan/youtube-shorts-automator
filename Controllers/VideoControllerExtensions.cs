@@ -1,4 +1,4 @@
-// =============================================================================
+﻿// =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
@@ -108,7 +108,7 @@ public static class VideoControllerExtensions
             try
             {
                 var result = await controller.ProcessVideo(videoId);
-                if (result is AcceptedResult acceptedResult && acceptedResult.Value != null)
+                if (result is AcceptedResult acceptedResult && acceptedResult.Value is not null)
                 {
                     jobs.Add(acceptedResult.Value);
                 }
@@ -165,7 +165,7 @@ public static class VideoControllerExtensions
             try
             {
                 var result = await controller.UploadVideo(videoId, userId);
-                if (result is AcceptedResult acceptedResult && acceptedResult.Value != null)
+                if (result is AcceptedResult acceptedResult && acceptedResult.Value is not null)
                 {
                     uploadResults.Add(acceptedResult.Value);
                 }
@@ -246,6 +246,31 @@ public static class VideoControllerExtensions
     }
 
     /// <summary>
+    /// Publishes a video only when it has an upload result.
+    /// Returns whether the video is not uploaded yet, and the publish payload when publishing succeeded.
+    /// </summary>
+    private static async Task<(bool NotUploaded, object? PublishResult)> PublishIfUploadedAsync(
+        VideoController controller,
+        Guid videoId)
+    {
+        var videoResult = await controller.GetVideo(videoId);
+        if (videoResult is not OkObjectResult okVideoResult)
+        {
+            return (false, null);
+        }
+
+        if (okVideoResult.Value?.GetType().GetProperty("UploadResult") is null)
+        {
+            return (true, null);
+        }
+
+        var result = await controller.PublishVideo(videoId);
+        return result is OkObjectResult { Value: not null } publishResult
+            ? (false, publishResult.Value)
+            : (false, null);
+    }
+
+    /// <summary>
     /// Publishes multiple videos that have been uploaded
     /// </summary>
     /// <param name="controller">The VideoController instance</param>
@@ -272,22 +297,14 @@ public static class VideoControllerExtensions
         {
             try
             {
-                var videoResult = await controller.GetVideo(videoId);
-                if (videoResult is OkObjectResult okVideoResult)
+                var (notUploaded, publishResult) = await PublishIfUploadedAsync(controller, videoId);
+                if (notUploaded)
                 {
-                    var video = okVideoResult.Value;
-                    if (video?.GetType().GetProperty("UploadResult") != null)
-                    {
-                        var result = await controller.PublishVideo(videoId);
-                        if (result is OkObjectResult publishResult && publishResult.Value != null)
-                        {
-                            publishResults.Add(publishResult.Value);
-                        }
-                    }
-                    else
-                    {
-                        videosNotUploaded.Add(videoId);
-                    }
+                    videosNotUploaded.Add(videoId);
+                }
+                else if (publishResult is not null)
+                {
+                    publishResults.Add(publishResult);
                 }
             }
             catch (Exception ex)

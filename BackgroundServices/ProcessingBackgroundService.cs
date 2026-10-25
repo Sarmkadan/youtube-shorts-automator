@@ -9,7 +9,7 @@ namespace YouTubeShortsAutomator.BackgroundServices;
 /// Background service for processing queued video jobs
 /// Monitors processing queue and orchestrates video processing pipeline
 /// </summary>
-public class ProcessingBackgroundService : BackgroundService
+public sealed class ProcessingBackgroundService : BackgroundService
 {
     private readonly ILogger<ProcessingBackgroundService> _logger;
     private readonly IServiceProvider _serviceProvider;

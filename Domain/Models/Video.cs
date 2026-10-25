@@ -5,7 +5,7 @@
 
 namespace YouTubeShortsAutomator.Domain.Models;
 
-public class Video
+public sealed class Video
 {
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;

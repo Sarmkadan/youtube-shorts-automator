@@ -59,7 +59,7 @@ public static class ConversionUtilityValidation
 
         // Validate ToEnum - check if default value is returned (null)
         var testEnum = ConversionUtility.ToEnum<DayOfWeek>(null);
-        if (testEnum == null)
+        if (testEnum is null)
         {
             problems.Add("ToEnum<T> returns null when parsing fails, which may indicate invalid enum value");
         }
@@ -80,7 +80,7 @@ public static class ConversionUtilityValidation
 
         // Validate JsonDeserialize - should return null on failure
         var testJsonDeserialize = ConversionUtility.JsonDeserialize<object>("invalid json");
-        if (testJsonDeserialize == null)
+        if (testJsonDeserialize is null)
         {
             problems.Add("JsonDeserialize<T> returns null when deserialization fails");
         }
@@ -129,7 +129,7 @@ public static class ConversionUtilityValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                "ConversionUtility validation failed:" + Environment.NewLine + "- " + string.Join(Environment.NewLine + "- ", problems)
+                $"ConversionUtility validation failed:{Environment.NewLine}- {string.Join($"{Environment.NewLine}- ", problems)}"
             );
         }
     }

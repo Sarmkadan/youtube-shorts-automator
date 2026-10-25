@@ -173,7 +173,7 @@ Updated: {credential.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.Inva
             ["UpdatedAt"] = credential.UpdatedAt ?? DateTime.MinValue
         };
 
-        if (credential.User != null)
+        if (credential.User is not null)
         {
             result["UserEmail"] = credential.User.Email;
             result["UserDisplayName"] = credential.User.DisplayName;

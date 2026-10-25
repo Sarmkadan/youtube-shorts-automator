@@ -11,7 +11,7 @@ namespace YouTubeShortsAutomator.Application.Services;
 /// <summary>
 /// Manages application configuration and settings
 /// </summary>
-public class ConfigurationService
+public sealed class ConfigurationService
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<ConfigurationService> _logger;
@@ -210,7 +210,7 @@ public class ConfigurationService
 /// <summary>
 /// YouTube API configuration model
 /// </summary>
-public class YouTubeApiConfig
+public sealed class YouTubeApiConfig
 {
     public string ApiKey { get; set; } = string.Empty;
     public string ClientId { get; set; } = string.Empty;

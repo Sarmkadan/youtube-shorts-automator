@@ -5,7 +5,7 @@
 
 namespace YouTubeShortsAutomator.Domain.Models;
 
-public class UploadSchedule
+public sealed class UploadSchedule
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
@@ -125,7 +125,7 @@ public class UploadSchedule
     /// <param name="utcNow">Current time in UTC</param>
     public bool IsDueForExecution(DateTime utcNow)
     {
-        if (!IsActive || NextScheduledTime == null)
+        if (!IsActive || NextScheduledTime is null)
         {
             return false;
         }
@@ -186,7 +186,7 @@ public enum ScheduleFrequency
     Quarterly = 4
 }
 
-public class ScheduledUpload
+public sealed class ScheduledUpload
 {
     public Guid Id { get; set; }
     public Guid ScheduleId { get; set; }

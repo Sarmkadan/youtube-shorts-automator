@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Exceptions;
 /// <summary>
 /// Represents an exception that occurs during video processing.
 /// </summary>
-public class VideoProcessingException : Exception
+public sealed class VideoProcessingException : Exception
 {
     /// <summary>
     /// Gets the ID of the video that caused the exception.

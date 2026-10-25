@@ -24,7 +24,7 @@ public static class AnalyticsServiceExtensions
 
         var analytics = await service.GetVideoAnalyticsAsync(videoShortId, cancellationToken);
 
-        if (analytics == null || analytics.ViewCount == 0)
+        if (analytics is null || analytics.ViewCount == 0)
         {
             return 0;
         }
@@ -109,17 +109,17 @@ public static class AnalyticsServiceExtensions
         var video1 = await service.GetVideoAnalyticsAsync(videoShortId1, cancellationToken);
         var video2 = await service.GetVideoAnalyticsAsync(videoShortId2, cancellationToken);
 
-        if (video1 == null && video2 == null)
+        if (video1 is null && video2 is null)
         {
             return "Both videos have no analytics data.";
         }
 
-        if (video1 == null)
+        if (video1 is null)
         {
             return $"Video {videoShortId2} has data, Video {videoShortId1} does not.";
         }
 
-        if (video2 == null)
+        if (video2 is null)
         {
             return $"Video {videoShortId1} has data, Video {videoShortId2} does not.";
         }

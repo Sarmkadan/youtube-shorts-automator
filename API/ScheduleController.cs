@@ -1,4 +1,4 @@
-// =============================================================================
+﻿// =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
@@ -16,10 +16,13 @@ namespace YouTubeShortsAutomator.API;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
-public class ScheduleController : ControllerBase
+public sealed class ScheduleController : ControllerBase
 {
     private readonly ILogger<ScheduleController> _logger;
     private readonly ICacheService _cacheService;
+
+    private static readonly TimeSpan ScheduleCacheDuration = TimeSpan.FromDays(30);
+    private static readonly string[] RequiredCsvColumns = ["FilePath", "Title", "ScheduledPublishTimeUtc"];
 
     public ScheduleController(
         ILogger<ScheduleController> logger,
@@ -59,7 +62,7 @@ public class ScheduleController : ControllerBase
                 TimeZone = request.TimeZone ?? "UTC"
             };
 
-            _cacheService.Set($"schedule:{scheduleId}", schedule, TimeSpan.FromDays(30));
+            _cacheService.Set($"schedule:{scheduleId}", schedule, ScheduleCacheDuration);
 
             _logger.LogInformation("Upload scheduled. ScheduleId: {ScheduleId}, UploadTime: {UploadTime}",
                 scheduleId, request.ScheduledUploadTimeUtc);
@@ -85,7 +88,7 @@ public class ScheduleController : ControllerBase
         try
         {
             var schedule = _cacheService.Get<ScheduledUpload>($"schedule:{scheduleId}");
-            if (schedule == null)
+            if (schedule is null)
             {
                 return NotFound();
             }
@@ -158,7 +161,7 @@ public class ScheduleController : ControllerBase
         try
         {
             var schedule = _cacheService.Get<ScheduledUpload>($"schedule:{scheduleId}");
-            if (schedule == null)
+            if (schedule is null)
             {
                 return NotFound();
             }
@@ -173,7 +176,7 @@ public class ScheduleController : ControllerBase
                 schedule.RecurrencePattern = request.RecurrencePattern;
             }
 
-            _cacheService.Set($"schedule:{scheduleId}", schedule, TimeSpan.FromDays(30));
+            _cacheService.Set($"schedule:{scheduleId}", schedule, ScheduleCacheDuration);
 
             _logger.LogInformation("Schedule updated. ScheduleId: {ScheduleId}", scheduleId);
 
@@ -220,7 +223,7 @@ public class ScheduleController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ImportSchedulesFromCsvAsync(IFormFile file)
     {
-        if (file == null || file.Length == 0)
+        if (file is null || file.Length == 0)
         {
             return BadRequest(new { message = "A non-empty CSV file is required." });
         }
@@ -238,22 +241,21 @@ public class ScheduleController : ControllerBase
         {
             using var reader = new StreamReader(file.OpenReadStream());
             string? headerLine = await reader.ReadLineAsync();
-            if (headerLine == null)
+            if (headerLine is null)
             {
                 return BadRequest(new { message = "CSV file is empty." });
             }
 
             lineNumber = 1;
             var headers = ParseCsvLine(headerLine);
-            var required = new[] { "FilePath", "Title", "ScheduledPublishTimeUtc" };
-            var missing = required.Where(h => !headers.ContainsKey(h)).ToList();
+            var missing = RequiredCsvColumns.Where(h => !headers.ContainsKey(h)).ToList();
             if (missing.Count > 0)
             {
                 return BadRequest(new { message = $"Missing required CSV columns: {string.Join(", ", missing)}" });
             }
 
             string? line;
-            while ((line = await reader.ReadLineAsync()) != null)
+            while ((line = await reader.ReadLineAsync()) is not null)
             {
                 lineNumber++;
                 if (string.IsNullOrWhiteSpace(line))
@@ -261,70 +263,15 @@ public class ScheduleController : ControllerBase
                     continue;
                 }
 
-                var cols = ParseCsvLine(line, headers.Count);
-                var rowErrors2 = new List<string>();
-
-                var row = new CsvScheduleRow
+                var row = BuildCsvRow(ParseCsvLine(line, headers.Count), headers);
+                var errors = ValidateCsvRow(row);
+                if (errors.Count > 0)
                 {
-                    FilePath = GetColumn(cols, headers, "FilePath"),
-                    Title = GetColumn(cols, headers, "Title"),
-                    Description = GetColumn(cols, headers, "Description"),
-                    Tags = GetColumn(cols, headers, "Tags"),
-                    ThumbnailPath = GetColumn(cols, headers, "ThumbnailPath"),
-                    RawScheduledTime = GetColumn(cols, headers, "ScheduledPublishTimeUtc")
-                };
-
-                if (string.IsNullOrWhiteSpace(row.FilePath))
-                {
-                    rowErrors2.Add("FilePath is required.");
-                }
-
-                if (string.IsNullOrWhiteSpace(row.Title))
-                {
-                    rowErrors2.Add("Title is required.");
-                }
-
-                if (string.IsNullOrWhiteSpace(row.RawScheduledTime))
-                {
-                    rowErrors2.Add("ScheduledPublishTimeUtc is required.");
-                }
-                else if (!DateTime.TryParse(row.RawScheduledTime, null,
-                    System.Globalization.DateTimeStyles.AdjustToUniversal, out var parsedTime))
-                {
-                    rowErrors2.Add($"ScheduledPublishTimeUtc '{row.RawScheduledTime}' is not a valid date/time.");
-                }
-                else if (parsedTime <= DateTime.UtcNow)
-                {
-                    rowErrors2.Add("ScheduledPublishTimeUtc must be in the future.");
-                }
-                else
-                {
-                    row.ScheduledPublishTimeUtc = parsedTime;
-                }
-
-                if (rowErrors2.Count > 0)
-                {
-                    rowErrors.Add(new CsvRowError { LineNumber = lineNumber, Errors = rowErrors2 });
+                    rowErrors.Add(new CsvRowError { LineNumber = lineNumber, Errors = errors });
                     continue;
                 }
 
-                var scheduleId = Guid.NewGuid();
-                var schedule = new ScheduledUpload
-                {
-                    ScheduleId = scheduleId,
-                    VideoId = Guid.Empty, // resolved later when the file is ingested
-                    ScheduledUploadTimeUtc = row.ScheduledPublishTimeUtc,
-                    Status = "Scheduled",
-                    CreatedAtUtc = DateTime.UtcNow,
-                    TimeZone = "UTC"
-                };
-
-                _cacheService.Set($"schedule:{scheduleId}", schedule, TimeSpan.FromDays(30));
-                created.Add(new ScheduleResponse { ScheduleId = scheduleId, Status = "Scheduled" });
-
-                _logger.LogInformation(
-                    "CSV import: schedule created. ScheduleId: {ScheduleId}, Title: {Title}, UploadTime: {UploadTime}",
-                    scheduleId, row.Title, row.ScheduledPublishTimeUtc);
+                created.Add(CreateScheduleFromCsvRow(row));
             }
         }
         catch (Exception ex)
@@ -341,6 +288,79 @@ public class ScheduleController : ControllerBase
             CreatedSchedules = created,
             Errors = rowErrors
         });
+    }
+
+    private static CsvScheduleRow BuildCsvRow(List<string> cols, Dictionary<string, int> headers)
+    {
+        return new CsvScheduleRow
+        {
+            FilePath = GetColumn(cols, headers, "FilePath"),
+            Title = GetColumn(cols, headers, "Title"),
+            Description = GetColumn(cols, headers, "Description"),
+            Tags = GetColumn(cols, headers, "Tags"),
+            ThumbnailPath = GetColumn(cols, headers, "ThumbnailPath"),
+            RawScheduledTime = GetColumn(cols, headers, "ScheduledPublishTimeUtc")
+        };
+    }
+
+    /// <summary>
+    /// Validates a CSV row and, when it is valid, stores the parsed publish time on the row.
+    /// </summary>
+    private static List<string> ValidateCsvRow(CsvScheduleRow row)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(row.FilePath))
+        {
+            errors.Add("FilePath is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(row.Title))
+        {
+            errors.Add("Title is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(row.RawScheduledTime))
+        {
+            errors.Add("ScheduledPublishTimeUtc is required.");
+        }
+        else if (!DateTime.TryParse(row.RawScheduledTime, null,
+            System.Globalization.DateTimeStyles.AdjustToUniversal, out var parsedTime))
+        {
+            errors.Add($"ScheduledPublishTimeUtc '{row.RawScheduledTime}' is not a valid date/time.");
+        }
+        else if (parsedTime <= DateTime.UtcNow)
+        {
+            errors.Add("ScheduledPublishTimeUtc must be in the future.");
+        }
+        else
+        {
+            row.ScheduledPublishTimeUtc = parsedTime;
+        }
+
+        return errors;
+    }
+
+    private ScheduleResponse CreateScheduleFromCsvRow(CsvScheduleRow row)
+    {
+        var scheduleId = Guid.NewGuid();
+        var schedule = new ScheduledUpload
+        {
+            ScheduleId = scheduleId,
+            VideoId = Guid.Empty, // resolved later when the file is ingested
+            ScheduledUploadTimeUtc = row.ScheduledPublishTimeUtc,
+            Status = "Scheduled",
+            CreatedAtUtc = DateTime.UtcNow,
+            TimeZone = "UTC"
+        };
+
+        _cacheService.Set($"schedule:{scheduleId}", schedule, ScheduleCacheDuration);
+
+        _logger.LogInformation(
+            "CSV import: schedule created. ScheduleId: {ScheduleId}, Title: {Title}, UploadTime: {UploadTime}",
+            scheduleId, row.Title, row.ScheduledPublishTimeUtc);
+
+        return new ScheduleResponse { ScheduleId = scheduleId, Status = "Scheduled" };
     }
 
     private static Dictionary<string, int> ParseCsvLine(string line)
@@ -407,7 +427,7 @@ public class ScheduleController : ControllerBase
 
 #region Schedule Models
 
-public class CreateScheduleRequest
+public sealed class CreateScheduleRequest
 {
     public Guid VideoId { get; set; }
     public DateTime ScheduledUploadTimeUtc { get; set; }
@@ -415,31 +435,19 @@ public class CreateScheduleRequest
     public string? TimeZone { get; set; }
 }
 
-public class UpdateScheduleRequest
+public sealed class UpdateScheduleRequest
 {
     public DateTime? ScheduledUploadTimeUtc { get; set; }
     public string? RecurrencePattern { get; set; }
 }
 
-public class ScheduleResponse
+public sealed class ScheduleResponse
 {
     public Guid ScheduleId { get; set; }
     public string Status { get; set; } = string.Empty;
 }
 
-public class ScheduledUpload
-{
-    public Guid ScheduleId { get; set; }
-    public Guid VideoId { get; set; }
-    public DateTime ScheduledUploadTimeUtc { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public string? RecurrencePattern { get; set; }
-    public string TimeZone { get; set; } = string.Empty;
-    public DateTime CreatedAtUtc { get; set; }
-    public DateTime? LastExecutedUtc { get; set; }
-}
-
-public class ScheduledUploadDetails
+public sealed class ScheduledUpload
 {
     public Guid ScheduleId { get; set; }
     public Guid VideoId { get; set; }
@@ -451,7 +459,19 @@ public class ScheduledUploadDetails
     public DateTime? LastExecutedUtc { get; set; }
 }
 
-public class ScheduleListItem
+public sealed class ScheduledUploadDetails
+{
+    public Guid ScheduleId { get; set; }
+    public Guid VideoId { get; set; }
+    public DateTime ScheduledUploadTimeUtc { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? RecurrencePattern { get; set; }
+    public string TimeZone { get; set; } = string.Empty;
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime? LastExecutedUtc { get; set; }
+}
+
+public sealed class ScheduleListItem
 {
     public Guid ScheduleId { get; set; }
     public Guid VideoId { get; set; }
@@ -459,7 +479,7 @@ public class ScheduleListItem
     public DateTime ScheduledUploadTimeUtc { get; set; }
 }
 
-public class ScheduleListResponse
+public sealed class ScheduleListResponse
 {
     public List<ScheduleListItem> Schedules { get; set; } = new();
     public int TotalCount { get; set; }
@@ -467,7 +487,7 @@ public class ScheduleListResponse
     public int PageSize { get; set; }
 }
 
-public class CsvScheduleRow
+public sealed class CsvScheduleRow
 {
     public string FilePath { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
@@ -478,13 +498,13 @@ public class CsvScheduleRow
     public DateTime ScheduledPublishTimeUtc { get; set; }
 }
 
-public class CsvRowError
+public sealed class CsvRowError
 {
     public int LineNumber { get; set; }
     public List<string> Errors { get; set; } = new();
 }
 
-public class CsvImportResult
+public sealed class CsvImportResult
 {
     public int SchedulesCreated { get; set; }
     public int RowsWithErrors { get; set; }

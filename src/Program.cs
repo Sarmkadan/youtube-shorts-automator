@@ -15,7 +15,7 @@ using YouTubeShortAutomator.Services;
 
 namespace YouTubeShortAutomator;
 
-public class Program
+public sealed class Program
 {
     public static async Task Main(string[] args)
     {
@@ -108,13 +108,13 @@ public class Program
 
         foreach (var e in entries)
         {
-            var file = e.VideoFileName.Length > 38 ? "…" + e.VideoFileName[^37..] : e.VideoFileName;
+            var file = e.VideoFileName.Length > 38 ? $"…{e.VideoFileName[^37..]}" : e.VideoFileName;
             var ytId = e.YouTubeVideoId ?? "-";
             var status = e.Status.ToString();
             var error = e.ErrorMessage ?? string.Empty;
             if (error.Length > 40)
             {
-                error = error[..37] + "…";
+                error = $"{error[..37]}…";
             }
 
             Console.WriteLine($"{e.Id,-6} {file,-40} {ytId,-14} {status,-9} {e.UploadedAt:yyyy-MM-dd HH:mm:ss,-22} {error}");

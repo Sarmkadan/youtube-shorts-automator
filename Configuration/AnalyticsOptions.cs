@@ -10,7 +10,7 @@ namespace YouTubeShortsAutomator.Configuration;
 /// <summary>
 /// Analytics settings, bound from the <c>Analytics</c> configuration section.
 /// </summary>
-public class AnalyticsOptions
+public sealed class AnalyticsOptions
 {
     /// <summary>Configuration section name.</summary>
     public const string SectionName = "Analytics";

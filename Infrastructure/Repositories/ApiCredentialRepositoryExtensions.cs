@@ -33,7 +33,7 @@ public static class ApiCredentialRepositoryExtensions
     {
         ArgumentNullException.ThrowIfNull(repository);
         var credential = await repository.GetActiveCredentialAsync(userId);
-        return credential != null;
+        return credential is not null;
     }
 
     /// <summary>

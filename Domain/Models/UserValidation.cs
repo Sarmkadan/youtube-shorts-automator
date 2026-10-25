@@ -133,17 +133,17 @@ public static class UserValidation
         // No specific validation needed for boolean
 
         // Validate Videos
-        if (value.Videos == null)
+        if (value.Videos is null)
         {
             errors.Add("Videos collection cannot be null");
         }
-        else if (value.Videos.Any(v => v == null))
+        else if (value.Videos.Any(v => v is null))
         {
             errors.Add("Videos collection cannot contain null entries");
         }
 
         // Validate ApiCredential
-        if (value.ApiCredential != null)
+        if (value.ApiCredential is not null)
         {
             if (value.ApiCredential.UserId != value.Id)
             {
@@ -158,7 +158,7 @@ public static class UserValidation
         }
 
         // Validate UploadSchedule
-        if (value.UploadSchedule != null)
+        if (value.UploadSchedule is not null)
         {
             var scheduleValidation = value.UploadSchedule.Validate();
             if (scheduleValidation.IsValid == false)

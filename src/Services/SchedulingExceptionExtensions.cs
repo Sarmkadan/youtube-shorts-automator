@@ -89,7 +89,7 @@ public static class SchedulingExceptionExtensions
             dict["ScheduledTime"] = exception.ScheduledTime.Value.ToString("o", CultureInfo.InvariantCulture);
         }
 
-        if (exception.InnerException != null)
+        if (exception.InnerException is not null)
         {
             dict["InnerException"] = exception.InnerException.GetType().Name;
             dict["InnerMessage"] = exception.InnerException.Message;

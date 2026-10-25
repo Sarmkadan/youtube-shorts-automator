@@ -59,7 +59,7 @@ public static class EncodingUtility
 
     public static string ComputeSha256Hash(byte[] data)
     {
-        if (data == null || data.Length == 0)
+        if (data is null || data.Length == 0)
         {
             return string.Empty;
         }
@@ -188,7 +188,7 @@ public static class EncodingUtility
 
     public static string BuildQueryString(Dictionary<string, string> parameters)
     {
-        if (parameters == null || parameters.Count == 0)
+        if (parameters is null || parameters.Count == 0)
         {
             return string.Empty;
         }

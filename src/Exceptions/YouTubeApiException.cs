@@ -8,7 +8,7 @@ namespace YouTubeShortAutomator.Exceptions;
 /// <summary>
 /// Represents errors returned from the YouTube API.
 /// </summary>
-public class YouTubeApiException : YoutubeShortsAutomatorException
+public sealed class YouTubeApiException : YoutubeShortsAutomatorException
 {
     public int? ChannelId { get; set; }
     public string? ApiErrorCode { get; set; }

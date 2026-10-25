@@ -20,7 +20,7 @@ public interface IMetricsCollector
     Task<MetricsSnapshot> GetMetricsAsync();
 }
 
-public class MetricsCollector : IMetricsCollector
+public sealed class MetricsCollector : IMetricsCollector
 {
     private readonly Dictionary<string, ProcessingMetric> _processingMetrics;
     private readonly Dictionary<string, int> _errorCounts;
@@ -191,7 +191,7 @@ public class MetricsCollector : IMetricsCollector
     }
 }
 
-public class MetricsSnapshot
+public sealed class MetricsSnapshot
 {
     public DateTime CapturedAtUtc { get; set; }
     public List<ProcessingMetric> ProcessingMetrics { get; set; } = new();
@@ -200,7 +200,7 @@ public class MetricsSnapshot
     public int TotalApiCalls { get; set; }
 }
 
-public class ProcessingMetric
+public sealed class ProcessingMetric
 {
     public string ProcessType { get; set; } = string.Empty;
     public int Count { get; set; }
@@ -213,7 +213,7 @@ public class ProcessingMetric
     public double AverageDurationMs => Count > 0 ? TotalDurationMs / Count : 0;
 }
 
-public class ApiCallMetric
+public sealed class ApiCallMetric
 {
     public string Endpoint { get; set; } = string.Empty;
     public int StatusCode { get; set; }

@@ -119,7 +119,7 @@ public class AnalyticsService
         {
             throw new ArgumentNullException(nameof(youtubeVideoId), "YouTube video ID cannot be null or empty.");
         }
-        if (channel == null)
+        if (channel is null)
         {
             throw new ArgumentNullException(nameof(channel), "YouTube channel cannot be null.");
         }
@@ -135,7 +135,7 @@ public class AnalyticsService
 
             var existingAnalytics = await _analyticsRepository.GetByVideoIdAsync(videoShortId, cancellationToken);
             
-            if (existingAnalytics == null)
+            if (existingAnalytics is null)
             {
                 existingAnalytics = await CreateAnalyticsRecordAsync(videoShortId, cancellationToken);
             }
@@ -316,7 +316,7 @@ public class AnalyticsService
 /// <summary>
 /// Represents an analytics report containing aggregated metrics for a specified date range.
 /// </summary>
-public class AnalyticsReport
+public sealed class AnalyticsReport
 {
     public DateTime PeriodStart { get; set; }
     public DateTime PeriodEnd { get; set; }
