@@ -245,4 +245,11 @@ public sealed class ContentCalendarEntry
         Status = CalendarEntryStatus.Cancelled;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Returns a concise summary of the entry in the form
+    /// <c>[Id] Title (Category, Status) scheduled yyyy-MM-dd HH:mm UTC</c>.
+    /// </summary>
+    public override string ToString() =>
+        $"[{Id}] {Title} ({Category}, {Status}) scheduled {ScheduledPublishAt:yyyy-MM-dd HH:mm} UTC";
 }
