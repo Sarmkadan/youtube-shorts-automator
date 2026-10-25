@@ -126,4 +126,13 @@ public sealed class UploadResult
         // Returns formatted upload duration
         return $"{UploadDuration.Hours:D2}:{UploadDuration.Minutes:D2}:{UploadDuration.Seconds:D2}";
     }
+
+    /// <summary>
+    /// Returns a concise, human-readable summary of the key properties of the upload result.
+    /// </summary>
+    /// <returns>A string containing the result's Id, UploadJobId, VideoId, IsSuccessful and CompletedAt.</returns>
+    public override string ToString()
+    {
+        return $"UploadResult {{ Id={Id}, UploadJobId={UploadJobId}, VideoId={VideoId}, IsSuccessful={IsSuccessful}, CompletedAt={CompletedAt:yyyy-MM-dd HH:mm:ss} }}";
+    }
 }
