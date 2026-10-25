@@ -206,4 +206,14 @@ public sealed class YouTubeChannel
         // Check if token refresh is needed (within 1 hour of expiration)
         return DateTime.UtcNow.AddHours(1) > TokenExpiresAt;
     }
+
+    /// <summary>
+    /// Returns a concise, human-readable summary of the key identifying properties of the YouTube channel.
+    /// Tokens are intentionally excluded.
+    /// </summary>
+    /// <returns>A string containing the channel's Id, ChannelId, ChannelName and SubscriberCount.</returns>
+    public override string ToString()
+    {
+        return $"YouTubeChannel {{ Id={Id}, ChannelId={ChannelId}, ChannelName={ChannelName}, SubscriberCount={SubscriberCount} }}";
+    }
 }
