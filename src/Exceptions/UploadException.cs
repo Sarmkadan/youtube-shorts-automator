@@ -24,7 +24,10 @@ public sealed class UploadException : Exception
     /// Initializes a new instance of the <see cref="UploadException"/> class with a specified error message.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
-    public UploadException(string message) : base(message) { }
+    public UploadException(string message) : base(message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UploadException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.
@@ -32,7 +35,11 @@ public sealed class UploadException : Exception
     /// <param name="message">The message that describes the error.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
     public UploadException(string message, Exception innerException)
-        : base(message, innerException) { }
+        : base(message, innerException)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(innerException);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UploadException"/> class with a specified error message and additional context information.
@@ -44,6 +51,8 @@ public sealed class UploadException : Exception
     public UploadException(string message, int uploadJobId, int videoShortId, bool isRetryable = true)
         : base(message)
     {
+        ArgumentNullException.ThrowIfNull(message);
+
         UploadJobId = uploadJobId;
         VideoShortId = videoShortId;
         IsRetryable = isRetryable;
