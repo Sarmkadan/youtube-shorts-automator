@@ -1435,3 +1435,57 @@ else
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for the full text.
+
+## IRepository
+
+`IRepository<T>` is the generic repository contract for the console pipeline's data layer (`src/Data/IRepository.cs`, namespace `YouTubeShortAutomator.Data`). It constrains `T` to reference types and provides the basic CRUD operations, existence and count checks, and an explicit `SaveChangesAsync` for persisting pending changes. Concrete repositories such as `UploadJobRepository` implement it, and callers should depend on the interface rather than the implementation.
+
+### Usage Example
+
+```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using YouTubeShortAutomator.Data;
+using YouTubeShortAutomator.Domain.Models;
+
+public class UploadJobService
+{
+    private readonly IRepository<UploadJob> _repository;
+
+    public UploadJobService(IRepository<UploadJob> repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<UploadJob?> GetJobAsync(int id, CancellationToken cancellationToken = default)
+    {
+        // Returns null when no entity with the given id exists
+        return await _repository.GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task<UploadJob> CreateJobAsync(UploadJob job, CancellationToken cancellationToken = default)
+    {
+        // Stage the new entity, then persist it explicitly
+        UploadJob added = await _repository.AddAsync(job, cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
+        return added;
+    }
+
+    public async Task<bool> RemoveJobAsync(int id, CancellationToken cancellationToken = default)
+    {
+        // Returns false when the entity was not found
+        bool deleted = await _repository.DeleteAsync(id, cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
+        return deleted;
+    }
+
+    public async Task<int> GetTotalJobsAsync(CancellationToken cancellationToken = default)
+    {
+        bool exists = await _repository.ExistsAsync(1, cancellationToken);
+        Console.WriteLine($"Job 1 exists: {exists}");
+
+        return await _repository.CountAsync(cancellationToken);
+    }
+}
+```
