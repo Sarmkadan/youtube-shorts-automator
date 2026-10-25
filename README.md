@@ -1564,3 +1564,88 @@ string outputPath = Path.Combine(Constants.OUTPUT_DIRECTORY, $"short.{Constants.
 // Use a timeout constant instead of a magic number
 var timeout = TimeSpan.FromSeconds(Constants.FFMPEG_TIMEOUT_SECONDS);
 ```
+
+## ThumbnailAbTestService
+
+`ThumbnailAbTestService` runs A/B split tests on thumbnails for a `VideoShort` (`src/Services/ThumbnailAbTestService.cs`, namespace `YouTubeShortAutomator.Services`). It registers two thumbnail variants labelled `A` and `B`, records impressions and click-throughs for each variant, and declares the variant with the highest view rate as the winner once both have at least `MinimumImpressionsForConclusion` (500) impressions. The losing variant is deactivated. The service is registered as scoped in `src/Configuration/DependencyInjection.cs`, so resolve it from the container rather than constructing it by hand.
+
+### Public members
+
+| Member | Returns | Description |
+|--------|---------|-------------|
+| `MinimumImpressionsForConclusion` | `long` | Impressions each variant needs before a winner can be declared (`500`) |
+| `CreateTestAsync(videoShortId, thumbnailPathA, thumbnailPathB, ct)` | `(ThumbnailVariant VariantA, ThumbnailVariant VariantB)` | Creates both variants as active. Throws `ValidationException` for an empty path, `InvalidOperationException` if the video does not exist or an active test already exists |
+| `RecordViewEventAsync(variantId, clicked = false, ct)` | `Task` | Records one impression, plus one click when `clicked` is `true`. Throws `InvalidOperationException` if the variant does not exist or is inactive |
+| `SyncAnalyticsAsync(videoShortId, analyticsData, ct)` | `Task` | Overwrites impression and click totals for each active variant whose label appears in `analyticsData`. Throws `ArgumentNullException` for a `null` dictionary. Does nothing if no active variants exist |
+| `EvaluateAndConcludeAsync(videoShortId, ct)` | `Task<ThumbnailVariant?>` | Returns the winner, or `null` if there are no active variants or any variant is below the impression minimum. Otherwise it marks the highest view-rate variant as the winner and deactivates the rest |
+| `GetTestResultAsync(videoShortId, ct)` | `Task<ThumbnailAbTestResult>` | Returns a snapshot of all variants for the video, including concluded ones, with the winner label and completion flag |
+
+`ThumbnailAbTestResult` is the snapshot type returned by `GetTestResultAsync`. Its `GetSummary()` method returns a human-readable report with per-variant impressions, clicks, view rate, and the view-rate lead of the top variant over the runner-up.
+
+### Usage Example
+
+```csharp
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using YouTubeShortAutomator.Domain.Models;
+using YouTubeShortAutomator.Services;
+
+public class ThumbnailTestRunner
+{
+    private readonly ThumbnailAbTestService _abTestService;
+
+    public ThumbnailTestRunner(ThumbnailAbTestService abTestService)
+    {
+        _abTestService = abTestService;
+    }
+
+    public async Task StartTestAsync(int videoShortId, CancellationToken cancellationToken = default)
+    {
+        // Register two thumbnail candidates; both variants start active
+        var (variantA, variantB) = await _abTestService.CreateTestAsync(
+            videoShortId,
+            "thumbnails/short-42-a.jpg",
+            "thumbnails/short-42-b.jpg",
+            cancellationToken);
+    }
+
+    public async Task RecordViewAsync(int variantId, bool clicked, CancellationToken cancellationToken = default)
+    {
+        // Count one impression, and a click if the viewer clicked through
+        await _abTestService.RecordViewEventAsync(variantId, clicked, cancellationToken);
+    }
+
+    public async Task ImportAnalyticsAsync(int videoShortId, CancellationToken cancellationToken = default)
+    {
+        // Keys are variant labels; values are (Impressions, Clicks) totals from the analytics provider
+        var analytics = new Dictionary<string, (long Impressions, long Clicks)>
+        {
+            ["A"] = (1_250, 48),
+            ["B"] = (1_310, 71)
+        };
+
+        await _abTestService.SyncAnalyticsAsync(videoShortId, analytics, cancellationToken);
+    }
+
+    public async Task<ThumbnailVariant?> TryConcludeAsync(int videoShortId, CancellationToken cancellationToken = default)
+    {
+        // Returns null until both variants reach MinimumImpressionsForConclusion
+        ThumbnailVariant? winner = await _abTestService.EvaluateAndConcludeAsync(videoShortId, cancellationToken);
+        return winner;
+    }
+
+    public async Task<string> ReportAsync(int videoShortId, CancellationToken cancellationToken = default)
+    {
+        ThumbnailAbTestResult result = await _abTestService.GetTestResultAsync(videoShortId, cancellationToken);
+
+        // Inspect the outcome programmatically or print the formatted summary
+        if (result.IsComplete)
+        {
+            System.Console.WriteLine($"Winner: variant {result.WinnerLabel}");
+        }
+
+        return result.GetSummary();
+    }
+}
+```
