@@ -1489,3 +1489,78 @@ public class UploadJobService
     }
 }
 ```
+
+## Constants
+
+`Constants` is a static class of compile-time constants shared by the console pipeline (`src/Constants/Constants.cs`, namespace `YouTubeShortAutomator.Constants`). It holds video constraints, YouTube metadata limits, processing defaults, FFmpeg encoding defaults, directory names, and timeouts. Values are `const`, so they can be used in attributes and switch labels, and they should be changed in one place rather than hardcoded elsewhere.
+
+### Constant reference
+
+| Group | Constant | Value | Description |
+|-------|----------|-------|-------------|
+| Video constraints | `MAX_DURATION_SECONDS` | `60` | Maximum Short duration |
+| | `MIN_DURATION_SECONDS` | `1` | Minimum video duration |
+| | `MAX_FILE_SIZE_MB` | `512` | Maximum input file size in megabytes |
+| | `MAX_FILE_SIZE_BYTES` | `512 * 1024 * 1024` | Maximum file size in bytes (derived from `MAX_FILE_SIZE_MB`) |
+| | `MIN_FILE_SIZE_BYTES` | `1024` | Minimum file size in bytes (1 KB) |
+| | `MIN_WIDTH_PIXELS` / `MIN_HEIGHT_PIXELS` | `360` / `640` | Minimum frame dimensions |
+| | `MAX_WIDTH_PIXELS` / `MAX_HEIGHT_PIXELS` | `1920` / `1080` | Maximum frame dimensions |
+| YouTube limits | `MAX_TITLE_LENGTH` | `100` | Maximum title length in characters |
+| | `MAX_DESCRIPTION_LENGTH` | `5000` | Maximum description length in characters |
+| | `MAX_TAGS_COUNT` | `500` | Maximum number of tags |
+| | `MAX_TAG_LENGTH` | `30` | Maximum length of a single tag |
+| Processing | `DEFAULT_RETRY_COUNT` | `3` | Default number of retries for a failed job |
+| | `DEFAULT_UPLOAD_TIMEOUT_SECONDS` | `7200` | Upload timeout (2 hours) |
+| | `PROCESSING_QUEUE_LIMIT` | `100` | Maximum number of queued processing items |
+| | `BATCH_PROCESSING_SIZE` | `5` | Number of items handled per batch |
+| | `MAX_CONCURRENT_UPLOADS` | `3` | Maximum parallel uploads |
+| | `MAX_CONCURRENT_PROCESSING_TASKS` | `2` | Maximum parallel processing tasks |
+| FFmpeg defaults | `DEFAULT_VIDEO_CODEC` | `"libx264"` | Video codec |
+| | `DEFAULT_AUDIO_CODEC` | `"aac"` | Audio codec |
+| | `DEFAULT_CONTAINER` | `"mp4"` | Container format |
+| | `DEFAULT_BITRATE_KBPS` | `2000` | Video bitrate in kbps |
+| | `DEFAULT_AUDIO_BITRATE_KBPS` | `128` | Audio bitrate in kbps |
+| | `DEFAULT_FPS` | `30` | Frame rate |
+| Paths and formats | `LOG_DIRECTORY` | `"logs"` | Log directory name |
+| | `PROCESSING_DIRECTORY` | `"processing"` | Working directory for in-progress videos |
+| | `OUTPUT_DIRECTORY` | `"output"` | Directory for processed output |
+| | `TEMP_DIRECTORY` | `"temp"` | Temporary file directory |
+| | `SUPPORTED_INPUT_FORMATS` | `"mp4,avi,mov,mkv,flv,wmv"` | Comma-separated list of accepted input extensions |
+| | `OUTPUT_FORMAT` | `"mp4"` | Output file format |
+| Timeouts | `API_TIMEOUT_SECONDS` | `30` | External API request timeout |
+| | `DATABASE_TIMEOUT_SECONDS` | `30` | Database command timeout |
+| | `FFMPEG_TIMEOUT_SECONDS` | `3600` | FFmpeg process timeout (1 hour) |
+| Scheduling | `SCHEDULE_CHECK_INTERVAL_SECONDS` | `60` | How often scheduled uploads are checked |
+| | `ANALYTICS_SYNC_INTERVAL_HOURS` | `6` | Interval between analytics syncs |
+| | `TOKEN_REFRESH_BUFFER_HOURS` | `1` | Refresh OAuth tokens this many hours before expiry |
+| Caching | `CACHE_EXPIRATION_MINUTES` | `30` | Default cache entry lifetime |
+
+Some constants, such as `MAX_TITLE_LENGTH`, `MAX_FILE_SIZE_BYTES`, `DEFAULT_RETRY_COUNT`, and `TEMP_DIRECTORY`, are referenced directly by the pipeline. Others are defined for future or shared use, so check the usages before relying on one. The descriptions above are based on each constant's name.
+
+### Usage Example
+
+```csharp
+using YouTubeShortAutomator.Constants;
+
+// Reject videos longer than the Shorts limit
+if (duration.TotalSeconds > Constants.MAX_DURATION_SECONDS)
+{
+    throw new InvalidOperationException(
+        $"Video must be at most {Constants.MAX_DURATION_SECONDS} seconds long.");
+}
+
+// Validate the file size against the byte limit
+if (fileInfo.Length > Constants.MAX_FILE_SIZE_BYTES)
+{
+    Console.Error.WriteLine($"File exceeds {Constants.MAX_FILE_SIZE_MB} MB.");
+}
+
+// Split the supported input extensions into an array
+string[] formats = Constants.SUPPORTED_INPUT_FORMATS.Split(',');
+
+// Build the output path from the configured directory and format
+string outputPath = Path.Combine(Constants.OUTPUT_DIRECTORY, $"short.{Constants.OUTPUT_FORMAT}");
+
+// Use a timeout constant instead of a magic number
+var timeout = TimeSpan.FromSeconds(Constants.FFMPEG_TIMEOUT_SECONDS);
+```
