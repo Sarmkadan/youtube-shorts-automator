@@ -187,4 +187,13 @@ public sealed class AnalyticsData
             _ => "Low"
         };
     }
+
+    /// <summary>
+    /// Returns a concise summary of the analytics data for the video short.
+    /// </summary>
+    /// <returns>A string containing the key identifiers and engagement metrics.</returns>
+    public override string ToString()
+    {
+        return $"AnalyticsData {{ Id={Id}, VideoShortId={VideoShortId}, Views={ViewCount}, Likes={LikeCount}, Comments={CommentCount}, Shares={ShareCount}, EngagementRate={EngagementRate:F2}% }}";
+    }
 }
