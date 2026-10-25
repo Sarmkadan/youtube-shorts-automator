@@ -1883,3 +1883,47 @@ public class AnalyticsReporter
     }
 }
 ```
+
+## FileValidationService
+
+`FileValidationService` checks video files before processing and provides hashing and temporary file cleanup (`src/Services/FileValidationService.cs`, namespace `YouTubeShortAutomator.Services`). It is sealed and has no interface. It takes an `ILogger<FileValidationService>` and throws `ArgumentNullException` if the logger is `null`. It is not registered in the DI container, so construct it directly with a logger. Extension methods for batch operations are in `FileValidationServiceExtensions`.
+
+Supported extensions come from `Constants.SUPPORTED_INPUT_FORMATS` (`mp4,avi,mov,mkv,flv,wmv`). File size limits come from `Constants.MIN_FILE_SIZE_BYTES` (1 KB) and `Constants.MAX_FILE_SIZE_BYTES`. Most methods that receive a blank path throw `ArgumentException`. The validation and cleanup methods log and swallow their own I/O errors instead of throwing.
+
+### Public members
+
+| Member | Returns | Description |
+|--------|---------|-------------|
+| `ValidateVideoFile(filePath)` | `bool` | Returns `true` only if the file exists, its size is between the minimum and maximum limits, its extension is in the supported list (case-insensitive), and it can be opened and is not empty. Logs a warning for each failed check and returns `false` instead of throwing. Throws `ArgumentException` for a blank path |
+| `GetFileHash(filePath)` | `string` | Returns the lowercase hex SHA256 hash of the file contents. Logs and throws `InvalidOperationException` (with the original exception as inner) if the file cannot be read. Throws `ArgumentException` for a blank path |
+| `GetVideoDuration(filePath)` | `TimeSpan?` | Returns a placeholder duration of 30 seconds if the file exists, or `null` if it does not. It does not read the real duration; the code notes that FFprobe is needed for that. Logs and returns `null` on error. Throws `ArgumentException` for a blank path |
+| `DeleteTemporaryFile(filePath)` | `void` | Deletes the file if it exists and logs at information level. Logs a warning and does not rethrow if the deletion fails. Does nothing if the file is missing. Throws `ArgumentException` for a blank path |
+| `CleanupTemporaryDirectory(directoryPath)` | `void` | Calls `DeleteTemporaryFile` for each file directly inside the directory. Subdirectories are not touched. Logs an error and does not rethrow on failure. Does nothing if the directory is missing. Throws `ArgumentException` for a blank path |
+| `GetSupportedFormats()` | `string` | Returns the comma-separated list of supported extensions, for example `mp4,avi,mov,mkv,flv,wmv`. Has no side effects |
+
+### Usage Example
+
+```csharp
+using YouTubeShortAutomator.Services;
+
+// FileValidationService is not registered in DI, so create it with a logger
+FileValidationService fileValidationService = new FileValidationService(loggerFactory.CreateLogger<FileValidationService>());
+
+string inputPath = "./input/clip.mp4";
+
+if (!fileValidationService.ValidateVideoFile(inputPath))
+{
+    Console.WriteLine($"Skipping invalid file. Supported formats: {fileValidationService.GetSupportedFormats()}");
+    return;
+}
+
+// Store the hash to detect duplicate uploads later
+string hash = fileValidationService.GetFileHash(inputPath);
+
+// Duration is a placeholder (30 seconds) until FFprobe is wired in
+TimeSpan? duration = fileValidationService.GetVideoDuration(inputPath);
+
+// Remove processed intermediate files, then the temporary directory's contents
+fileValidationService.DeleteTemporaryFile("./temp/clip_720p.mp4");
+fileValidationService.CleanupTemporaryDirectory("./temp");
+```
