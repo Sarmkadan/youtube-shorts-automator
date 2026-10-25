@@ -92,6 +92,10 @@ public static class DatabaseContextExtensions
         Func<IDataRecord, T> mapper,
         Dictionary<string, object?>? parameters = null)
     {
+        ArgumentNullException.ThrowIfNull(db);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sql);
+        ArgumentNullException.ThrowIfNull(mapper);
+
         var list = await db.QueryAsync(sql, mapper, parameters);
         return list.FirstOrDefault();
     }
