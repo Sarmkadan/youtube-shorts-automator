@@ -114,6 +114,8 @@ public static class AppSettingsValidation
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="settings"/> is null.</exception>
     public static bool IsValid(this AppSettings settings)
     {
+        ArgumentNullException.ThrowIfNull(settings);
+
         return settings.Validate().Count == 0;
     }
 
