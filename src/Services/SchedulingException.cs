@@ -27,6 +27,7 @@ public sealed class SchedulingException : Exception
     public SchedulingException(string message)
         : base(message)
     {
+        ArgumentNullException.ThrowIfNull(message);
     }
 
     /// <summary>
@@ -37,6 +38,8 @@ public sealed class SchedulingException : Exception
     public SchedulingException(string message, Exception innerException)
         : base(message, innerException)
     {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(innerException);
     }
 
     /// <summary>
@@ -48,6 +51,8 @@ public sealed class SchedulingException : Exception
     public SchedulingException(string message, int jobId, DateTime scheduledTime)
         : base(message)
     {
+        ArgumentNullException.ThrowIfNull(message);
+
         JobId = jobId;
         ScheduledTime = scheduledTime;
     }
