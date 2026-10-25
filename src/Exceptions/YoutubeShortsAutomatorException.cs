@@ -12,8 +12,15 @@ public class YoutubeShortsAutomatorException : Exception
 {
     public YoutubeShortsAutomatorException() { }
 
-    public YoutubeShortsAutomatorException(string message) : base(message) { }
+    public YoutubeShortsAutomatorException(string message) : base(message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+    }
 
     public YoutubeShortsAutomatorException(string message, Exception innerException)
-        : base(message, innerException) { }
+        : base(message, innerException)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(innerException);
+    }
 }
