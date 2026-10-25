@@ -29,15 +29,22 @@ public sealed class VideoProcessingException : Exception
     /// Initializes a new instance of the <see cref="VideoProcessingException"/> class.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
-    public VideoProcessingException(string message) : base(message) { }
+    public VideoProcessingException(string message) : base(message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoProcessingException"/> class.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
     /// <param name="innerException">The inner exception that caused the error.</param>
-    public VideoProcessingException(string message, Exception innerException) 
-        : base(message, innerException) { }
+    public VideoProcessingException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(innerException);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoProcessingException"/> class.
@@ -48,6 +55,8 @@ public sealed class VideoProcessingException : Exception
     public VideoProcessingException(string message, int videoId, string? errorCode = null)
         : base(message)
     {
+        ArgumentNullException.ThrowIfNull(message);
+
         VideoId = videoId;
         ErrorCode = errorCode;
     }
@@ -62,6 +71,8 @@ public sealed class VideoProcessingException : Exception
     public VideoProcessingException(string message, int videoId, string? taskId, Exception? innerException)
         : base(message, innerException)
     {
+        ArgumentNullException.ThrowIfNull(message);
+
         VideoId = videoId;
         ProcessingTaskId = taskId;
     }
