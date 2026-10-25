@@ -36,4 +36,13 @@ public sealed class UploadHistoryEntry
     public string? ErrorMessage { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Returns a concise, human-readable summary of the key properties of the upload history entry.
+    /// </summary>
+    /// <returns>A string containing the entry's Id, VideoFileName, Status, YouTubeVideoId and UploadedAt.</returns>
+    public override string ToString()
+    {
+        return $"UploadHistoryEntry {{ Id={Id}, VideoFileName={VideoFileName}, Status={Status}, YouTubeVideoId={YouTubeVideoId}, UploadedAt={UploadedAt:yyyy-MM-dd HH:mm:ss} }}";
+    }
 }
