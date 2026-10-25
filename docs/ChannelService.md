@@ -1,78 +1,87 @@
 # ChannelService
 
-The `ChannelService` class manages the authentication state and status of a YouTube channel within the shorts automator workflow. It provides properties to inspect the current token validity and refresh requirement, methods to update the internal status, retrieve a human-readable summary, and validate stored credentials against the external service.
+`ChannelService` checks and updates the authentication state and activity status of a `YouTubeChannel`, and produces a human-readable status summary. It is a sealed class in the console pipeline (`src/Services/ChannelService.cs`, namespace `YouTubeShortAutomator.Services`) and has no interface. It does not call the YouTube API: every method works on the `YouTubeChannel` instance it is given, so the token and credential checks reflect the locally stored state.
 
 ## API
 
-### `public ChannelService()`
+### public ChannelService(ILogger\<ChannelService\> logger)
+Initializes a new instance of the service. The logger is used to write informational and warning messages from `UpdateChannelStatus` and `ValidateChannelCredentials`. Throws `ArgumentNullException` if `logger` is `null`.
 
-Initializes a new instance of the `ChannelService` class. No parameters are required. The constructor does not throw exceptions.
+### public bool IsChannelTokenValid(YouTubeChannel channel)
+Returns `true` when the channel's access token has not expired (`YouTubeChannel.IsTokenExpired()` is `false`) and the channel is active (`IsActive` is `true`); otherwise `false`. Returns `false` when `channel` is `null` instead of throwing. This method only reads state and does not log.
 
-### `public bool IsChannelTokenValid { get; }`
+### public bool NeedsTokenRefresh(YouTubeChannel channel)
+Returns the result of `YouTubeChannel.NeedsTokenRefresh()`, which indicates the token should be refreshed proactively. The service does not perform the refresh itself. Throws `ArgumentNullException` if `channel` is `null`.
 
-Gets a value indicating whether the current channel token is considered valid. Returns `true` if the token is valid; otherwise `false`. This property does not throw exceptions.
+### public void UpdateChannelStatus(YouTubeChannel channel, bool isActive)
+Activates the channel when `isActive` is `true` (`Activate()`), or deactivates it otherwise (`Deactivate()`). Logs an information message with the channel name and the new status. Throws `ArgumentNullException` if `channel` is `null`. The change is applied to the in-memory instance only; persisting it is the caller's responsibility.
 
-### `public bool NeedsTokenRefresh { get; }`
+### public string GetChannelStatusSummary(YouTubeChannel channel)
+Returns a multi-line, human-readable summary with one `Label: value` line per field, each terminated by a newline:
 
-Gets a value indicating whether the channel token requires a refresh. Returns `true` if a refresh is needed; otherwise `false`. This property does not throw exceptions.
+| Line | Source |
+|------|--------|
+| `Channel` | `ChannelName` |
+| `Status` | `Active` or `Inactive`, from `IsActive` |
+| `Verified` | `Yes` or `No`, from `IsVerified` |
+| `Subscribers` | `SubscriberCount`, formatted with `N0` (thousands separators) |
+| `Views` | `ViewCount`, formatted with `N0` |
+| `Videos` | `VideoCount` |
+| `Token Valid` | `Expired` or `Valid`, from `IsTokenExpired()` |
+| `Last Synced` | `LastSyncAt`, formatted with the `F` (full date/time) pattern |
 
-### `public void UpdateChannelStatus()`
+Throws `ArgumentNullException` if `channel` is `null`.
 
-Updates the internal channel status by re-evaluating the token state and any cached data. This method does not throw exceptions.
+### public bool ValidateChannelCredentials(YouTubeChannel channel)
+Checks the locally stored credentials in this order and returns `false` at the first failure:
 
-### `public string GetChannelStatusSummary()`
+1. `channel.IsValid()`, the validation method defined on `YouTubeChannel`. Logs a warning with the channel ID.
+2. `AccessToken` is not empty or whitespace. Logs a warning.
+3. `RefreshToken` is not empty or whitespace. Logs a warning.
 
-Returns a human-readable summary of the current channel status. The returned string contains information such as token validity and refresh state. This method does not throw exceptions.
-
-### `public bool ValidateChannelCredentials()`
-
-Validates the stored channel credentials by performing a check against the external service. Returns `true` if the credentials are valid; otherwise `false`. This method does not throw exceptions.
+Returns `true` when all checks pass. The method does not contact Google or verify that the tokens are accepted by the API. Throws `ArgumentNullException` if `channel` is `null`.
 
 ## Usage
 
-### Example 1: Basic status inspection
-
 ```csharp
-var service = new ChannelService();
+using Microsoft.Extensions.Logging;
+using YouTubeShortAutomator.Domain.Models;
+using YouTubeShortAutomator.Services;
 
-// Check initial token state
-if (!service.IsChannelTokenValid)
+ILogger<ChannelService> logger = loggerFactory.CreateLogger<ChannelService>();
+var channelService = new ChannelService(logger);
+
+YouTubeChannel channel = await LoadChannelAsync();
+
+if (!channelService.ValidateChannelCredentials(channel))
 {
-    Console.WriteLine("Token is not valid. Updating status...");
-    service.UpdateChannelStatus();
+    channelService.UpdateChannelStatus(channel, isActive: false);
+    Console.WriteLine("Credentials are incomplete. Channel deactivated.");
+    return;
 }
 
-// Display a summary
-string summary = service.GetChannelStatusSummary();
-Console.WriteLine(summary);
+if (channelService.NeedsTokenRefresh(channel))
+{
+    Console.WriteLine("Access token should be refreshed before the next upload.");
+}
+
+Console.WriteLine(channelService.GetChannelStatusSummary(channel));
 ```
 
-### Example 2: Handling token refresh
-
 ```csharp
-var service = new ChannelService();
-
-if (service.NeedsTokenRefresh)
+// Check whether the channel can be used for uploads right now
+if (!channelService.IsChannelTokenValid(channel))
 {
-    Console.WriteLine("Token refresh required. Validating credentials...");
-    bool valid = service.ValidateChannelCredentials();
-
-    if (valid)
-    {
-        Console.WriteLine("Credentials are valid. Updating status...");
-        service.UpdateChannelStatus();
-    }
-    else
-    {
-        Console.WriteLine("Credentials are invalid. Manual intervention needed.");
-    }
+    Console.WriteLine("Channel is not usable: token expired or channel inactive.");
 }
-
-string finalSummary = service.GetChannelStatusSummary();
-Console.WriteLine(finalSummary);
 ```
 
 ## Notes
 
-- **Edge cases**: If the service has not been configured with any credentials, `IsChannelTokenValid` and `NeedsTokenRefresh` may both return `false` until `ValidateChannelCredentials` or `UpdateChannelStatus` is called. The `GetChannelStatusSummary` method will still return a meaningful string even when no credentials are present.
-- **Thread safety**: This class is not thread-safe. Properties and methods are intended to be called from a single thread. If concurrent access is required, external synchronization (e.g., a lock) must be used. The values of `IsChannelTokenValid` and `NeedsTokenRefresh` can change after calls to `UpdateChannelStatus` or `ValidateChannelCredentials`.
+- **Null handling:** `IsChannelTokenValid` returns `false` for a `null` channel. All other public methods throw `ArgumentNullException` with the message `YouTube channel cannot be null.`
+- **Local checks only:** `ValidateChannelCredentials` confirms that the credentials are present and pass entity validation. It does not detect revoked or rejected tokens, because it never contacts the YouTube API.
+- **Activity and token state are separate:** `IsChannelTokenValid` requires both an unexpired token and an active channel. `GetChannelStatusSummary` reports `Token Valid` from the token expiry alone, so a summary can show `Token Valid: Valid` for an inactive channel.
+- **Last synced:** `LastSyncAt` is nullable. When the channel has never been synced, the `Last Synced` line is empty rather than showing a date.
+- **Persistence:** `UpdateChannelStatus` changes the instance only. Save the channel through the repository layer if the new status must survive a restart.
+- **Dependency injection:** `ChannelService` is not registered in the console app's `ServiceCollection` in `src/Program.cs`. Create it directly with a logger, as shown in the usage examples.
+- **Thread safety:** The class holds no mutable state of its own, but it mutates the `YouTubeChannel` passed to `UpdateChannelStatus`. Callers must synchronize access to the same channel instance.
