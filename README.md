@@ -1975,3 +1975,64 @@ int queued = await schedulingService.GetQueuedJobCountAsync();
 
 await schedulingService.CancelUploadAsync(job.Id);
 ```
+
+## IContentCalendarService
+
+`IContentCalendarService` is the contract for the publishing calendar: it creates, queries, updates and deletes `ContentCalendarEntry` records and moves an entry through its lifecycle (create, optimise, apply suggestion, schedule). It is defined in `src/Services/IContentCalendarService.cs`, namespace `YouTubeShortAutomator.Services`, in the same file as `ITitleOptimizationEngine`, which the calendar uses for title and description suggestions. `ContentCalendarService` is the implementation. `AddContentCalendar` registers it as scoped in `src/Configuration/DependencyInjection.cs`, so resolve `IContentCalendarService` from the container rather than constructing it by hand.
+
+Entries move through `CalendarEntryStatus` values: `Draft`, `Optimised`, `Approved`, `Scheduled` and then `Published`. `ScheduleEntryAsync` requires the entry to have a linked `VideoShortId`. Date ranges and scheduled times are UTC.
+
+### Public members
+
+| Member | Returns | Description |
+|--------|---------|-------------|
+| `CreateEntryAsync(entry, cancellationToken)` | `Task<ContentCalendarEntry>` | Persists a new entry and runs the optimisation engine when auto-optimisation is configured. `Title` is required |
+| `GetEntryAsync(entryId, cancellationToken)` | `Task<ContentCalendarEntry?>` | Returns the entry, or `null` when it does not exist |
+| `GetEntriesInRangeAsync(from, to, cancellationToken)` | `Task<IEnumerable<ContentCalendarEntry>>` | Returns entries whose `ScheduledPublishAt` falls within the inclusive range, oldest first |
+| `GetUpcomingEntriesAsync(daysAhead = 7, cancellationToken)` | `Task<IEnumerable<ContentCalendarEntry>>` | Returns entries scheduled in the next `daysAhead` days that are not cancelled or archived, oldest first. `daysAhead` must be positive |
+| `UpdateEntryAsync(entry, cancellationToken)` | `Task<ContentCalendarEntry>` | Validates and saves changes to an existing entry. The `Id` must already exist |
+| `DeleteEntryAsync(entryId, cancellationToken)` | `Task<bool>` | Permanently deletes the entry. Returns `false` when it was not found |
+| `OptimizeEntryAsync(entryId, cancellationToken)` | `Task<TitleOptimizationResult>` | Runs the optimisation engine on the current title, description and tags, and stores the result on the entry. Published metadata is not changed |
+| `ApplyOptimizationAsync(entryId, suggestionIndex = 0, cancellationToken)` | `Task<ContentCalendarEntry>` | Applies the suggestion at `suggestionIndex` from `LastOptimization`. Call `OptimizeEntryAsync` first when `LastOptimization` is `null` |
+| `GetRecommendedSlotsAsync(channelId, count = 5, cancellationToken)` | `Task<IEnumerable<DateTime>>` | Returns UTC posting times for the channel, ranked by projected engagement from historical analytics |
+| `ScheduleEntryAsync(entryId, scheduledAt, cancellationToken)` | `Task<ContentCalendarEntry>` | Links the entry to a new `UploadJob` through the scheduling service, sets `ScheduledPublishAt`, and moves the status to `Scheduled` |
+
+### ITitleOptimizationEngine
+
+The engine behind the optimisation methods is defined in the same file. It is a deterministic, data-driven heuristic and does not call an external AI service.
+
+| Member | Returns | Description |
+|--------|---------|-------------|
+| `OptimizeAsync(title, description, tags, channelId, cancellationToken)` | `Task<TitleOptimizationResult>` | Analyses the metadata against channel history and returns ranked suggestions and posting times |
+| `RecommendPostingTimesAsync(channelId, count = 5, cancellationToken)` | `Task<IEnumerable<DateTime>>` | Returns UTC posting times ordered by projected engagement |
+| `ScoreTitle(title)` | `double` | Returns a quality score from 0 (very poor) to 1 (excellent) based on length, structure, power words and configured keywords |
+| `ExtractKeywords(title, description)` | `string[]` | Returns the main content keywords, used as seed terms for optimisation |
+
+### Usage Example
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+using YouTubeShortAutomator.Services;
+
+// Resolve the calendar service from the container (registered as scoped)
+IContentCalendarService calendar = serviceProvider.GetRequiredService<IContentCalendarService>();
+
+ContentCalendarEntry entry = await calendar.CreateEntryAsync(new ContentCalendarEntry
+{
+    Title = "Five Second Tip",
+    Description = "A quick tip in under a minute.",
+    Tags = ["tips", "shorts"],
+    YouTubeChannelId = 1,
+    ScheduledPublishAt = DateTime.UtcNow.AddDays(2)
+});
+
+// Ask for a title suggestion, then apply the best one
+TitleOptimizationResult result = await calendar.OptimizeEntryAsync(entry.Id);
+ContentCalendarEntry optimised = await calendar.ApplyOptimizationAsync(entry.Id);
+
+// Pick a recommended slot and schedule the entry (the entry needs a VideoShortId first)
+IEnumerable<DateTime> slots = await calendar.GetRecommendedSlotsAsync(channelId: 1, count: 3);
+ContentCalendarEntry scheduled = await calendar.ScheduleEntryAsync(entry.Id, slots.First());
+
+IEnumerable<ContentCalendarEntry> upcoming = await calendar.GetUpcomingEntriesAsync(daysAhead: 14);
+```
