@@ -106,6 +106,15 @@ public sealed class ThumbnailVariant
     /// <param name="minimumImpressions">Impression threshold before drawing conclusions.</param>
     public bool HasSufficientData(long minimumImpressions = 500) => ImpressionCount >= minimumImpressions;
 
+    /// <summary>
+    /// Returns a concise, human-readable summary of the key properties of the thumbnail variant.
+    /// </summary>
+    /// <returns>A string containing the variant's Id, VideoShortId, Label, impression and click counts, ViewRate, IsActive and IsWinner.</returns>
+    public override string ToString()
+    {
+        return $"ThumbnailVariant {{ Id={Id}, VideoShortId={VideoShortId}, Label={Label}, Impressions={ImpressionCount}, Clicks={ClickCount}, ViewRate={ViewRate:F2}%, IsActive={IsActive}, IsWinner={IsWinner} }}";
+    }
+
     private void RecalculateViewRate()
     {
         ViewRate = ImpressionCount > 0 ? (double)ClickCount / ImpressionCount * 100.0 : 0;
