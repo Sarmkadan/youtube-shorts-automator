@@ -95,6 +95,8 @@ public static class UploadJobRepositoryValidation
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this UploadJobRepository value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         return Validate(value).Count == 0;
     }
 
