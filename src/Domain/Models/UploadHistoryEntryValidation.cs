@@ -98,7 +98,12 @@ public static class UploadHistoryEntryValidation
     /// <param name="value">The upload history entry to check.</param>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static bool IsValid(this UploadHistoryEntry value) => value.Validate().Count == 0;
+    public static bool IsValid(this UploadHistoryEntry value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        return value.Validate().Count == 0;
+    }
 
     /// <summary>
     /// Ensures that the specified <see cref="UploadHistoryEntry"/> value is valid, throwing an <see cref="ArgumentException"/> if not.
