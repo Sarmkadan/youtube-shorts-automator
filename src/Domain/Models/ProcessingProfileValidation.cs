@@ -10,6 +10,20 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// </summary>
 public static class ProcessingProfileValidation
 {
+    private const int MaxNameLength = 100;
+    private const int MaxDescriptionLength = 500;
+    private const int MinVideoWidth = 360;
+    private const int MinVideoHeight = 640;
+    private const int MaxVideoDimension = 1920;
+    private const int MinVideoBitrate = 500;
+    private const int MaxVideoBitrate = 20000;
+    private const int MinAudioBitrate = 64;
+    private const int MaxAudioBitrate = 320;
+    private const int MinFrameRate = 24;
+    private const int MaxFrameRate = 60;
+    private const int MinCompressionLevel = 0;
+    private const int MaxCompressionLevel = 10;
+
     /// <summary>
     /// Validates the specified processing profile.
     /// </summary>
@@ -23,25 +37,25 @@ public static class ProcessingProfileValidation
         var errors = new List<string>();
 
         // Validate Name
-        ValidateString(value.Name, nameof(value.Name), 100, errors);
+        ValidateString(value.Name, nameof(value.Name), MaxNameLength, errors);
 
         // Validate Description (optional, no specific constraints)
-        ValidateString(value.Description, nameof(value.Description), 500, errors);
+        ValidateString(value.Description, nameof(value.Description), MaxDescriptionLength, errors);
 
         // Validate VideoWidth
-        ValidateRange(value.VideoWidth, nameof(value.VideoWidth), 360, 1920, errors);
+        ValidateRange(value.VideoWidth, nameof(value.VideoWidth), MinVideoWidth, MaxVideoDimension, errors);
 
         // Validate VideoHeight
-        ValidateRange(value.VideoHeight, nameof(value.VideoHeight), 640, 1920, errors);
+        ValidateRange(value.VideoHeight, nameof(value.VideoHeight), MinVideoHeight, MaxVideoDimension, errors);
 
         // Validate VideoBitrate
-        ValidateRange(value.VideoBitrate, nameof(value.VideoBitrate), 500, 20000, errors);
+        ValidateRange(value.VideoBitrate, nameof(value.VideoBitrate), MinVideoBitrate, MaxVideoBitrate, errors);
 
         // Validate AudioBitrate
-        ValidateRange(value.AudioBitrate, nameof(value.AudioBitrate), 64, 320, errors);
+        ValidateRange(value.AudioBitrate, nameof(value.AudioBitrate), MinAudioBitrate, MaxAudioBitrate, errors);
 
         // Validate FrameRate
-        ValidateRange(value.FrameRate, nameof(value.FrameRate), 24, 60, errors);
+        ValidateRange(value.FrameRate, nameof(value.FrameRate), MinFrameRate, MaxFrameRate, errors);
 
         // Validate VideoCodec
         ValidateString(value.VideoCodec, nameof(value.VideoCodec), null, errors);
@@ -53,7 +67,12 @@ public static class ProcessingProfileValidation
         ValidateString(value.Container, nameof(value.Container), null, errors);
 
         // Validate CompressionLevel
-        ValidateRange(value.CompressionLevel, nameof(value.CompressionLevel), 0, 10, errors);
+        ValidateRange(
+            value.CompressionLevel,
+            nameof(value.CompressionLevel),
+            MinCompressionLevel,
+            MaxCompressionLevel,
+            errors);
 
         // Validate CreatedAt (must not be default)
         if (value.CreatedAt == default)
