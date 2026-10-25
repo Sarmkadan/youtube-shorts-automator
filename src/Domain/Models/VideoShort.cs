@@ -195,4 +195,13 @@ public sealed class VideoShort
     {
         return Status == ProcessingStatus.Pending && IsValid();
     }
+
+    /// <summary>
+    /// Returns a concise description of the video short built from its identifier, title, status and duration.
+    /// </summary>
+    /// <returns>A string in the form <c>VideoShort [Id=..., Title=..., Status=..., Duration=...]</c>.</returns>
+    public override string ToString()
+    {
+        return $"VideoShort [Id={Id}, Title={Title}, Status={Status}, Duration={Duration:g}]";
+    }
 }
