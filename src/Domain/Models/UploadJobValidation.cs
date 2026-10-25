@@ -7,6 +7,13 @@ namespace YouTubeShortAutomator.Domain.Models;
 
 public static class UploadJobValidation
 {
+    private const int MaxYouTubeVideoIdLength = 100;
+    private const int MaxErrorMessageLength = 1000;
+    private const int MaxProgressPercentage = 100;
+    private const int MaxScheduleLeadYears = 1;
+    private const int MaxEstimatedTimeRemainingDays = 365;
+    private const int AttemptCountBuffer = 10;
+
     /// <summary>
     /// Validates the specified <see cref="UploadJob"/> instance.
     /// </summary>
@@ -36,9 +43,9 @@ public static class UploadJobValidation
         {
             errors.Add("YouTubeVideoId cannot be null or whitespace.");
         }
-        else if (value.YouTubeVideoId.Length > 100)
+        else if (value.YouTubeVideoId.Length > MaxYouTubeVideoIdLength)
         {
-            errors.Add($"YouTubeVideoId cannot exceed 100 characters, but was {value.YouTubeVideoId.Length}.");
+            errors.Add($"YouTubeVideoId cannot exceed {MaxYouTubeVideoIdLength} characters, but was {value.YouTubeVideoId.Length}.");
         }
 
         // Validate Status
@@ -52,7 +59,7 @@ public static class UploadJobValidation
         {
             errors.Add("ScheduledAt cannot be default(DateTime).");
         }
-        else if (value.ScheduledAt > DateTime.UtcNow.AddYears(1))
+        else if (value.ScheduledAt > DateTime.UtcNow.AddYears(MaxScheduleLeadYears))
         {
             errors.Add($"ScheduledAt cannot be more than 1 year in the future, but was {value.ScheduledAt:O}.");
         }
@@ -68,7 +75,7 @@ public static class UploadJobValidation
         {
             errors.Add($"AttemptCount cannot be negative, but was {value.AttemptCount}.");
         }
-        else if (value.AttemptCount > value.MaxRetries + 10) // Allow some buffer
+        else if (value.AttemptCount > value.MaxRetries + AttemptCountBuffer) // Allow some buffer
         {
             errors.Add($"AttemptCount ({value.AttemptCount}) exceeds MaxRetries ({value.MaxRetries}) by too much.");
         }
@@ -84,9 +91,9 @@ public static class UploadJobValidation
         {
             errors.Add("ErrorMessage cannot be empty or whitespace when set.");
         }
-        else if (value.ErrorMessage?.Length > 1000)
+        else if (value.ErrorMessage?.Length > MaxErrorMessageLength)
         {
-            errors.Add($"ErrorMessage cannot exceed 1000 characters, but was {value.ErrorMessage.Length}.");
+            errors.Add($"ErrorMessage cannot exceed {MaxErrorMessageLength} characters, but was {value.ErrorMessage.Length}.");
         }
 
         // Validate UploadedBytes
@@ -96,9 +103,9 @@ public static class UploadJobValidation
         }
 
         // Validate UploadProgressPercentage
-        if (value.UploadProgressPercentage < 0 || value.UploadProgressPercentage > 100)
+        if (value.UploadProgressPercentage < 0 || value.UploadProgressPercentage > MaxProgressPercentage)
         {
-            errors.Add($"UploadProgressPercentage must be between 0 and 100, but was {value.UploadProgressPercentage.ToString(CultureInfo.InvariantCulture)}.");
+            errors.Add($"UploadProgressPercentage must be between 0 and {MaxProgressPercentage}, but was {value.UploadProgressPercentage.ToString(CultureInfo.InvariantCulture)}.");
         }
 
         // Validate EstimatedTimeRemaining
@@ -106,7 +113,7 @@ public static class UploadJobValidation
         {
             errors.Add($"EstimatedTimeRemaining cannot be negative, but was {value.EstimatedTimeRemaining}.");
         }
-        else if (value.EstimatedTimeRemaining > TimeSpan.FromDays(365))
+        else if (value.EstimatedTimeRemaining > TimeSpan.FromDays(MaxEstimatedTimeRemainingDays))
         {
             errors.Add($"EstimatedTimeRemaining cannot exceed 1 year, but was {value.EstimatedTimeRemaining}.");
         }
