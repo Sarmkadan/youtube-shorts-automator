@@ -86,8 +86,11 @@ public static class ThumbnailAbTestRepositoryValidation
     /// </summary>
     /// <param name="value">The repository instance to check.</param>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this ThumbnailAbTestRepository value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         return Validate(value).Count == 0;
     }
 
