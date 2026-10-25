@@ -37,8 +37,11 @@ public static class DatabaseContextValidation
     /// </summary>
     /// <param name="value">The database context to check.</param>
     /// <returns><see langword="true"/> if the context is valid; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static bool IsValid(this DatabaseContext? value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         return Validate(value).Count == 0;
     }
 
