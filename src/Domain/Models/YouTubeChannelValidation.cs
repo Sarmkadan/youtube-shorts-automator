@@ -9,6 +9,12 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// </summary>
 public static class YouTubeChannelValidation
 {
+    private const string ChannelIdPrefix = "UC";
+    private const int ChannelIdLength = 24;
+    private const int MaxChannelNameLength = 100;
+    private const int MaxDescriptionLength = 5000;
+    private const int MaxDefaultLanguageLength = 10;
+
     /// <summary>
     /// Validates a <see cref="YouTubeChannel"/> instance and returns a list of human-readable validation problems.
     /// </summary>
@@ -32,7 +38,8 @@ public static class YouTubeChannelValidation
         {
             errors.Add("ChannelId cannot be null or whitespace.");
         }
-        else if (!value.ChannelId.StartsWith("UC", StringComparison.Ordinal) || value.ChannelId.Length != 24)
+        else if (!value.ChannelId.StartsWith(ChannelIdPrefix, StringComparison.Ordinal)
+            || value.ChannelId.Length != ChannelIdLength)
         {
             errors.Add("ChannelId must be a valid YouTube channel ID starting with 'UC' and be 24 characters long.");
         }
@@ -42,13 +49,13 @@ public static class YouTubeChannelValidation
         {
             errors.Add("ChannelName cannot be null or whitespace.");
         }
-        else if (value.ChannelName.Length > 100)
+        else if (value.ChannelName.Length > MaxChannelNameLength)
         {
             errors.Add("ChannelName cannot exceed 100 characters.");
         }
 
         // Validate Description
-        if (!string.IsNullOrEmpty(value.Description) && value.Description.Length > 5000)
+        if (!string.IsNullOrEmpty(value.Description) && value.Description.Length > MaxDescriptionLength)
         {
             errors.Add("Description cannot exceed 5000 characters.");
         }
@@ -104,7 +111,7 @@ public static class YouTubeChannelValidation
         }
 
         // Validate DefaultLanguage
-        if (!string.IsNullOrEmpty(value.DefaultLanguage) && value.DefaultLanguage.Length > 10)
+        if (!string.IsNullOrEmpty(value.DefaultLanguage) && value.DefaultLanguage.Length > MaxDefaultLanguageLength)
         {
             errors.Add("DefaultLanguage cannot exceed 10 characters.");
         }
