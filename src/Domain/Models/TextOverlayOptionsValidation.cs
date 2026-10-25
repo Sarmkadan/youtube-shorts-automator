@@ -10,6 +10,11 @@ namespace YouTubeShortAutomator.Domain.Models;
 /// </summary>
 public static class TextOverlayOptionsValidation
 {
+    private const int ExclusiveMinimumFontSize = 0;
+    private const int MinimumBoxPadding = 0;
+    private const int MinimumWrapWidth = 0;
+    private const int NoValidationErrors = 0;
+
     /// <summary>
     /// Validates the specified <see cref="TextOverlayOptions"/> instance.
     /// </summary>
@@ -23,7 +28,7 @@ public static class TextOverlayOptionsValidation
         var errors = new List<string>();
 
         // Validate FontSize (should be positive)
-        if (value.FontSize <= 0)
+        if (value.FontSize <= ExclusiveMinimumFontSize)
         {
             errors.Add($"FontSize must be a positive integer, but was {value.FontSize}.");
         }
@@ -43,7 +48,7 @@ public static class TextOverlayOptionsValidation
         }
 
         // Validate BoxPadding (should be non-negative)
-        if (value.BoxPadding < 0)
+        if (value.BoxPadding < MinimumBoxPadding)
         {
             errors.Add($"BoxPadding must be non-negative, but was {value.BoxPadding}.");
         }
@@ -51,7 +56,7 @@ public static class TextOverlayOptionsValidation
         // Validate Position (no validation needed, it's an enum)
 
         // Validate WrapWidth (should be non-negative; 0 means no wrapping)
-        if (value.WrapWidth < 0)
+        if (value.WrapWidth < MinimumWrapWidth)
         {
             errors.Add($"WrapWidth must be non-negative, but was {value.WrapWidth}.");
         }
@@ -67,7 +72,7 @@ public static class TextOverlayOptionsValidation
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static bool IsValid(this TextOverlayOptions value)
     {
-        return value.Validate().Count == 0;
+        return value.Validate().Count == NoValidationErrors;
     }
 
     /// <summary>
@@ -82,7 +87,7 @@ public static class TextOverlayOptionsValidation
         ArgumentNullException.ThrowIfNull(value);
 
         var errors = value.Validate();
-        if (errors.Count == 0)
+        if (errors.Count == NoValidationErrors)
         {
             return;
         }
