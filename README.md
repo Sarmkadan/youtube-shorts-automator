@@ -2036,3 +2036,48 @@ ContentCalendarEntry scheduled = await calendar.ScheduleEntryAsync(entry.Id, slo
 
 IEnumerable<ContentCalendarEntry> upcoming = await calendar.GetUpcomingEntriesAsync(daysAhead: 14);
 ```
+
+## DependencyInjection
+
+`DependencyInjection` holds the extension methods that register the console app's services, repositories, and options into an `IServiceCollection` (`src/Configuration/DependencyInjection.cs`, namespace `YouTubeShortAutomator.Configuration`). It is a static class with no state. Every method throws `ArgumentNullException` for a `null` argument and returns the same `IServiceCollection`, so calls can be chained. `src/Program.cs` calls the methods in this order: `AddMediaProcessingOptions`, `AddApplicationServices`, then `AddApplicationLogging`. The console app has no generic host, so `Program.cs` also runs the `ValidateOnStart` checks by hand.
+
+### Public members
+
+| Member | Returns | Description |
+|--------|---------|-------------|
+| `AddApplicationServices(services, appSettings)` | `IServiceCollection` | Registers `DatabaseContext` as a singleton from `appSettings.ConnectionString`, the four repositories (`VideoShortRepository`, `UploadJobRepository`, `AnalyticsRepository`, `UploadHistoryRepository`), `ThumbnailAbTestRepository`, and the scoped services: `VideoProcessingService`, `YouTubeUploadService`, `SchedulingService`, `AnalyticsService`, `ThumbnailAbTestService`, and `JobOrchestrationService`. `IThumbnailGeneratorService` is registered as scoped with `ThumbnailGeneratorService` |
+| `AddContentCalendar(services, configure = null)` | `IServiceCollection` | Creates a `ContentCalendarOptions` instance, applies the optional `configure` delegate, and registers it as a singleton. Then it registers `ContentCalendarRepository`, `ITitleOptimizationEngine` (`TitleOptimizationEngine`), and `IContentCalendarService` (`ContentCalendarService`), all scoped. It is not called from `Program.cs` |
+| `AddMediaProcessingOptions(services, configuration)` | `IServiceCollection` | Binds `VideoProcessorOptions` and `ThumbnailGeneratorOptions` with `ValidateOnStart`. Each one binds the shared `Processing` section first, then its own section (`VideoProcessor` or `ThumbnailGenerator`). It also registers `VideoProcessorOptionsValidation` and `ThumbnailGeneratorOptionsValidation` as singleton `IValidateOptions<T>` implementations |
+| `AddApplicationLogging(services, appSettings)` | `IServiceCollection` | Calls `AddLogging` with the console provider and a minimum level of `Information`. Every `ILogger<T>` used by the registrations above needs this |
+
+`AddApplicationServices` resolves its dependencies from the container, so the order of the registrations inside the method does not matter. `AddContentCalendar` does need `DatabaseContext`, `AnalyticsService`, `SchedulingService`, and `VideoShortRepository` to be registered first, which `AddApplicationServices` does. `AddMediaProcessingOptions` must run before `ThumbnailGeneratorService` is resolved, because that service reads `IOptions<ThumbnailGeneratorOptions>`.
+
+### Usage Example
+
+```csharp
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using YouTubeShortAutomator.Configuration;
+
+IConfiguration configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
+
+AppSettings appSettings = configuration.GetSection("AppSettings").Get<AppSettings>() ?? new AppSettings();
+
+ServiceCollection services = new ServiceCollection();
+
+services.AddMediaProcessingOptions(configuration);
+services.AddApplicationServices(appSettings);
+services.AddApplicationLogging(appSettings);
+
+// Optional: register the content calendar with overridden defaults
+services.AddContentCalendar(options =>
+{
+    options.DefaultLookAheadDays = 7;
+    options.MaxTagCount = 10;
+});
+
+using ServiceProvider provider = services.BuildServiceProvider();
+JobOrchestrationService orchestrator = provider.GetRequiredService<JobOrchestrationService>();
+```
