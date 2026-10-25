@@ -1782,3 +1782,43 @@ bool retried = await orchestrator.ProcessFailedRetriableJobsAsync(channel);
 SyncResult sync = await orchestrator.SyncAnalyticsAsync(channel);
 Console.WriteLine($"Synced {sync.SyncedCount}, failed {sync.FailedCount}");
 ```
+
+## ChannelService
+
+`ChannelService` checks and updates the status and credentials of a `YouTubeChannel` (`src/Services/ChannelService.cs`, namespace `YouTubeShortAutomator.Services`). It is sealed and has no interface. It takes an `ILogger<ChannelService>` and throws `ArgumentNullException` if the logger is `null`. It is not registered in the DI container, so construct it directly with a logger. Extension methods for batch operations are in `ChannelServiceExtensions`.
+
+Only `UpdateChannelStatus` and `ValidateChannelCredentials` write to the log. The other methods have no side effects.
+
+### Public members
+
+| Member | Returns | Description |
+|--------|---------|-------------|
+| `IsChannelTokenValid(channel)` | `bool` | Returns `true` when the access token has not expired and the channel is active. Returns `false` for a `null` channel instead of throwing |
+| `NeedsTokenRefresh(channel)` | `bool` | Returns `true` when the channel's token should be refreshed proactively, as decided by `YouTubeChannel.NeedsTokenRefresh()`. Throws `ArgumentNullException` for a `null` channel |
+| `UpdateChannelStatus(channel, isActive)` | `void` | Activates or deactivates the channel through `Activate()` or `Deactivate()`, then logs the change at information level. Throws `ArgumentNullException` for a `null` channel |
+| `GetChannelStatusSummary(channel)` | `string` | Returns a multi-line report with the channel name, active and verified flags, subscriber, view, and video counts, token state (`Valid` or `Expired`), and the last sync time. Throws `ArgumentNullException` for a `null` channel |
+| `ValidateChannelCredentials(channel)` | `bool` | Returns `true` only if `YouTubeChannel.IsValid()` passes and both the access token and the refresh token are non-blank. Logs a warning naming the failed check and returns `false` otherwise. Throws `ArgumentNullException` for a `null` channel |
+
+### Usage Example
+
+```csharp
+using YouTubeShortAutomator.Domain.Models;
+using YouTubeShortAutomator.Services;
+
+// ChannelService is not registered in DI, so create it with a logger
+ChannelService channelService = new ChannelService(loggerFactory.CreateLogger<ChannelService>());
+
+if (!channelService.ValidateChannelCredentials(channel))
+{
+    channelService.UpdateChannelStatus(channel, isActive: false);
+}
+else if (channelService.NeedsTokenRefresh(channel))
+{
+    Console.WriteLine("Token should be refreshed before the next upload.");
+}
+
+if (channelService.IsChannelTokenValid(channel))
+{
+    Console.WriteLine(channelService.GetChannelStatusSummary(channel));
+}
+```
